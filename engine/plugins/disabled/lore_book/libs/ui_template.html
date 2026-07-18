@@ -1,0 +1,179 @@
+<div class="lb-root" id="lb-root">
+
+    <!-- ── Sidebar ── -->
+    <div class="lb-sidebar">
+        <div class="lb-sidebar-top">
+            <div class="lb-book-title">📜 Lore Book</div>
+            <div class="lb-book-file" id="lb-file-name">Loading...</div>
+        </div>
+
+        <div class="lb-search-wrap">
+            <input class="lb-search" id="lb-search" placeholder="🔍  Search entries..." autocomplete="off" />
+        </div>
+
+        <div class="lb-controls">
+            <select class="lb-mini-select" id="lb-sort" title="Sort by">
+                <option value="priority">↓ Priority</option>
+                <option value="name">A–Z Name</option>
+                <option value="hits">🔥 Most Used</option>
+                <option value="recent">🕐 Recent</option>
+            </select>
+            <select class="lb-mini-select" id="lb-cat-filter" title="Filter by category">
+                <option value="__all__">All categories</option>
+            </select>
+        </div>
+
+        <div class="lb-list" id="lb-list">
+            <div style="padding:20px;text-align:center;color:#555;font-size:12px;">Connecting...</div>
+        </div>
+
+        <div class="lb-sidebar-footer" id="lb-stats">
+            <span class="lb-stat">Entries: <span class="lb-stat-val" id="lb-stat-total">—</span></span>
+            <span class="lb-stat">Active: <span class="lb-stat-val" id="lb-stat-active">—</span></span>
+            <span class="lb-stat">~<span class="lb-stat-val" id="lb-stat-tokens">0</span> tok</span>
+        </div>
+    </div>
+
+    <!-- ── Main panel ── -->
+    <div class="lb-main">
+        <div class="lb-toolbar">
+            <button class="lb-btn lb-btn-primary lb-btn-sm" id="lb-new-btn">+ New Entry</button>
+            <span class="lb-status-bar" id="lb-status">⚡ Connecting to archive...</span>
+            <div class="lb-toolbar-right">
+                <button class="lb-btn lb-btn-ghost lb-btn-sm" id="lb-export-btn">Export JSON</button>
+                <button class="lb-btn lb-btn-ghost lb-btn-sm" id="lb-import-btn">Import JSON</button>
+                <input type="file" id="lb-import-file" accept=".json" style="display:none" />
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="lb-empty" id="lb-empty">
+            <div class="lb-empty-icon">📜</div>
+            <div class="lb-empty-title">Lore Book</div>
+            <div class="lb-empty-desc">Select an entry from the list, or create a new one to get started.</div>
+            <button class="lb-btn lb-btn-primary" id="lb-empty-new">+ Create First Entry</button>
+        </div>
+
+        <!-- Editor (hidden until entry selected) -->
+        <div class="lb-editor" id="lb-editor" style="display:none">
+
+            <div class="lb-editor-header">
+                <input class="lb-entry-name" id="lb-name" placeholder="Entry name..." />
+                <div class="lb-entry-breadcrumb">
+                    <span id="lb-crumb-cat"></span>
+                    <span>·</span>
+                    <span id="lb-crumb-hits"></span>
+                </div>
+            </div>
+
+            <div class="lb-master-toggle-row">
+                <label class="lb-toggle-item" id="lb-tog-enabled">
+                    <input type="checkbox" class="lb-toggle-cb" id="lb-enabled" />
+                    <div class="lb-track"></div>
+                    <div class="lb-toggle-text">
+                        <strong>Enabled</strong>
+                        <small>Participates in scanning</small>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Keywords -->
+            <div class="lb-field">
+                <label class="lb-label">Keywords — trigger conditions</label>
+                <div class="lb-tag-wrap" id="lb-tag-wrap">
+                    <input class="lb-tag-input" id="lb-kw-input" placeholder="Type keyword, press Enter or comma..." />
+                </div>
+                <div class="lb-hint">Entry is injected when any keyword is found in recent context (or if "Always Inject" is on).</div>
+            </div>
+
+            <!-- Content -->
+            <div class="lb-field">
+                <label class="lb-label">
+                    Injected Content
+                    <span class="lb-token-badge" id="lb-token-count">0 tokens</span>
+                </label>
+                <textarea class="lb-content" id="lb-content" placeholder="The lore text injected into the AI prompt when this entry triggers..."></textarea>
+            </div>
+
+            <!-- Settings grid -->
+            <div class="lb-grid">
+
+                <div class="lb-field">
+                    <label class="lb-label">Priority (0 – 100)</label>
+                    <div class="lb-priority-row">
+                        <input class="lb-slider" type="range" min="0" max="100" id="lb-priority" />
+                        <span class="lb-priority-num" id="lb-priority-val">50</span>
+                    </div>
+                    <div class="lb-hint">Higher priority is injected first when the token budget is tight.</div>
+                </div>
+
+                <div class="lb-field">
+                    <label class="lb-label">Category</label>
+                    <input class="lb-input" id="lb-category" placeholder="Character, Location, Faction…" />
+                </div>
+
+                <div class="lb-field">
+                    <label class="lb-label">Scan Depth Override</label>
+                    <input class="lb-input" type="number" id="lb-scan-depth" placeholder="Use global default" min="0" max="30" />
+                    <div class="lb-hint">Turns of history to scan for this entry's keywords.</div>
+                </div>
+
+            </div>
+
+            <!-- Toggle flags -->
+            <div class="lb-field">
+                <label class="lb-label">Flags</label>
+                <div class="lb-toggles">
+
+                    <label class="lb-toggle-item" id="lb-tog-constant">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-constant" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Always Inject</strong>
+                            <small>Ignores keywords</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-case">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-case-sensitive" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Case Sensitive</strong>
+                            <small>Exact case only</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-word">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-whole-word" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Whole Word</strong>
+                            <small>Word-boundary match</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-regex">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-use-regex" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Regex Mode</strong>
+                            <small>Keywords are RegExp</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Internal notes -->
+            <div class="lb-field">
+                <label class="lb-label">Notes <span style="font-weight:400;letter-spacing:0;text-transform:none;font-size:10px;color:#555">(private — never injected)</span></label>
+                <textarea class="lb-comment" id="lb-comment" placeholder="Internal notes about this entry…"></textarea>
+            </div>
+
+            <!-- Footer -->
+            <div class="lb-editor-footer">
+                <button class="lb-btn lb-btn-danger lb-btn-sm" id="lb-delete-btn">Delete Entry</button>
+                <div class="lb-footer-right">
+                    <span class="lb-save-status" id="lb-save-status"></span>
+                    <button class="lb-btn lb-btn-primary lb-btn-sm" id="lb-save-btn">Save  (Ctrl+S)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,13 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/modules/payload_manager.js
+    hash: F1C3AEDE44D1854E97180A97865CB698
+  - path: engine/views/vn_viewer/js/modules/generation_manager.js
+    hash: 2BA7AE2E5C84F8EE984FBEA79ED21291
+  - path: engine/views/vn_viewer/js/modules/status_manager.js
+    hash: 6F3B9F1058356B7E4BAA9F1AD824ACD9
+  - path: engine/views/vn_viewer/js/modules/dialogue_orchestrator.js
+    hash: A262868EEBE54F3D8B9FFE035649C955
+  - path: engine/views/vn_viewer/js/modules/director_sync.js
+    hash: 4DEA5ACFB34472091FF529E73DB07182
+  - path: engine/views/vn_viewer/js/modules/audio_manager.js
+    hash: ADA7EFC26519235B40338D1ED258CE8A

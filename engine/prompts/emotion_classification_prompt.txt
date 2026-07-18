@@ -1,0 +1,36 @@
+Classify emotions for these dialogue lines. These dialogue lines happen sequentially, so the character CAN maintain their emotion for multiple lines if it makes sense. Try to not always use the neutral emotion.
+
+Global emotion universe (fallback reference only):
+[${emotionList}]
+
+CRITICAL RULE:
+Each line has its own allowed emotion list.
+You MUST choose the emotion for each line ONLY from that line's allowed list.
+
+Per-line allowed emotions:
+${lineEmotionConstraints}
+
+Character emotional guidance (only for characters in this chunk):
+${characterEmotionProfiles}
+
+${project_directives}
+
+You should also classify the mood:
+[${moodList}]
+
+The emotion is the expression on the character's face. The mood is the overall feeling of the dialogue.
+The character CAN have an angry expression but a happy mood, or a happy expression but an angry mood.
+"angry" mood should ONLY be used when the dialogue is undisputeably angry, if it's ambiguous, use "annoyed" instead. Angry should ONLY be used for actual and very explicit anger, not for when the character is just annoyed or irritated.
+
+IMPORTANT:
+- The input dialogue lines should be outputted in the same order as the original.
+- Do not skip any lines.
+- Maintain order strictly.
+
+Dialogues:
+${dialogues}
+
+Output format:
+emotion1,mood1
+emotion2,mood2
+...

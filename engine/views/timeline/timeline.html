@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Timeline</title>
+    <link rel="stylesheet" href="../../vendor/fonts/noto_sans.css">
+    <link rel="stylesheet" id="theme-link" href="../../themes/active/global.css">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="../../vendor/js/leader-line.min.js"></script>
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+    <script src="../scripts/tooltips.js"></script>
+    <script src="../scripts/modals.js"></script>
+</head>
+
+<body>
+    <div id="timeline-viewport">
+        <div id="timeline-canvas">
+            <!-- Timeline content is rendered here by JS -->
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Fetching Chronology...</div>
+    </div>
+
+    <!-- Navigation controls -->
+    <div id="nav-controls">
+        <button id="nav-top-btn" title="Go to First Turn">▲ First Turn</button>
+        <button id="nav-bottom-btn" title="Go to Last Turn">▼ Last Turn</button>
+    </div>
+
+    <!-- Zoom indicator -->
+    <div id="zoom-indicator">
+        <span id="zoom-level">100%</span>
+        <div class="zoom-controls">
+            <button id="zoom-in-btn" title="Zoom In">+</button>
+            <button id="zoom-reset-btn" title="Reset Zoom">⊙</button>
+            <button id="zoom-out-btn" title="Zoom Out">−</button>
+        </div>
+    </div>
+
+    <!-- Resource loading indicator -->
+    <div id="resource-loading-indicator" aria-live="polite">
+        <span class="dot"></span>
+        <span class="text">Loading timeline data...</span>
+    </div>
+
+    <script src="./renderer_timeline.js"></script>
+</body>
+
+</html>

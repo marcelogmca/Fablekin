@@ -1,0 +1,8 @@
+Please identify the gender of the character "${characterName}" from the following text.
+Respond with ONLY ONE WORD: "male", "female", or "unknown".
+${project_directives}
+- "unknown" is STRICTLY for non-human entities (e.g. "Machine C", "The Voice from Beyond", "System Alert").
+- If the character is human, you MUST assume the gender that makes the most sense based on the name, title, or context. Do not use "unknown" for humans.
+
+[TEXT]
+${relevantText.substring(0, 1000)}

@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/memory_manager/retrieval/rag_pipeline.js
+    hash: EE6B1DBB39D3066718A73AC6CE83CD11
+  - path: engine/modules/memory_manager/retrieval/query_generator.js
+    hash: 71B0329820914D9024AD0BEC48EC98C2
+  - path: engine/modules/memory_manager/memory_config.js
+    hash: 6D21759BDA613D79BDA285D61921348C

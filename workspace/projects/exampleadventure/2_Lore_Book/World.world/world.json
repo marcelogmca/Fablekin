@@ -1,0 +1,2655 @@
+{
+    "meta": {
+        "image_file": "map.webp",
+        "origin_pixel_x": 0,
+        "origin_pixel_y": 0,
+        "scale_factor": 1,
+        "pixels_per_km": 7,
+        "base_walk_speed_kmpd": 30,
+        "winding_factor": 1.2,
+        "dimensions": {
+            "width": 6256,
+            "height": 4024
+        },
+        "is_compiled": true
+    },
+    "nodes": [
+        {
+            "uid": "node-7ea9d4d1",
+            "world_x": 562,
+            "world_y": -2151,
+            "name": "Neolia",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-b0e65d7d",
+            "world_x": 562,
+            "world_y": -1607,
+            "name": "Lacosa",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-0f3cab82",
+            "world_x": 960,
+            "world_y": -716,
+            "name": "Northwich",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-2e4b0923",
+            "world_x": 1562,
+            "world_y": -1151,
+            "name": "Redtom",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-01837241",
+            "world_x": 1962,
+            "world_y": -1287,
+            "name": "Tinodunum",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-aa04830b",
+            "world_x": 2474,
+            "world_y": -948,
+            "name": "Lorin",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-407b73d7",
+            "world_x": 3240,
+            "world_y": -1221,
+            "name": "Botford",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-25bb2f9f",
+            "world_x": 1436,
+            "world_y": -1869,
+            "name": "Rocor",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-65f79e00",
+            "world_x": 966,
+            "world_y": -2093,
+            "name": "Overlorn",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-0cea1099",
+            "world_x": 1218,
+            "world_y": -2733,
+            "name": "Durriogeli",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-3e2a4cae",
+            "world_x": 1966,
+            "world_y": -2853,
+            "name": "Duran",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-84a3ed6c",
+            "world_x": 1934,
+            "world_y": -2497,
+            "name": "Cortus City",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-974bb65b",
+            "world_x": 2326,
+            "world_y": -2389,
+            "name": "Hucosia",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-b65cff4b",
+            "world_x": 2058,
+            "world_y": -2029,
+            "name": "Momacovia",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-7c9a4cbb",
+            "world_x": 2834,
+            "world_y": -2261,
+            "name": "Altelen",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-90b204b4",
+            "world_x": 4118,
+            "world_y": -890,
+            "name": "Helger",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-da09366c",
+            "world_x": 3736,
+            "world_y": -1437,
+            "name": "Avriukavirt",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-b44087fd",
+            "world_x": 4322,
+            "world_y": -1561,
+            "name": "Ozer",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-5f85e863",
+            "world_x": 4452,
+            "world_y": -1121,
+            "name": "Eunin",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-62dec312",
+            "world_x": 4868,
+            "world_y": -1561,
+            "name": "Delphia",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-bf1bab04",
+            "world_x": 5938,
+            "world_y": -1763,
+            "name": "Forest City of Klen",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-a28e02fe",
+            "world_x": 5098,
+            "world_y": -2100,
+            "name": "Sersal",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-c01b7bbb",
+            "world_x": 5076,
+            "world_y": -2698,
+            "name": "Citesh",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-6091f004",
+            "world_x": 5662,
+            "world_y": -2792,
+            "name": "Bole",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-566139ed",
+            "world_x": 4584,
+            "world_y": -2863,
+            "name": "Drest",
+            "type": "capital city",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-75980e86",
+            "world_x": 3604,
+            "world_y": -2529,
+            "name": "The Glassbite Dunes",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-d630bbeb",
+            "world_x": 3550,
+            "world_y": -3360,
+            "name": "The Shivering Mountain Range",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-7d1dd1bd",
+            "world_x": 4020,
+            "world_y": -3212,
+            "name": "Frostbell Watchtower",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-93095a70",
+            "world_x": 4642,
+            "world_y": -2462,
+            "name": "The Lonely Crown Castle",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-04503fd4",
+            "world_x": 4110,
+            "world_y": -2484,
+            "name": "The Sacred Mountains",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-0ac74d3b",
+            "world_x": 4214,
+            "world_y": -2852,
+            "name": "The Rugged Oasis Mountains",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-db0755ab",
+            "world_x": 3844,
+            "world_y": -2047,
+            "name": "Hammerfell Coast Mountains",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-eb5e8875",
+            "world_x": 5670,
+            "world_y": -2261,
+            "name": "The Elven Lake",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-4923fef2",
+            "world_x": 5116,
+            "world_y": -1037,
+            "name": "Vehala Forest Mountains",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-7e0cb1b8",
+            "world_x": 5568,
+            "world_y": -1501,
+            "name": "Ancient Killingen Jungle",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-9eea1f53",
+            "world_x": 4804,
+            "world_y": -747,
+            "name": "The Frozen Tower",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-8f1ee7e2",
+            "world_x": 4586,
+            "world_y": -1247,
+            "name": "Half Frozen Lake of Elina",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-2c47fa26",
+            "world_x": 3512,
+            "world_y": -741,
+            "name": "Frozen Peninsula Mountain Range",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-5106bbe4",
+            "world_x": 646,
+            "world_y": -1129,
+            "name": "The Far Forest of Mist",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-3afb768f",
+            "world_x": 1244,
+            "world_y": -2548,
+            "name": "Island of Duringeli",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-008fced6",
+            "world_x": 1102,
+            "world_y": -1427,
+            "name": "The Crooked Giant’s Bridge",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-c0ccbbf5",
+            "world_x": 1530,
+            "world_y": -1431,
+            "name": "Coppertooth Mine",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-ce40261c",
+            "world_x": 3602,
+            "world_y": -1187,
+            "name": "The Crooked Giant’s Bridge",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-682794cd",
+            "world_x": 2145,
+            "world_y": -1710,
+            "name": "The Sleeping Hydra Marsh",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-bc211034",
+            "world_x": 1238,
+            "world_y": -835,
+            "name": "Embercrack Pass",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-c7ea8627",
+            "world_x": 2032,
+            "world_y": -793,
+            "name": "The Last Warm Spring",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-8a6953e3",
+            "world_x": 2766,
+            "world_y": -1866,
+            "name": "Saint Vela’s Floating Chapel",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-74b5c072",
+            "world_x": 4430,
+            "world_y": -2116,
+            "name": "The Shivering Orchard",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-7e472701",
+            "world_x": 4914,
+            "world_y": -3449,
+            "name": "The Whispering Cactus Field",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-9c31bb2d",
+            "world_x": 4984,
+            "world_y": -2948,
+            "name": "Blackroot Forest",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-bc0d44bc",
+            "world_x": 2390,
+            "world_y": -2696,
+            "name": "Port Town of Helios",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-e15d9f82",
+            "world_x": 2710,
+            "world_y": -2312,
+            "name": "Port of Altelen",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-660d3476",
+            "world_x": 2260,
+            "world_y": -1748,
+            "name": "Port Town of Yach",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-ae0fee52",
+            "world_x": 2470,
+            "world_y": -1579,
+            "name": "Port Village of Northern Altelen",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-16a247bd",
+            "world_x": 3670,
+            "world_y": -2036,
+            "name": "Northern Port of Drestia",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-5acd6dc4",
+            "world_x": 3202,
+            "world_y": -1997,
+            "name": "Port Fishing Village of Alteron",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-4f355606",
+            "world_x": 5828,
+            "world_y": -2889,
+            "name": "Port Town of New Horizons",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-447d52a3",
+            "world_x": 1914,
+            "world_y": -3033,
+            "name": "Port Town of Glandach",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-554856bc",
+            "world_x": 1612,
+            "world_y": -2534,
+            "name": "Ancient Port  Village of Seria",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-38595652",
+            "world_x": 1421,
+            "world_y": -2778,
+            "name": "Estern Port of Durriogeli",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-81ea8bd9",
+            "world_x": 1162,
+            "world_y": -2283,
+            "name": "Sea Strait of Duringeli Island",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-560eebdf",
+            "world_x": 340,
+            "world_y": -1703,
+            "name": "Port Town of The Western Lands",
+            "type": "poi",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        },
+        {
+            "uid": "node-35cc79c4",
+            "world_x": 1152,
+            "world_y": -655,
+            "name": "Port City of Cold Harbor",
+            "type": "port",
+            "region": "",
+            "parent_nation": "",
+            "description": "",
+            "tags": ""
+        }
+    ],
+    "areas": [
+        {
+            "uid": "area-2371699c",
+            "name": "East Continent",
+            "kind": "continent",
+            "parent_uid": null,
+            "color": "#4f8fc0",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2888,
+                        -3684
+                    ],
+                    [
+                        3104,
+                        -3395
+                    ],
+                    [
+                        3032,
+                        -3171
+                    ],
+                    [
+                        3224,
+                        -2819
+                    ],
+                    [
+                        3216,
+                        -2587
+                    ],
+                    [
+                        3432,
+                        -2171
+                    ],
+                    [
+                        3684,
+                        -2099
+                    ],
+                    [
+                        3652,
+                        -1899
+                    ],
+                    [
+                        3940,
+                        -1730
+                    ],
+                    [
+                        3964,
+                        -1642
+                    ],
+                    [
+                        3740,
+                        -1590
+                    ],
+                    [
+                        3616,
+                        -1398
+                    ],
+                    [
+                        3680,
+                        -1162
+                    ],
+                    [
+                        3904,
+                        -594
+                    ],
+                    [
+                        5076,
+                        -610
+                    ],
+                    [
+                        6176,
+                        -1734
+                    ],
+                    [
+                        6200,
+                        -2091
+                    ],
+                    [
+                        6096,
+                        -2623
+                    ],
+                    [
+                        5852,
+                        -3031
+                    ],
+                    [
+                        5512,
+                        -3191
+                    ],
+                    [
+                        5036,
+                        -3672
+                    ],
+                    [
+                        4284,
+                        -3760
+                    ],
+                    [
+                        3480,
+                        -3800
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-0169c212",
+            "name": "Central Peninsula",
+            "kind": "Continent",
+            "parent_uid": null,
+            "color": "#63b16d",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2816,
+                        -3407
+                    ],
+                    [
+                        3020,
+                        -2655
+                    ],
+                    [
+                        3712,
+                        -1044
+                    ],
+                    [
+                        3800,
+                        -292
+                    ],
+                    [
+                        3448,
+                        -428
+                    ],
+                    [
+                        3296,
+                        -876
+                    ],
+                    [
+                        2992,
+                        -868
+                    ],
+                    [
+                        2752,
+                        -1220
+                    ],
+                    [
+                        2400,
+                        -1364
+                    ],
+                    [
+                        2552,
+                        -1917
+                    ],
+                    [
+                        2608,
+                        -2573
+                    ],
+                    [
+                        2448,
+                        -3374
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-028b2641",
+            "name": "Western Lands",
+            "kind": "region",
+            "parent_uid": null,
+            "color": "#d99d43",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2132,
+                        -3195
+                    ],
+                    [
+                        2496,
+                        -2566
+                    ],
+                    [
+                        2464,
+                        -1934
+                    ],
+                    [
+                        2268,
+                        -1422
+                    ],
+                    [
+                        2724,
+                        -1165
+                    ],
+                    [
+                        3116,
+                        -421
+                    ],
+                    [
+                        2592,
+                        -178
+                    ],
+                    [
+                        576,
+                        -298
+                    ],
+                    [
+                        160,
+                        -1066
+                    ],
+                    [
+                        208,
+                        -2179
+                    ],
+                    [
+                        704,
+                        -2843
+                    ],
+                    [
+                        1360,
+                        -3076
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-9e4b893b",
+            "name": "Tsardom of Drestia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#b66fd2",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2892,
+                        -3675
+                    ],
+                    [
+                        3172,
+                        -2603
+                    ],
+                    [
+                        3468,
+                        -2058
+                    ],
+                    [
+                        3636,
+                        -1906
+                    ],
+                    [
+                        4748,
+                        -2374
+                    ],
+                    [
+                        4692,
+                        -3115
+                    ],
+                    [
+                        5148,
+                        -3155
+                    ],
+                    [
+                        5260,
+                        -3251
+                    ],
+                    [
+                        5180,
+                        -3755
+                    ],
+                    [
+                        3892,
+                        -3819
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-0e462f25",
+            "name": "Kingdom of Citesh",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#d26f7d",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        4584,
+                        -2282
+                    ],
+                    [
+                        4844,
+                        -1994
+                    ],
+                    [
+                        5300,
+                        -2422
+                    ],
+                    [
+                        5364,
+                        -2763
+                    ],
+                    [
+                        5192,
+                        -3143
+                    ],
+                    [
+                        4712,
+                        -3107
+                    ],
+                    [
+                        4748,
+                        -2354
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-48534fb0",
+            "name": "Kingdom of Bole",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#4ec0b8",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        5292,
+                        -2406
+                    ],
+                    [
+                        5460,
+                        -2210
+                    ],
+                    [
+                        5660,
+                        -2414
+                    ],
+                    [
+                        5812,
+                        -2386
+                    ],
+                    [
+                        5800,
+                        -2210
+                    ],
+                    [
+                        6092,
+                        -2106
+                    ],
+                    [
+                        6124,
+                        -2298
+                    ],
+                    [
+                        6092,
+                        -2643
+                    ],
+                    [
+                        5844,
+                        -3047
+                    ],
+                    [
+                        5496,
+                        -3227
+                    ],
+                    [
+                        5300,
+                        -3051
+                    ],
+                    [
+                        5316,
+                        -2891
+                    ],
+                    [
+                        5380,
+                        -2747
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-02aa6689",
+            "name": "Kingdom of Sersalinia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#db6d53",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        4834,
+                        -1991
+                    ],
+                    [
+                        4804,
+                        -1743
+                    ],
+                    [
+                        5090,
+                        -1495
+                    ],
+                    [
+                        5766,
+                        -2015
+                    ],
+                    [
+                        5710,
+                        -2125
+                    ],
+                    [
+                        5570,
+                        -2107
+                    ],
+                    [
+                        5458,
+                        -2207
+                    ],
+                    [
+                        5286,
+                        -2403
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-ea90d540",
+            "name": "Killingen Empire",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#88a64a",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        5706,
+                        -2121
+                    ],
+                    [
+                        5786,
+                        -2201
+                    ],
+                    [
+                        6146,
+                        -2095
+                    ],
+                    [
+                        6182,
+                        -2059
+                    ],
+                    [
+                        6172,
+                        -1719
+                    ],
+                    [
+                        5846,
+                        -1327
+                    ],
+                    [
+                        5260,
+                        -783
+                    ],
+                    [
+                        5032,
+                        -741
+                    ],
+                    [
+                        4988,
+                        -613
+                    ],
+                    [
+                        4836,
+                        -585
+                    ],
+                    [
+                        4600,
+                        -649
+                    ],
+                    [
+                        4612,
+                        -841
+                    ],
+                    [
+                        4748,
+                        -998
+                    ],
+                    [
+                        4960,
+                        -1026
+                    ],
+                    [
+                        5060,
+                        -1274
+                    ],
+                    [
+                        5084,
+                        -1462
+                    ],
+                    [
+                        5768,
+                        -1994
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-86e65add",
+            "name": "Kingdom of Delphia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#4f8fc0",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        4818,
+                        -1019
+                    ],
+                    [
+                        4962,
+                        -1021
+                    ],
+                    [
+                        5058,
+                        -1271
+                    ],
+                    [
+                        5082,
+                        -1496
+                    ],
+                    [
+                        4810,
+                        -1740
+                    ],
+                    [
+                        4596,
+                        -1508
+                    ],
+                    [
+                        4564,
+                        -1371
+                    ],
+                    [
+                        4716,
+                        -1235
+                    ],
+                    [
+                        4818,
+                        -1159
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-e8e6d709",
+            "name": "Ozorisunyurt Khaganate",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#63b16d",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        4576,
+                        -2292
+                    ],
+                    [
+                        4832,
+                        -1992
+                    ],
+                    [
+                        4802,
+                        -1735
+                    ],
+                    [
+                        4574,
+                        -1491
+                    ],
+                    [
+                        4452,
+                        -1443
+                    ],
+                    [
+                        4308,
+                        -1437
+                    ],
+                    [
+                        3970,
+                        -1637
+                    ],
+                    [
+                        3918,
+                        -1761
+                    ],
+                    [
+                        3658,
+                        -1899
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-68f6a80d",
+            "name": "Ennin Despotate",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#d99d43",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        4610,
+                        -849
+                    ],
+                    [
+                        4742,
+                        -1009
+                    ],
+                    [
+                        4372,
+                        -1435
+                    ],
+                    [
+                        4304,
+                        -1425
+                    ],
+                    [
+                        4222,
+                        -1479
+                    ],
+                    [
+                        4112,
+                        -1113
+                    ],
+                    [
+                        4312,
+                        -833
+                    ],
+                    [
+                        4462,
+                        -785
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-60bd93c1",
+            "name": "Protectorate of Avriukavirt",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#b66fd2",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        4220,
+                        -1481
+                    ],
+                    [
+                        3976,
+                        -1636
+                    ],
+                    [
+                        3900,
+                        -1754
+                    ],
+                    [
+                        3652,
+                        -1892
+                    ],
+                    [
+                        3484,
+                        -1952
+                    ],
+                    [
+                        3414,
+                        -1862
+                    ],
+                    [
+                        3594,
+                        -1337
+                    ],
+                    [
+                        3710,
+                        -937
+                    ],
+                    [
+                        3834,
+                        -793
+                    ],
+                    [
+                        3920,
+                        -789
+                    ],
+                    [
+                        3998,
+                        -857
+                    ],
+                    [
+                        3928,
+                        -1065
+                    ],
+                    [
+                        4002,
+                        -1173
+                    ],
+                    [
+                        4112,
+                        -1113
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-f6730ffc",
+            "name": "Helgerkenia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#d26f7d",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        3792,
+                        -785
+                    ],
+                    [
+                        3928,
+                        -529
+                    ],
+                    [
+                        4224,
+                        -623
+                    ],
+                    [
+                        4424,
+                        -515
+                    ],
+                    [
+                        4478,
+                        -609
+                    ],
+                    [
+                        4522,
+                        -681
+                    ],
+                    [
+                        4502,
+                        -787
+                    ],
+                    [
+                        4454,
+                        -777
+                    ],
+                    [
+                        4308,
+                        -829
+                    ],
+                    [
+                        4104,
+                        -1103
+                    ],
+                    [
+                        4004,
+                        -1163
+                    ],
+                    [
+                        3940,
+                        -1065
+                    ],
+                    [
+                        4008,
+                        -857
+                    ],
+                    [
+                        3924,
+                        -773
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-4c0ff3b5",
+            "name": "Principality of Botford",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#4ec0b8",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2890,
+                        -1161
+                    ],
+                    [
+                        2994,
+                        -1271
+                    ],
+                    [
+                        3130,
+                        -1241
+                    ],
+                    [
+                        3370,
+                        -1299
+                    ],
+                    [
+                        3550,
+                        -1285
+                    ],
+                    [
+                        3626,
+                        -1009
+                    ],
+                    [
+                        3690,
+                        -721
+                    ],
+                    [
+                        3716,
+                        -422
+                    ],
+                    [
+                        3544,
+                        -426
+                    ],
+                    [
+                        3376,
+                        -734
+                    ],
+                    [
+                        3240,
+                        -918
+                    ],
+                    [
+                        3016,
+                        -838
+                    ],
+                    [
+                        2892,
+                        -1022
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-c8cc12e5",
+            "name": "Republic of Altelen",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#db6d53",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2884,
+                        -1147
+                    ],
+                    [
+                        2764,
+                        -1327
+                    ],
+                    [
+                        2466,
+                        -1387
+                    ],
+                    [
+                        2456,
+                        -1587
+                    ],
+                    [
+                        2592,
+                        -1806
+                    ],
+                    [
+                        2564,
+                        -1920
+                    ],
+                    [
+                        2644,
+                        -2134
+                    ],
+                    [
+                        2616,
+                        -2223
+                    ],
+                    [
+                        2732,
+                        -2419
+                    ],
+                    [
+                        2624,
+                        -2479
+                    ],
+                    [
+                        2640,
+                        -2731
+                    ],
+                    [
+                        2652,
+                        -2915
+                    ],
+                    [
+                        2560,
+                        -2987
+                    ],
+                    [
+                        2488,
+                        -3359
+                    ],
+                    [
+                        2804,
+                        -3415
+                    ],
+                    [
+                        3020,
+                        -2775
+                    ],
+                    [
+                        3092,
+                        -2695
+                    ],
+                    [
+                        3072,
+                        -2567
+                    ],
+                    [
+                        3236,
+                        -2167
+                    ],
+                    [
+                        3240,
+                        -1975
+                    ],
+                    [
+                        3136,
+                        -1742
+                    ],
+                    [
+                        3116,
+                        -1574
+                    ],
+                    [
+                        3060,
+                        -1486
+                    ],
+                    [
+                        2932,
+                        -1558
+                    ],
+                    [
+                        2868,
+                        -1550
+                    ],
+                    [
+                        2948,
+                        -1446
+                    ],
+                    [
+                        3084,
+                        -1414
+                    ],
+                    [
+                        3164,
+                        -1494
+                    ],
+                    [
+                        3220,
+                        -1530
+                    ],
+                    [
+                        3228,
+                        -1658
+                    ],
+                    [
+                        3176,
+                        -1710
+                    ],
+                    [
+                        3268,
+                        -1830
+                    ],
+                    [
+                        3340,
+                        -1750
+                    ],
+                    [
+                        3548,
+                        -1422
+                    ],
+                    [
+                        3560,
+                        -1282
+                    ],
+                    [
+                        3372,
+                        -1310
+                    ],
+                    [
+                        3132,
+                        -1254
+                    ],
+                    [
+                        2996,
+                        -1278
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-e2ef36cc",
+            "name": "Principality of Lorilorum",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#88a64a",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        3016,
+                        -519
+                    ],
+                    [
+                        2668,
+                        -1186
+                    ],
+                    [
+                        2568,
+                        -1258
+                    ],
+                    [
+                        2298,
+                        -1284
+                    ],
+                    [
+                        2212,
+                        -499
+                    ],
+                    [
+                        2636,
+                        -283
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-e2c77191",
+            "name": "Tinodunum Theocracy",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#4f8fc0",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2326,
+                        -1288
+                    ],
+                    [
+                        2108,
+                        -1470
+                    ],
+                    [
+                        2142,
+                        -1610
+                    ],
+                    [
+                        1920,
+                        -1622
+                    ],
+                    [
+                        1762,
+                        -1244
+                    ],
+                    [
+                        1804,
+                        -1170
+                    ],
+                    [
+                        1658,
+                        -755
+                    ],
+                    [
+                        1578,
+                        -507
+                    ],
+                    [
+                        1844,
+                        -243
+                    ],
+                    [
+                        2050,
+                        -375
+                    ],
+                    [
+                        2204,
+                        -507
+                    ],
+                    [
+                        2292,
+                        -1268
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-2e89605d",
+            "name": "Grand Duchy of Redtomia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#63b16d",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        1580,
+                        -533
+                    ],
+                    [
+                        1506,
+                        -547
+                    ],
+                    [
+                        1240,
+                        -981
+                    ],
+                    [
+                        1334,
+                        -1162
+                    ],
+                    [
+                        1498,
+                        -1286
+                    ],
+                    [
+                        1678,
+                        -1280
+                    ],
+                    [
+                        1766,
+                        -1226
+                    ],
+                    [
+                        1804,
+                        -1170
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-e5360452",
+            "name": "Trwighan Confederation",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#d99d43",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        1504,
+                        -531
+                    ],
+                    [
+                        1488,
+                        -417
+                    ],
+                    [
+                        1140,
+                        -609
+                    ],
+                    [
+                        942,
+                        -429
+                    ],
+                    [
+                        808,
+                        -397
+                    ],
+                    [
+                        596,
+                        -473
+                    ],
+                    [
+                        612,
+                        -755
+                    ],
+                    [
+                        808,
+                        -971
+                    ],
+                    [
+                        964,
+                        -1037
+                    ],
+                    [
+                        1232,
+                        -985
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-1a856fa2",
+            "name": "Kingdom of Lacosenia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#b66fd2",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        602,
+                        -763
+                    ],
+                    [
+                        254,
+                        -1045
+                    ],
+                    [
+                        234,
+                        -1281
+                    ],
+                    [
+                        362,
+                        -1445
+                    ],
+                    [
+                        334,
+                        -1772
+                    ],
+                    [
+                        638,
+                        -1878
+                    ],
+                    [
+                        882,
+                        -1820
+                    ],
+                    [
+                        998,
+                        -1760
+                    ],
+                    [
+                        1098,
+                        -1600
+                    ],
+                    [
+                        1058,
+                        -1307
+                    ],
+                    [
+                        1162,
+                        -1209
+                    ],
+                    [
+                        1192,
+                        -999
+                    ],
+                    [
+                        958,
+                        -1035
+                    ],
+                    [
+                        774,
+                        -963
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-1b596fc9",
+            "name": "Rocorian League",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#d26f7d",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        1238,
+                        -981
+                    ],
+                    [
+                        1194,
+                        -989
+                    ],
+                    [
+                        1162,
+                        -1207
+                    ],
+                    [
+                        1064,
+                        -1295
+                    ],
+                    [
+                        1098,
+                        -1592
+                    ],
+                    [
+                        1214,
+                        -1746
+                    ],
+                    [
+                        1224,
+                        -2124
+                    ],
+                    [
+                        1544,
+                        -2222
+                    ],
+                    [
+                        1734,
+                        -2004
+                    ],
+                    [
+                        1710,
+                        -1820
+                    ],
+                    [
+                        1902,
+                        -1612
+                    ],
+                    [
+                        1762,
+                        -1235
+                    ],
+                    [
+                        1688,
+                        -1281
+                    ],
+                    [
+                        1506,
+                        -1295
+                    ],
+                    [
+                        1330,
+                        -1167
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-0484180a",
+            "name": "Grand Duchy of Neolia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#4ec0b8",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        332,
+                        -1756
+                    ],
+                    [
+                        240,
+                        -1860
+                    ],
+                    [
+                        340,
+                        -2014
+                    ],
+                    [
+                        304,
+                        -2068
+                    ],
+                    [
+                        586,
+                        -2320
+                    ],
+                    [
+                        764,
+                        -2208
+                    ],
+                    [
+                        818,
+                        -2056
+                    ],
+                    [
+                        844,
+                        -1832
+                    ],
+                    [
+                        622,
+                        -1888
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-a1ee937c",
+            "name": "Grand Duchy of Overlorn",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#db6d53",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        1106,
+                        -1596
+                    ],
+                    [
+                        998,
+                        -1772
+                    ],
+                    [
+                        854,
+                        -1832
+                    ],
+                    [
+                        768,
+                        -2212
+                    ],
+                    [
+                        632,
+                        -2438
+                    ],
+                    [
+                        684,
+                        -2556
+                    ],
+                    [
+                        872,
+                        -2452
+                    ],
+                    [
+                        1156,
+                        -2284
+                    ],
+                    [
+                        1220,
+                        -2112
+                    ],
+                    [
+                        1212,
+                        -1748
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-f3f602ad",
+            "name": "Grand Duchy of Duringeli",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#88a64a",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        1276,
+                        -2234
+                    ],
+                    [
+                        1174,
+                        -2288
+                    ],
+                    [
+                        1162,
+                        -2342
+                    ],
+                    [
+                        1080,
+                        -2484
+                    ],
+                    [
+                        1016,
+                        -2522
+                    ],
+                    [
+                        1024,
+                        -2658
+                    ],
+                    [
+                        936,
+                        -2690
+                    ],
+                    [
+                        910,
+                        -2812
+                    ],
+                    [
+                        984,
+                        -2914
+                    ],
+                    [
+                        1120,
+                        -2838
+                    ],
+                    [
+                        1324,
+                        -2936
+                    ],
+                    [
+                        1464,
+                        -2766
+                    ],
+                    [
+                        1464,
+                        -2626
+                    ],
+                    [
+                        1376,
+                        -2556
+                    ],
+                    [
+                        1386,
+                        -2398
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-3cf570dd",
+            "name": "Protectorate of Momacovia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#4f8fc0",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        1914,
+                        -1608
+                    ],
+                    [
+                        1718,
+                        -1816
+                    ],
+                    [
+                        1728,
+                        -2000
+                    ],
+                    [
+                        1978,
+                        -2206
+                    ],
+                    [
+                        2154,
+                        -2186
+                    ],
+                    [
+                        2362,
+                        -2086
+                    ],
+                    [
+                        2386,
+                        -1960
+                    ],
+                    [
+                        2446,
+                        -1928
+                    ],
+                    [
+                        2450,
+                        -1826
+                    ],
+                    [
+                        2348,
+                        -1758
+                    ],
+                    [
+                        2154,
+                        -1608
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-4a2a570a",
+            "name": "Grand Duchy of Hocosia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#63b16d",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2158,
+                        -2196
+                    ],
+                    [
+                        2374,
+                        -2076
+                    ],
+                    [
+                        2470,
+                        -2122
+                    ],
+                    [
+                        2512,
+                        -2192
+                    ],
+                    [
+                        2480,
+                        -2298
+                    ],
+                    [
+                        2428,
+                        -2332
+                    ],
+                    [
+                        2438,
+                        -2452
+                    ],
+                    [
+                        2348,
+                        -2530
+                    ],
+                    [
+                        2398,
+                        -2690
+                    ],
+                    [
+                        2360,
+                        -2776
+                    ],
+                    [
+                        2212,
+                        -2764
+                    ],
+                    [
+                        2186,
+                        -2652
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-6697f620",
+            "name": "Principality of Cortus",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#d99d43",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2152,
+                        -2188
+                    ],
+                    [
+                        1976,
+                        -2208
+                    ],
+                    [
+                        1736,
+                        -2020
+                    ],
+                    [
+                        1530,
+                        -2226
+                    ],
+                    [
+                        1522,
+                        -2358
+                    ],
+                    [
+                        1422,
+                        -2410
+                    ],
+                    [
+                        1438,
+                        -2480
+                    ],
+                    [
+                        1474,
+                        -2520
+                    ],
+                    [
+                        1562,
+                        -2420
+                    ],
+                    [
+                        1608,
+                        -2530
+                    ],
+                    [
+                        1608,
+                        -2618
+                    ],
+                    [
+                        1662,
+                        -2656
+                    ],
+                    [
+                        1742,
+                        -2660
+                    ],
+                    [
+                        1772,
+                        -2662
+                    ],
+                    [
+                        1940,
+                        -2544
+                    ],
+                    [
+                        2042,
+                        -2534
+                    ],
+                    [
+                        2170,
+                        -2504
+                    ]
+                ]
+            }
+        },
+        {
+            "uid": "area-70c4fab8",
+            "name": "Grand Duchy of Duranenia",
+            "kind": "kingdom",
+            "parent_uid": null,
+            "color": "#b66fd2",
+            "tags": "",
+            "description": "",
+            "geometry": {
+                "type": "polygon",
+                "points": [
+                    [
+                        2166,
+                        -2509
+                    ],
+                    [
+                        1948,
+                        -2539
+                    ],
+                    [
+                        1764,
+                        -2659
+                    ],
+                    [
+                        1734,
+                        -2713
+                    ],
+                    [
+                        1640,
+                        -2771
+                    ],
+                    [
+                        1672,
+                        -2860
+                    ],
+                    [
+                        1712,
+                        -2910
+                    ],
+                    [
+                        1804,
+                        -2904
+                    ],
+                    [
+                        1816,
+                        -2930
+                    ],
+                    [
+                        1764,
+                        -2944
+                    ],
+                    [
+                        1764,
+                        -2984
+                    ],
+                    [
+                        1738,
+                        -3032
+                    ],
+                    [
+                        1752,
+                        -3090
+                    ],
+                    [
+                        2120,
+                        -3194
+                    ],
+                    [
+                        2208,
+                        -2775
+                    ]
+                ]
+            }
+        }
+    ],
+    "biomes": {
+        "mask_file": "biome_mask.png",
+        "mask_width": 1024,
+        "mask_height": 659,
+        "palette": [
+            {
+                "id": "forest",
+                "label": "Forest",
+                "color": "#4fb84f",
+                "needs_boat": false,
+                "slows_down": false,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "rainforest",
+                "label": "Rainforest",
+                "color": "#126b35",
+                "needs_boat": false,
+                "slows_down": true,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "plains",
+                "label": "Plains",
+                "color": "#95c95c",
+                "needs_boat": false,
+                "slows_down": false,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "mountains",
+                "label": "Mountains",
+                "color": "#55585d",
+                "needs_boat": false,
+                "slows_down": true,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "desert",
+                "label": "Desert",
+                "color": "#d8bd74",
+                "needs_boat": false,
+                "slows_down": false,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "snowfield",
+                "label": "Snowfield",
+                "color": "#f2f5f6",
+                "needs_boat": false,
+                "slows_down": false,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "sea",
+                "label": "Sea",
+                "color": "#236db5",
+                "needs_boat": true,
+                "slows_down": false,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "river",
+                "label": "River",
+                "color": "#61bce8",
+                "needs_boat": false,
+                "slows_down": false,
+                "is_road": false,
+                "is_river": true
+            },
+            {
+                "id": "road",
+                "label": "Road",
+                "color": "#b8b8b8",
+                "needs_boat": false,
+                "slows_down": false,
+                "is_road": true,
+                "is_river": false
+            },
+            {
+                "id": "town",
+                "label": "Town",
+                "color": "#d0d0c8",
+                "needs_boat": false,
+                "slows_down": false,
+                "is_road": false,
+                "is_river": false
+            },
+            {
+                "id": "custom_11",
+                "label": "Lake",
+                "color": "#4dfefb",
+                "needs_boat": true,
+                "slows_down": true,
+                "is_road": false,
+                "is_river": false
+            }
+        ]
+    }
+}

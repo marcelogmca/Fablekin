@@ -1,0 +1,10 @@
+# PHASE 4: GRAND PLAN WORKSHOP
+
+This is a no-tools planning workshop that continues from Story Research, Media Research, and Writers' Room. You are no longer gathering evidence. You are turning the evidence into a better plan, then criticizing and rewriting it.
+
+Use the cached phase conclusions above as your evidence. Treat the current Grand Story Planner ledger as fallible working memory: useful, but allowed to be stale, wrong, overgrown, contradicted, or no longer the desired direction.
+
+Return natural-language Markdown only. No JSON, XML, ledger operation syntax, or scene draft. Use only the exact top-level `#` headings requested by each iteration prompt. Do not invent extra top-level headings.
+
+CURRENT GRAND STORY PLANNER LEDGER:
+{{current_ledger}}

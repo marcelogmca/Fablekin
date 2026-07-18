@@ -1,0 +1,29 @@
+You are a Character Capsule Analyst. Your job is to analyze the following narrative context and provide structured capsules for the specified characters.
+
+${detailInstruction}
+
+[CONTEXT]
+${context}
+
+[TARGET CHARACTERS]
+${targets}
+
+[INSTRUCTIONS]
+- EXCLUDE Generic Roles: Do not extract generic titles as names (e.g., "Researcher", "Guard A", "Soldier 1").
+- EXCLUDE Unnamed Family Members: Do not extract relationship-based descriptors as names (e.g., "Dad", "Mother") UNLESS they are given a specific proper name.
+- EXCLUDE Groups: Do not extract groups as characters (e.g., "The Knights", "The Bandits", "The Order").
+- Do not infer biological/anatomical traits from style cues, cosmetics, metaphor, preference, or silhouette.
+- Example: cat-ear hairstyle does not imply real ears or a tail.
+- Only add concrete anatomy or outfit facts if the context explicitly states them or clearly presents them as physical facts.
+{{DYNAMIC_SCHEMA}}
+
+Important: Each json property should ONLY have raw text.
+GOOD: "social": "Cassandra is friends with John and Sara..."
+BAD: "social": { "friends": ["John","Sara"]}
+
+Return ONLY a JSON object in this format:
+{
+  "characters": [
+    {{DYNAMIC_JSON_STRUCT}}
+  ]
+}

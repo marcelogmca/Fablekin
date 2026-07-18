@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Project Selector</title>
+    <link rel="stylesheet" href="../../themes/active/global.css">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../../titlebar.css">
+    <script src="../scripts/tooltips.js"></script>
+    <script src="../scripts/modals.js"></script>
+    <script src="../../titlebar.js"></script>
+</head>
+
+<body class="themed-container">
+    <div class="custom-titlebar">
+        <div class="titlebar-content">
+            <img src="../../icon.png" class="titlebar-icon">
+            <span>Fablekin</span>
+        </div>
+        <div class="titlebar-controls">
+            <div class="control-btn" id="window-minimize">
+                <svg viewBox="0 0 10 1">
+                    <path d="M0 0h10v1H0z" fill="currentColor" />
+                </svg>
+            </div>
+            <div class="control-btn" id="window-maximize">
+                <svg viewBox="0 0 10 10">
+                    <path d="M0 0v10h10V0H0zm9 9H1V1h8v8z" fill="currentColor" />
+                </svg>
+            </div>
+            <div class="control-btn close" id="window-close">
+                <svg viewBox="0 0 10 10">
+                    <path d="M10 1L9 0 5 4 1 0 0 1l4 4-4 4 1 1 4-4 4 4 1-1-4-4z" fill="currentColor" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="main-wrapper">
+        <div class="selector-card">
+            <div class="card-header">
+                <h1><span class="header-icon">📁</span> Select a Project</h1>
+                <p class="subtitle">Choose a world to continue your adventure</p>
+            </div>
+
+            <div class="project-list-container">
+                <ul id="project-list">
+                    <!-- Projects will be listed here -->
+                </ul>
+            </div>
+
+            <div class="card-footer">
+                <div class="divider">
+                    <span>✨ OR ✨</span>
+                </div>
+
+                <div class="create-project-section">
+                    <h2>Create New Project</h2>
+                    <div class="create-project-form">
+                        <div class="input-group">
+                            <input type="text" id="new-project-name" placeholder="Name your new world...">
+                            <button id="create-project-btn">Create</button>
+                        </div>
+                    </div>
+                    <p id="error-message" class="error-message"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="renderer_project_selector.js"></script>
+</body>
+
+</html>

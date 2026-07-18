@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Inspector</title>
+    <link rel="stylesheet" id="theme-link" href="../../themes/active/global.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="../libs/jsonTree/jsonTree.css" rel="stylesheet" />
+    <script src="../libs/jsonTree/jsonTree.js"></script>
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+    <script src="../scripts/tooltips.js"></script>
+</head>
+
+<body class="themed-container">
+    <div id="log-inspector-container">
+        <div id="log-inspector-header">
+            <h1 id="project-title">Log Inspector</h1>
+            <div id="connection-status">Connecting...</div>
+        </div>
+
+        <div id="tab-content">
+            <div id="log-list-container">
+                <div id="loading-indicator" class="hidden">
+                    <div class="spinner"></div>
+                    <span>Loading logs...</span>
+                </div>
+                <!-- Log files will be dynamically inserted here by renderer_logs.js -->
+            </div>
+        </div>
+    </div>
+
+    <script src="./cost_metrics.js"></script>
+    <!-- The renderer script for this page -->
+    <script src="./renderer_logs.js"></script>
+</body>
+
+</html>

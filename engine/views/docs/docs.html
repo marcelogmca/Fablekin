@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation</title>
+    <link rel="stylesheet" href="../../themes/active/global.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../../vendor/js/marked.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+</head>
+<body>
+    <div class="docs-container">
+        <aside class="docs-sidebar">
+            <header class="sidebar-header">
+                <div class="brand">
+                    <img src="../../icon.png" class="docs-logo">
+                    <h1>Archive</h1>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="search-docs" placeholder="Search documentation..." autocomplete="off">
+                    <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </div>
+            </header>
+            <nav id="docs-nav" class="tree-nav">
+                <!-- Hierarchical navigation injected here -->
+            </nav>
+        </aside>
+        <main class="docs-content">
+            <header class="content-header">
+                <div class="breadcrumb-container" id="breadcrumbs">
+                    <span class="breadcrumb-item">Docs</span>
+                </div>
+                <div class="header-actions">
+                    <button id="btn-back" class="icon-btn hidden" title="Back to Index">
+                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    </button>
+                </div>
+            </header>
+            <article id="doc-viewer" class="doc-viewer">
+                <div id="doc-content" class="markdown-body hidden">
+                    <!-- Document content injected here -->
+                </div>
+                <div id="welcome-screen">
+                    <div class="welcome-card">
+                        <div class="welcome-icon">
+                            <svg viewBox="0 0 24 24" width="64" height="64" fill="var(--color-primary)"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+                        </div>
+                        <h3>Fablekin Documentation</h3>
+                        <p>Browse guides, system references, and plugin documentation. Start with an essential below or explore the library on the left.</p>
+                        <div class="quick-links" id="quick-links">
+                            <!-- Quick links will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <script src="renderer_docs.js"></script>
+</body>
+</html>

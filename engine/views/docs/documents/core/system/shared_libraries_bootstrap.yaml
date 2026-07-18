@@ -1,0 +1,15 @@
+documented_files:
+  - path: engine/views/libs/socket_bootstrap.js
+    hash: 665D6B135881CCD017055A91B77D0F59
+  - path: engine/views/libs/jsontree/jsonTree.js
+    hash: 3FF80E9766A6EF42D85E78A51074BA6A
+  - path: engine/views/libs/jsontree/jsonTree.css
+    hash: 21E1FF54A8FC74CF79B30584BC35F7C1
+  - path: engine/views/libs/premium_select.css
+    hash: E648468B046278837F5685CB98C5098D
+  - path: engine/views/libs/sigma.min.js
+    hash: 1C8FDAC8D8D632CA6E9430F4B87ABE8E
+  - path: engine/views/libs/graphology.min.js
+    hash: CFC35A5EC76C9953D7A65D72F1E6C5C2
+  - path: engine/views/libs/graphology-layout-forceatlas2.min.js
+    hash: EC64FA29F1BB263BC18C3CE17E7FA48D

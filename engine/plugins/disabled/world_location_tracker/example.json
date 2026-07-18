@@ -1,0 +1,167 @@
+{
+    "meta": {
+        "image_path": "map.png",
+        "origin_pixel_x": 0,
+        "origin_pixel_y": 0,
+        "scale_factor": 1.0,
+        "pixels_per_km": 7.0,
+        "base_walk_speed_kmpd": 30.0,
+        "winding_factor": 1.2
+    },
+    "nodes": [
+        {
+            "uid": "1e03c07d",
+            "world_x": 6127.0,
+            "world_y": -6696.0,
+            "name": "Aaru VIllage",
+            "type": "Village",
+            "region": "Desert",
+            "parent_nation": "Sumeru",
+            "description": "Candace's Home",
+            "tags": ""
+        },
+        {
+            "uid": "b239468b",
+            "world_x": 6269.0,
+            "world_y": -6497.0,
+            "name": "Caravan Ribet",
+            "type": "Transition",
+            "region": "Desert-Forest Border",
+            "parent_nation": "Sumeru",
+            "description": "A small trading town in the border from desert and forest.",
+            "tags": ""
+        },
+        {
+            "uid": "803d684f",
+            "world_x": 6364.0,
+            "world_y": -6605.0,
+            "name": "Ruins of Dahri",
+            "type": "POI",
+            "region": "Ashavan Realm",
+            "parent_nation": "Sumeru",
+            "description": "Some old ruins",
+            "tags": "Forest, Ruins"
+        },
+        {
+            "uid": "fb623b03",
+            "world_x": 6561.0,
+            "world_y": -6553.0,
+            "name": "Apam Woods",
+            "type": "Landscape",
+            "region": "Ashavan Realm",
+            "parent_nation": "Sumeru",
+            "description": "The densest and largest Rainforest of Sumeru.",
+            "tags": "Rainforest"
+        },
+        {
+            "uid": "7d0da984",
+            "world_x": 6209.0,
+            "world_y": -6831.0,
+            "name": "Dar al-Shifa",
+            "type": "POI",
+            "region": "Desert",
+            "parent_nation": "Sumeru",
+            "description": "Dar al-Shifa, now abandoned, used to be a hospital that specialized in treating patients with Eleazar.",
+            "tags": "Ruins"
+        },
+        {
+            "uid": "21978f0b",
+            "world_x": 5870.0,
+            "world_y": -6753.0,
+            "name": "Abdju Pit",
+            "type": "POI",
+            "region": "Desert",
+            "parent_nation": "Sumeru",
+            "description": "A small valley leading to the vast desert.",
+            "tags": "Road"
+        },
+        {
+            "uid": "71727c5a",
+            "world_x": 5985.0,
+            "world_y": -6441.0,
+            "name": "Khaj-Nisut",
+            "type": "POI",
+            "region": "Desert",
+            "parent_nation": "Sumeru",
+            "description": "The ruins that contain King Deshret's throne room.",
+            "tags": "Ruins, Temple"
+        },
+        {
+            "uid": "301a3ab6",
+            "world_x": 6807.0,
+            "world_y": -5902.0,
+            "name": "Sumeru City",
+            "type": "Capital",
+            "region": "Capital",
+            "parent_nation": "Sumeru",
+            "description": "The main city of Sumeru, home to the Akademiya and the dendro archon.",
+            "tags": ""
+        },
+        {
+            "uid": "41e74e5f",
+            "world_x": 8025.0,
+            "world_y": -5952.0,
+            "name": "Liyue City",
+            "type": "Capital",
+            "region": "Capital",
+            "parent_nation": "Liyue",
+            "description": "Main Liyue City, home to the Liyue Qixing, the government of Liyue.",
+            "tags": ""
+        },
+        {
+            "uid": "e12b4a49",
+            "world_x": 8629.0,
+            "world_y": -4557.0,
+            "name": "Mondstadt City",
+            "type": "Capital",
+            "region": "Capital",
+            "parent_nation": "None",
+            "description": "The capital of Mondstadt, home to the knights of favonious.",
+            "tags": ""
+        },
+        {
+            "uid": "ef8286ca",
+            "world_x": 10415.0,
+            "world_y": -7233.0,
+            "name": "Inazuma City",
+            "type": "Capital",
+            "region": "Capital",
+            "parent_nation": "Inazuma",
+            "description": "Capital of Inazuma, home of the Raiden Shogun, the electro archon.",
+            "tags": ""
+        },
+        {
+            "uid": "c28844a3",
+            "world_x": 3652.0,
+            "world_y": -6631.0,
+            "name": "Natlan's Arena",
+            "type": "Capital",
+            "region": "Capital",
+            "parent_nation": "Natlan",
+            "description": "The effective capital of Natlan's nation, where the Pyro Archon oversees the tribes.",
+            "tags": ""
+        },
+        {
+            "uid": "d1412bde",
+            "world_x": 3469.0,
+            "world_y": -4873.0,
+            "name": "Nasha Town",
+            "type": "Capital",
+            "region": "Capital",
+            "parent_nation": "Nod Krai",
+            "description": "The de facto capital of the lawless land of Nod Krai.",
+            "tags": ""
+        },
+        {
+            "uid": "e53809da",
+            "world_x": 5892.0,
+            "world_y": -3909.0,
+            "name": "Court of Fontaine",
+            "type": "Capital",
+            "region": "Capital",
+            "parent_nation": "Fontaine",
+            "description": "Capital of Fontaine, where Iudex Neuvilette and Archon Furina live.",
+            "tags": ""
+        }
+    ]
+}

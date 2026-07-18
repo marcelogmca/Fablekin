@@ -1,0 +1,38 @@
+{
+  "openrouter": {
+    "lowendmodel": { "model": "deepseek/deepseek-v4-flash:no_thinking" },
+    "mediumendmodel": { "model": "deepseek/deepseek-v4-flash:no_thinking" },
+    "highendmodel": { "model": "deepseek/deepseek-v4-flash:thinking" },
+    "veryhighendmodel": { "model": "deepseek/deepseek-v4-pro:thinking" }
+  },
+  "nano_gpt": {
+    "lowendmodel": { "model": "deepseek/deepseek-v4-flash", "subprovider": "Deepseek" },
+    "mediumendmodel": { "model": "deepseek/deepseek-v4-flash", "subprovider": "Deepseek" },
+    "highendmodel": { "model": "deepseek/deepseek-v4-flash:thinking", "subprovider": "Deepseek" },
+    "veryhighendmodel": { "model": "deepseek/deepseek-v4-pro:thinking", "subprovider": "Deepseek" }
+  },
+  "openai": {
+    "lowendmodel": { "model": "gpt-4.1-nano" },
+    "mediumendmodel": { "model": "gpt-4.1-mini" },
+    "highendmodel": { "model": "gpt-4.1" },
+    "veryhighendmodel": { "model": "gpt-4.1" }
+  },
+  "anthropic": {
+    "lowendmodel": { "model": "claude-haiku-4-5" },
+    "mediumendmodel": { "model": "claude-sonnet-4-6" },
+    "highendmodel": { "model": "claude-sonnet-4-6" },
+    "veryhighendmodel": { "model": "claude-sonnet-4-6" }
+  },
+  "gemini": {
+    "lowendmodel": { "model": "gemini-2.5-flash-lite" },
+    "mediumendmodel": { "model": "gemini-2.5-flash" },
+    "highendmodel": { "model": "gemini-2.5-pro" },
+    "veryhighendmodel": { "model": "gemini-3.1-pro-preview" }
+  },
+  "deepseek": {
+    "lowendmodel": { "model": "deepseek-v4-flash" },
+    "mediumendmodel": { "model": "deepseek-v4-flash" },
+    "highendmodel": { "model": "deepseek-v4-pro" },
+    "veryhighendmodel": { "model": "deepseek-v4-pro" }
+  }
+}

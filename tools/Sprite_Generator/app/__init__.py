@@ -1,0 +1,2 @@
+"""Sprite Generator application package."""
+

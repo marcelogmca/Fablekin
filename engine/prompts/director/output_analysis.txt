@@ -1,0 +1,41 @@
+[FINAL OUTPUT FORMAT]
+Use the format "--- TITLE ---" for SCRATCHPAD, YOUR_MONOLOGUE, and WRITER_BRIEF.
+
+--- SCRATCHPAD ---
+For every single analytical step, if you identify a need, you MUST end the step with a DECISION: [YES/NO] and a DIRECTIVE.
+
+--- YOUR_MONOLOGUE ---
+Anything you think is important to remember yourself when you review the next turn in the future.
+You are planning a long term strategy for the story and you need to remember important things.
+What do you want to tell yourself in the future?
+THIS IS NOT instructions to the writer! This is for YOURSELF.
+
+--- WRITER_BRIEF ---
+For every directive you found on the action board, write a definitive and descriptive suggestion for the writer to act upon. 
+The writer has absolutely no idea what your steps are, IDs, action queues or other things. 
+You need to output an instruction that an "ignorant" non analytical writer can follow.
+CRITICAL: It's your job to help the writer make the NPCs feel alive. They should resume any leftover tasks they had, start sudden conversations, express their thoughts, etc.
+
+Divide your brief into:
+## SCENE REVIEW
+A brief situational assessment of the current state of the story.
+
+## MANDATORY ORDERS
+Tactical, immediate, must-execute directives for the upcoming scene.
+This should be directly correlated to your findings during --SCRATCHPAD--!
+The Writer MUST act on all of these.
+
+## NARRATIVE THREADS
+Strategic, long-term seeds and subtle advancements derived from your strategic plans or lore analysis. 
+These are NOT mandatory for this specific scene—they are "seeds to plant" when the opportunity arises naturally. The Writer should incorporate 1-2 of these organically rather than forcing them.
+
+## MYSTERIES_NOT_TO_REVEAL
+Explicit spoiler guardrails, telling the writer specifically to NOT reveal them in the next turn.
+
+## WRITING CRITIQUES
+Concise prose and craft warnings the Writer should obey this chapter. Use this for anti-cliche, repetition, dialogue, pacing, characterization, scene structure, or "do not write it like this" guidance. Do not include hidden future spoilers unless phrased as spoiler-safe craft advice.
+
+DO NOT include on your brief any type of statistical data, metrics, or other analytical information. (e.g. 50% of the dialogue needs to be ...; 35% of the narrative needs to be comedy...)
+IF a statistical metric has significance, you can mention generically that the writer needs, for example, to write more "action" or "comedy".
+DO NOT reference any IDs, tags, or other internal director information. The writer should not know anything about your internal processes.
+Exception: If your Dynamic Event Cadence Check concludes that dynamic events are repetitive and should be avoided this chapter, include the exact token "deny_event" once in WRITER_BRIEF.

@@ -1,0 +1,192 @@
+--- SCRATCHPAD ---
+
+**Step 1B: Player Soft Feedback**  
+1B-1: The player's question "So, what's the plan?" is a classic group-anchoring prompt. It signals Talion wants to hear everyone's thoughts before committing. Thematic seeds: party decision-making, character differentiation through opinions, and the weight of the mission sinking in.  
+1B-2: Fully aligns with the current state—a fresh job, a dangerous tower, and a party that hasn't fully established its internal roles.  
+1B-3: **HIGH-PRIORITY NARRATIVE THREAD:** Let each character voice their specific angle on the plan (Srava's caution, Laios's practicality, Ingrid's tactical focus).  
+DECISION: [YES] — Make this the core of the scene.
+
+**Step 2: Director Ledger**  
+2A: Empty. No actionable items.  
+2B: Not applicable.  
+2C: Not applicable.  
+2D: Not applicable.  
+DECISION: [NO] — No changes to ledger.
+
+**Step 2.5: Previous Director Monologue**  
+2.5A: None available.  
+DECISION: [NO] — Skip.
+
+**Step 4A: Scene Business Rank**  
+Rank 2. The party just accepted the job conversationally. They are now in a natural planning phase, not under immediate pressure. Light tasks (talking, drinking, planning) are all possible simultaneously.  
+DECISION: [YES] — Confirm rank 2.
+
+**Step 4B: Potential Goals**  
+
+| Goal | Priority |
+|------|----------|
+| Discuss the Thornwell approach | 0 (immediate) |
+| Supply list / gear check | 1 (can be woven in) |
+| Debate the Red Boars' fate | 1 |
+| Address Laios's "old rules" warning | 0 (just mentioned, expand) |
+| Establish overnight rest plan | 2 |
+
+DECISION: [YES] — Lead with the plan discussion; weave in supply/prep talk and the old rules thread.
+
+**Step 4C: Interrupted Goals**  
+None. The prologue flowed smoothly from offer to acceptance to departure prep.  
+DECISION: [NO] — No resumption needed.
+
+**Step 4D: Next Scene Focus**  
+The plan discussion is the natural and necessary next beat. The party needs to vocalize their fears, hopes, and strategies before the action starts. This builds cohesion and characterization early.  
+DECISION: [YES] — Center the scene on the party pooling their thoughts.
+
+**Step 4F: Action Queue**  
+Nothing to remove.  
+DECISION: [NO] — N/A.
+
+**Step 5: Character Introduction**  
+5A: Current location: The Crooked Tankard, busy evening tavern. Crowdedness: medium-high.  
+5B: Capacity for others: 5+.  
+5C: The core party is enough for this scene. Adding an NPC would dilute the party-bonding moment. However, a brief cameo from Devlin or a background character at the store (next turn) could be natural.  
+5D-5F: Not needed now.  
+DECISION: [NO] — Keep the scene party-focused.
+
+**Step 6: Character Removal**  
+6A-6B: No character should leave yet. The party is still in the prep phase.  
+DECISION: [NO] — Everyone stays.
+
+**Step 7: Character Integrity**  
+7A: The prologue established each character cleanly. No OOC moments.  
+7B: Early stage; let personalities settle before planning arcs.  
+7C: Not yet. The voices are distinct but not exaggerated.  
+DECISION: [NO] — No correction needed.
+
+**Step 8: Agent of Chaos**  
+8A: Potential twists for this turn: 1) A stranger overhears and warns them specifically about the tower. 2) Devlin reveals he knows more than he let on (e.g., the tower was sealed for a reason, and he's hoping they'll reopen it).  
+8B: Too early for distant-past twists.  
+8C: Weak suggestions—better to let the party establish baseline before adding chaos.  
+DECISION: [NO] — Skip chaos agents this turn.
+
+**Step 9: NPC Amnesia**  
+9A: Devlin mentioned the Red Boars and the well. No interrupted personal tasks.  
+DECISION: [NO] — Clean.
+
+**Step 10: Lively NPCs**  
+10A: Early relationships; nothing demanding changed behavior yet.  
+10B: Srava and Talion have established a teasing dynamic. Ingrid and Laios have pragmatic banter. Good start.  
+10C: No one has initiated romantic/rival moments, and none are expected yet.  
+10D: No NPC separated.  
+10E: The full party is present. Ensure everyone gets a speaking moment in the plan discussion.  
+10F: The player's question invites response—let the characters match that energy by being direct and opinionated.  
+DECISION: [YES] — Ensure all four characters contribute actively to the plan.
+
+**Step 11: Dialogue Dynamics**  
+11A: Talion is the nominal leader, but the others should show autonomy. Have Srava challenge him gently, Laios interrupt with practical tangents, Ingrid steer the conversation back on track.  
+11B: Mild disagreement is natural: Srava might want to research first, Laios might want to go immediately, Ingrid might want to scout cautiously.  
+11C: No past events to callback yet.  
+11D: The prologue ping-ponged well. This scene benefits from one short monologue—perhaps Ingrid or Laios sharing a past experience with old ruins or watchtowers.  
+DECISION: [YES] — Encourage a brief monologue from Ingrid or Laios about past encounters with "waking ruins."
+
+**Step 12: Anti-Sycophancy**  
+12A-12F: Not applicable.  
+DECISION: [NO] — Skip.
+
+**Step 13: World Awareness**  
+13B: Weather: The prologue ended with "cold evening air" and "distant rain." That remains valid. The party will be indoors but aware of the coming weather.  
+13C: No inventory to reference.  
+13.2: Time: Evening. The party plans to leave at first light. The next scene should acknowledge they'll need to sleep soon.  
+13.5: Location: The Crooked Tankard, about to discuss plans before possibly splitting to prep.  
+DECISION: [YES] — Note evening time and impending rest need.
+
+**Step 14: High Stakes**  
+14A: Story just began. Too early for permanent consequences.  
+14B: No.  
+14C: No.  
+DECISION: [NO] — Skip.
+
+**Step 15: Continuity**  
+15A-15B: No inconsistencies.  
+DECISION: [NO] — Clean.
+
+**Step 16: Personal Time**  
+16A: Party has been together the whole prologue.  
+16B: This is a good moment to suggest a split—some go to the store, others rest, Talion and one companion stay to talk strategy. Plant it for the next scene if not this one.  
+DECISION: [YES] — Hint at eventual split for errands before departure.
+
+**Step 17: Scene Ending**  
+17A: The prologue ended on atmospheric tension (distant darkness, blue light).  
+17B: The plan discussion can end on a crossroads: supplies gathered, but the tower looms in everyone's mind. That matches the "unresolved pressure" flavor.  
+DECISION: [YES] — End on a quiet, tense note—the party deciding to rest, but the weight of the mission settling in.
+
+**Step 18: Dynamic Event Cadence**  
+18A: No events yet. Not overdue.  
+18B: N/A.  
+18C: Not yet—let the party discuss and prep first. The dynamic event can trigger when they reach the tower.  
+18D: N/A.  
+DECISION: [NO] — No event this turn.
+
+**Step 18.5: Previous Monologue Actionability**  
+N/A.  
+DECISION: [NO] — Skip.
+
+---
+
+--- YOUR_MONOLOGUE ---
+
+The party is in the planning phase. I want to remember that each character has a distinct approach to danger: Srava is cautious-academic, Laios is practical-experiential, Ingrid is protective-tactical, and Talion is aspirational-leadership. These voices should become sharper as the mission approaches. Plant the seeds now.
+
+Also note: The Red Boar Company's disappearance is an open mystery. Keep it in the background—don't solve it yet. Let the party wonder, and maybe drop a clue later.
+
+Time is evening. The party needs to rest before leaving at first light. Don't skip that transition—it's a good chance for a quiet moment between two characters.
+
+Location: The Crooked Tankard, then possibly the general store. Keep track of the geography: Thornwell is two days east at the edge of the Oldwood.
+
+No inventory items to track yet. No dynamic events triggered.
+
+Goal for next few turns: Arrive at Thornwell, meet Elder Oswin, scope the tower, encounter a problem (the Red Boars' fate? The blue light? Something else?). Keep the tone comedic but with genuine tension underneath.
+
+---
+
+--- WRITER_BRIEF ---
+
+## SCENE REVIEW
+
+The party has just accepted the Thornwell watchtower job. They're still at the counter of The Crooked Tankard, evening settling in, cold air and rain threatening outside. Devlin has given them the basic facts: blue lights, ground shaking, a dead well, and the Red Boars who went missing. Now Talion has asked the natural question: "So, what's the plan?" This is the moment for the party to think aloud, reveal their personalities through their priorities, and commit as a group.
+
+## MANDATORY ORDERS
+
+1. **Full party participation in the plan discussion.** Every character must speak and reveal their angle:
+   - **Srava** should voice skepticism about entering an unstable ruin without reconnaissance. She might suggest scrying or asking locals first. Lean into her academic caution and dry humor.
+   - **Laios** should counter with practicality: they need supplies first (rope, torches, rations), and the real answers are inside the tower, not in a village rumor. He's blunt, hungry, and eager to move.
+   - **Ingrid** should act as the mediator—she agrees with caution (scout the perimeter, have an exit plan) but also acknowledges they can't learn much from outside. She's the one who mentions checking the tower's structure before entering.
+   - **Talion** listens and synthesizes. Let him show leadership by acknowledging each person's concern and proposing a compromise.
+
+2. **Include one short monologue** from either Laios or Ingrid. If Laios, let him talk about a past dungeon experience—something that went wrong because they didn't prepare, or a lesson he learned the hard way. If Ingrid, let her describe a watchtower she saw collapse because no one checked the foundations. Keep it under 8-10 lines but let it breathe.
+
+3. **Acknowledge the time.** The evening is wearing on. Someone (likely Ingrid or Devlin passing by) should note that the party should rest before first light. This plants the natural transition to departure.
+
+4. **Weave in supply prep.** Laios or Ingrid should list what they need: rope, torches, water skins, medical supplies. This can happen mid-dialogue as natural planning.
+
+5. **Remind the player that Talion is present** by having the others glance at him or address him directly when making their points. He's the nominal leader, but they all have strong opinions.
+
+## NARRATIVE THREADS
+
+- **The Red Boars' fate.** Plant a subtle worry: someone notes that mercenaries with silvered weapons don't just vanish unless something powerful stopped them. Don't resolve this mystery yet—let it hang.
+- **Laios's "old rules."** Continue this thread from the prologue. He can mention one more rule (e.g., "If there's writing on the walls, don't read it aloud.") and get teased by Srava. It builds his backstory without over-explaining.
+- **Party bonding through disagreement.** Mild, respectful disagreement shows they're not a hive mind. Srava and Laios can go back and forth about whether to rush in or stall. Ingrid mediates. Talion decides.
+- **Weather as a factor.** The cold rain outside can be mentioned—it might make travel slower, colder, and more uncomfortable. This raises the stakes slightly and adds texture.
+
+## MYSTERIES_NOT_TO_REVEAL
+
+- Do NOT reveal what is inside the watchtower or what the Blue Light is.
+- Do NOT reveal the Red Boars' fate.
+- Do NOT explain the "Great Stirring" in detail—keep it a background mystery referenced by scholars and worried villagers.
+- Do NOT have Devlin suddenly confess hidden knowledge about the tower. He's a tavern keeper, not a plot device.
+
+## WRITING CRITIQUES
+
+- **Avoid ping-pong dialogue.** After the monologue, let responses breathe. A character can pause, reflect, or react non-verbally before speaking. Use action beats between dialogue clusters.
+- **Show, don't tell** the characters' concerns. If Srava is worried, she taps her wand. If Laios is impatient, he stands up. If Ingrid is calculating, she looks toward the door.
+- **End the scene with weight.** Don't wrap it up neatly. End on a moment of quiet—the party splitting up to rest or prepare, with an unspoken tension about tomorrow. Let the last line be a thought, a look, or a simple statement that hangs in the air. Example: "No one said goodnight. They just went to their rooms, and the tower waited in the east."
+- **Keep the comedy alive** even during planning. Srava can quip about the "hole-in-the-world armor" being very fashionable. Laios can grumble that "investigating" doesn't pay as well as "solving." The tone should feel like a group of friends with slightly different priorities, not a military briefing.

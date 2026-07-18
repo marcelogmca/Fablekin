@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/main_process/handlers/socket_plugin_handlers.js
+    hash: B20D7891C5FC191C59B2C0E5B196A632
+  - path: engine/views/libs/plugin_bridge.js
+    hash: 86FA864D957227FDEE2147A8FCC14835

@@ -1,0 +1,35 @@
+Review the following ${windowSize} chapters of narrative history and update the profiles for the listed characters.
+
+${detailInstruction}
+
+[CHARACTERS CURRENT STATE]
+${characterStateBlocks}
+
+[NARRATIVE HISTORY]
+${chapters}
+
+[INSTRUCTION]
+Analyze the narrative history for any significant developments regarding these characters.
+Update the fields ONLY if the narrative has explicitly changed or revealed new information about them. 
+
+[RULES]
+1. If a field has NOT changed, OMIT it from the JSON object for that character.
+2. Only include the "name" field and the fields that actually need updating.
+3. If no fields have changed for a character, you may omit that character from the "updates" array entirely.
+4. Treat the current state as authoritative for species, anatomy, baseline body traits, and default wardrobe.
+5. Do not add physical/anatomical traits that heavily contradict the current state unless the narrative explicitly states a physical transformation, injury, mutation, disguise, costume, or newly revealed fact.
+6. Do not infer biological/anatomical traits from style cues, cosmetics, metaphor, preference, or silhouette. Example: cat-ear hairstyle does not imply real ears or a tail.
+7. If the evidence is ambiguous, omit the update.
+
+{{DYNAMIC_SCHEMA}}
+
+Important: Each json property should ONLY have raw text.
+GOOD: "social": "Cassandra is friends with John and Sara..."
+BAD: "social": { "friends": ["John","Sara"]}
+
+Return ONLY a JSON object in this format:
+{
+  "updates": [
+    {{DYNAMIC_JSON_STRUCT}}
+  ]
+}

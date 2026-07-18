@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/main_process/state/runtime_socket_state.js
+    hash: 2D9AFDCD9F665BA9F40926835FCBEE3B
+  - path: engine/modules/memory_manager/storage/devcache.js
+    hash: 1D4AB97078B02CD437AAF7D280EFB986

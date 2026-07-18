@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/modules/vn_manager/rendering/sprite_finder.js
+    hash: 2D013E6E9CA6DB9A3CF2666453C32042
+  - path: engine/modules/vn_manager/rendering/sprite_positioner.js
+    hash: 5A9E95B7FCF5C1C4340A53FFE9215BAE
+  - path: engine/modules/vn_manager/rendering/thumbnail_generator.js
+    hash: 45069075E03F2B1C354BF7D9FCFB158F
+  - path: engine/modules/vn_manager/rendering/sprite_metadata.js
+    hash: 31E31CD35B4405BAE8777CA1ACD4AF38

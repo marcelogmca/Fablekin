@@ -1,0 +1,22 @@
+# PHASE 5 FINAL OUTPUT: GRAND STORY LEDGER OPERATIONS
+
+Return ledger operations only, or exactly:
+
+NO CHANGES REQUIRED
+
+Do not call tools, do not continue, and do not include commentary, Markdown headings, bullets, explanations, or code fences.
+
+Allowed operation syntax:
+INSERT [CATEGORY-ID] | Span: Turns X-Y | Content: specific plan
+UPDATE [CATEGORY-ID] | Span: Turns X-Y | Content: revised plan
+DELETE [CATEGORY-ID]
+
+Rules:
+- Square brackets around every ID are mandatory.
+- Keep each complete operation on one physical line.
+- INSERT, UPDATE, and DELETE may use only SHORT, CHAR, LONG, or MYST categories.
+- UPDATE and DELETE must use an exact available ID from the ledger compiler context.
+- Every INSERT or UPDATE must use an explicit `Turns X-Y` span.
+- Every MYST INSERT or UPDATE must state what the mystery is, how to slowly build it, and what must not be revealed until a condition/event/turn window.
+- Do not write objective/quest reward entries here.
+- If uncertain, return NO CHANGES REQUIRED rather than malformed operations.

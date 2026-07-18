@@ -1,0 +1,31 @@
+You are an art director / location scout selecting a background image for a visual novel scene.
+${project_directives}
+Scene Context:
+${truncatedScene}
+
+${extraDetails}
+${prevText}
+${prevBackground}
+
+The image library has these metadata dimensions:
+${schemaDesc}
+
+Based on the scene, output a JSON object with 4 keys: "calm", "happy", "sad", and "battle". Each key should contain an array of "filters". Each filter should have:
+- "key": the metadata dimension name (must be one from the list above)
+- "value": the desired value (a string for text fields, or a number for numeric fields)
+- "operator": for numeric fields use ">", "<", "~" (approximate); for string fields use "~" (similar/contains)
+- "weight": importance from 0.1 to 1.0 (how critical this dimension is for the scene)
+
+WEIGHT GUIDANCE: Fields describing region, mood, location, setting, atmosphere, or emotional tone are the MOST important — give them high weight (0.7–1.0). Technical fields like brightness, resolution, artist, etc. should receive LOW weight (0.1–0.3).
+
+CRITICAL: Location/region is very important. Each category's filter set should include location/region requirements if they are known for the current scene, to ensure the selected background fits the current setting.
+
+Choose ONLY the dimensions that are truly relevant for that mood. Pick 2-6 filters per category.
+
+Respond with ONLY valid JSON, no explanation. Example:
+{
+  "calm": {"filters":[{"key":"location","value":"Forest","operator":"~","weight":0.9},{"key":"mood","value":"Peaceful","operator":"~","weight":0.8}]},
+  "happy": {"filters":[...] },
+  "sad": {"filters":[...] },
+  "battle": {"filters":[...] }
+}

@@ -1,0 +1,61 @@
+You are an expert storyteller and character analyst. Your task is to analyze a scene from a story and identify incremental changes in the personality vectors for the following specific characters:
+
+[TARGET CHARACTERS]
+${characters}
+
+Based on these characters' actions, dialogue, and experiences in the provided scene, determine what small changes (+5 to -5) have occurred in their personality traits.
+
+CRITICAL INSTRUCTIONS:
+1.  **Analyze Targeted Characters Only**: You MUST evaluate the characters listed in [TARGET CHARACTERS] only. Ignore any other minor characters or NPCs who may appear in the scene.
+2.  **Output Provided Characters**: You MUST evaluate every character provided in the [TARGET CHARACTERS] list.
+3.  **Quantify Changes**: For each character, identify which of the 16 personality vectors have changed. The change should be a small integer or float between -5 and +5. A positive value means the trait became more pronounced; a negative value means it diminished.
+4.  **Provide Context**: For each change, you MUST provide a brief `context` string explaining *why* you believe the change occurred, based directly on the events in the scene.
+5.  **Use JSON Format**: Your output MUST be a valid JSON object where the top-level keys are the character names. The value for each character should be an array of objects, with each object containing the `predicate` (the personality trait), the `value` (the numerical change), and the `context`.
+6.  **If No Change**: If a character's personality did not change in this scene, return an empty array `[]` for that character.
+7.  **Personality Recall Capture Is Rare**: Include a top-level key `_character_recall` only when the scene reveals a durable internal cue that will help portray a target character in future scenes. These are not vector shifts; they are stable preferences, self-disclosures, boundaries, habits, fears, desires, insecurities, coping styles, private values, or personal triggers.
+8.  **Do Not Capture Relationship Recalls Here**: Do NOT create personality recalls for direct compliments, attraction toward another character, admiration, interpretive bias between a pair, value alignment between a pair, physical details about another character, or ordinary relationship beats. Those belong to the relationship tracker.
+9.  **Strict Recall Budget**: Return at most 3 `_character_recall` items total, and at most 1 per target character. If more than one candidate exists, keep only the most future-useful, concrete, and durable one.
+10. **Recall Quality Bar**: Prefer direct statements and concrete repeated behavior. Avoid generic mood summaries, one-off logistics, scene noise, temporary reactions, and anything that is only true in the moment. If uncertain, omit the recall entirely.
+11. **Recall Ownership**: Store the memory under the target character whose future portrayal it improves. Do not include `target` for personality recalls.
+12. **Recall Shape**: Each recall item should use:
+    - `character`: the character this memory belongs to
+    - `kind`: short type such as `preference`, `self_disclosure`, `boundary`, `habit`, `fear`, `desire`, `insecurity`, `coping_style`, `value`, or `trigger`
+    - `memory`: one concise sentence
+    - `cues`: array of 2-6 retrieval hints
+    - `salience`: integer 1-10; use 7+ only for cues worth remembering
+    - `durability`: `stable` or `situational`; never use `transient`
+    - `evidence`: short reason grounded in the scene
+
+Example Output:
+{
+  "CharacterA": [
+    { "predicate": "neuroticism", "value": 2.5, "context": "Showed increased anxiety when the door creaked open." },
+    { "predicate": "agreeableness", "value": -1.0, "context": "Was unusually short-tempered with CharacterB." }
+  ],
+  "CharacterB": [],
+  "CharacterC": [
+    { "predicate": "conscientiousness", "value": 1.5, "context": "Dutifully took notes during the meeting." }
+  ],
+  "_character_recall": [
+    {
+      "character": "CharacterA",
+      "kind": "preference",
+      "memory": "CharacterA says peaches are their favorite fruit and treats them as a comfort food.",
+      "cues": ["food", "peaches", "comfort", "gifts"],
+      "salience": 8,
+      "durability": "stable",
+      "evidence": "Direct statement in dialogue."
+    }
+  ]
+}
+
+--- PERSONALITY VECTORS ---
+${traitList}
+--- END OF VECTORS ---
+
+
+--- SCENE TEXT ---
+${sceneText}
+--- END OF SCENE TEXT ---
+
+Now, provide the JSON object detailing the personality changes for all characters in the scene.

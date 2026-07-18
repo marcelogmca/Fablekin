@@ -1,0 +1,243 @@
+SPRITE SETUP GUIDE
+Updated: 2026-04-22
+
+This guide explains exactly how sprite discovery and matching work today, including
+variant folders and scene-level variant locks.
+
+----------------------------------------------------------------------------
+1) QUICK START (DRAG-AND-DROP FRIENDLY)
+----------------------------------------------------------------------------
+Put files in:
+workspace/projects/<YourProject>/assets/sprites/
+
+Minimum useful file:
+steve_neutral.png
+
+Common files:
+steve_happy.png
+steve_angry.png
+steve_happy_talk.png
+steve_happy_blink.png
+steve_happy_talk_blink.png
+
+Supported image formats:
+.png .jpg .jpeg .gif .bmp .webp
+
+----------------------------------------------------------------------------
+2) SUPPORTED FOLDER LAYOUTS
+----------------------------------------------------------------------------
+A) Flat/default layout (simple)
+assets/sprites/
+  frieren_neutral.png
+  frieren_happy.png
+
+B) Variant layout (outfits/major versions)
+assets/sprites/
+  frieren/
+    winter_clothes/
+      frieren_neutral.png
+      frieren_happy.png
+
+C) Mixed layout (both are allowed)
+assets/sprites/
+  frieren_neutral.png
+  frieren_happy.png
+  frieren/
+    winter_clothes/
+      frieren_neutral.png
+      frieren_happy.png
+
+Notes:
+- Variant folders are scanned with the same sprite parser as flat files.
+- Files inside variant folders still work even if no lock is set.
+- Locking is what keeps outfit/major version stable within a scene.
+
+----------------------------------------------------------------------------
+3) FILENAME GRAMMAR
+----------------------------------------------------------------------------
+Recommended base format:
+<character>_<emotion>.<ext>
+
+Full format (rotation + animation):
+<character>_<emotion>[_<rotation>][_talk|_blink|_talk_blink].<ext>
+
+Valid rotations:
+front, left, right, back
+
+Reserved suffixes (not emotions):
+icon, reference, talk, blink, talk_blink, front, left, right, back
+
+Examples:
+frieren_happy.png
+frieren_happy_front.png
+frieren_happy_left.png
+frieren_happy_talk.png
+frieren_happy_blink.png
+frieren_happy_right_talk_blink.png
+frieren_icon.png
+frieren_reference.png
+
+Ordering rule:
+If you use rotation + animation, rotation comes before animation:
+GOOD: frieren_happy_right_talk.png
+AVOID: frieren_happy_talk_right.png
+
+----------------------------------------------------------------------------
+4) SCENARIO A (FLAT FILES)
+----------------------------------------------------------------------------
+frieren.png
+- No explicit emotion token.
+- Not useful for emotion matching.
+- Use frieren_neutral.png instead.
+
+frieren_happy.png
+- Base sprite for emotion "happy".
+
+frieren_happy_talk.png / frieren_happy_blink.png / frieren_happy_talk_blink.png
+- Animation layers for the same base emotion.
+
+frieren_happy_left.png / frieren_happy_right.png / frieren_happy_back.png
+- Rotation variants.
+- Important: keep a base or front sprite too:
+  frieren_happy.png OR frieren_happy_front.png
+
+frieren_happy_front.png
+- Valid as a base fallback when frieren_happy.png is absent.
+
+----------------------------------------------------------------------------
+5) SCENARIO B (VARIANT FOLDERS)
+----------------------------------------------------------------------------
+Example:
+assets/sprites/frieren/winter_clothes/frieren_happy.png
+
+Behavior:
+- File is discovered and parsed normally.
+- If scene lock says frieren -> winter_clothes, this folder is prioritized.
+- If no lock exists, it can still be matched from the global pool.
+
+----------------------------------------------------------------------------
+6) SCENARIO C (FLAT + VARIANTS TOGETHER)
+----------------------------------------------------------------------------
+No lock:
+- Engine matches from the full pool (flat + variant files).
+- This can mix outfits if multiple candidates exist.
+
+Lock exists and variant folder exists:
+- Engine tries that variant pool first.
+- If no good match in locked pool, it gracefully falls back to full pool.
+
+Lock exists but variant folder has no files:
+- Engine immediately falls back to full pool.
+
+----------------------------------------------------------------------------
+7) SCENE-LEVEL VARIANT LOCKS
+----------------------------------------------------------------------------
+Location in TurnContext:
+processed.vnManager.spriteVariantLocks
+
+Concept:
+character_key -> variant_key
+
+Example:
+{
+  "frieren": "winter_clothes"
+}
+
+Normalization:
+- Character keys are matched leniently (raw, normalized, first-name forms).
+- Variant values are normalized to lowercase with spaces -> underscores.
+
+Recommendation:
+- Use full normalized character keys (example: sandra_reid, not just sandra)
+  to avoid collisions.
+
+----------------------------------------------------------------------------
+8) TWINS / MULTI-WORD NAMES
+----------------------------------------------------------------------------
+Yes, use full names with underscores:
+sandra_reid_happy.png
+monica_reid_happy.png
+
+Why this works:
+- Emotion extraction is tail-based.
+- For sandra_reid_happy.png, emotion = happy (not reid).
+
+Variant folders for twins:
+assets/sprites/sandra_reid/winter_clothes/sandra_reid_happy.png
+assets/sprites/monica_reid/winter_clothes/monica_reid_happy.png
+
+----------------------------------------------------------------------------
+9) MATCHING AND FALLBACK ORDER
+----------------------------------------------------------------------------
+For each dialogue line, the engine tries:
+1. Exact match: <character>_<emotion> (or _front fallback)
+2. First-name match
+3. Fuzzy character+emotion match
+4. Emotion match constrained by character similarity
+5. Character neutral fallback
+6. Generic gendered NPC fallback:
+   generic_npc_male / generic_npc_female (numbered variants allowed)
+7. Generic fallback:
+   generic_npc (or any file containing "generic")
+
+Also:
+- narrator/system/player/protagonist/meta speakers do not get character sprites.
+- Common JP honorifics are stripped from names before matching.
+
+----------------------------------------------------------------------------
+10) ICONS AND REFERENCE FILES
+----------------------------------------------------------------------------
+<character>_icon.<ext>
+- Used for UI portrait/icon usage.
+
+<character>_reference.<ext>
+- Ignored for scene sprite matching (safe to keep in sprites folder).
+
+----------------------------------------------------------------------------
+11) OPTIONAL SPRITE METADATA.JSON (STATUS)
+----------------------------------------------------------------------------
+As of 2026-04-22:
+- Sprite metadata.json is optional.
+- Metadata is discovered and merged at runtime.
+- Emotion classifier can consume optional per-character guidance text.
+
+Supported shape (example):
+
+{
+  "version": 1,
+  "characters": {
+    "frieren": {
+      "scale": 0.8,
+      "emotionGuidance": "Frieren is usually calm and emotionally restrained.",
+      "variants": {
+        "winter_clothes": {
+          "emotionGuidance": "Winter outfit is still emotionally restrained."
+        }
+      }
+    },
+    "fern": {
+      "scale": 1.0
+    }
+  }
+}
+
+Notes:
+- Keys are normalized lowercase with underscores.
+- `emotionGuidance` is optional free text used as a soft bias by emotion_classifier.
+- Guidance is included only for characters present in the current classification chunk.
+- Metadata can include non-guidance fields (like scale/defaultVariant) for future systems.
+- `emotionFallbacks` is no longer used by runtime matching.
+- Full example file: workspace/SPRITE_METADATA_EXAMPLE.json
+
+Recommended key style:
+- lowercase normalized character keys (same style as sprite filenames/folders).
+
+----------------------------------------------------------------------------
+12) PRACTICAL BEST PRACTICES
+----------------------------------------------------------------------------
+- Start with <character>_neutral.png for every important character.
+- Keep names lowercase with underscores.
+- Use full names for ambiguous characters.
+- Add variant folders only when you need major persistent looks.
+- If you use variants, set spriteVariantLocks during scene setup to keep outfits stable.
+- Keep icon/reference files in the same folder if convenient.

@@ -1,0 +1,51 @@
+ADVENTURE BOOK MODE.
+
+Using the existing writer context above, write chapter 1 of a bounded Pathfinder-style storybook challenge for the just-finished VN chapter.
+
+Core intent:
+The Adventure Book is a temporary zoom-in on the parent narrative action, like a tabletop RPG travel/skill-challenge vignette. It is NOT a new main plot, not a replacement scene direction, and not a direct continuation that solves the whole VN chapter by itself.
+
+Think of this as asking:
+"While the party carries out the already-implied action, what complications, discoveries, costs, small victories, or character moments shape the final state?"
+
+Important transformation rule:
+The source material was provided in the previous message. It is not prose to continue, repeat, summarize, or rewrite. Do not produce a 1-to-1 continuation or carbon copy of it. Mine it for the parent action, characters, tone, destination, and constraints, then create a NEW bounded incident inside that parent action.
+
+Examples:
+- If the parent action is a 4-day journey, the book may show bandits on the road, bad mushrooms, a dangerous river, a strange night watch, lost supplies, a funny mishap, a minor clue, or morale changing.
+- The journey itself still remains the frame. The book ultimately determines whether they arrive early, late, tired, injured, cheerful, suspicious, supplied, depleted, carrying a clue, or changed in some bounded way.
+- Similar logic applies to investigations, infiltrations, ruins, survival hazards, social obstacles, decoding, or environmental challenges.
+
+Scope contract:
+- Preserve the parent action and its obvious destination/goal.
+- Zoom in; do not zoom out.
+- Do not abandon, redirect, or supersede the parent action.
+- Do not introduce a new main quest, major villain, world-state upheaval, or plot revelation that dominates the campaign.
+- Do not decide the entire higher plot.
+- Do not permanently remove party members or make irreversible major consequences unless the existing context already made that plausible.
+- Consequences should be local, stateful, and useful for the next normal VN chapter: time, condition, resources, morale, relationships, minor clues, rumors, injuries, debts, supplies, route changes, or arrival tone.
+- Read the room. Match the tone, genre, stakes, intimacy, brutality, politics, comedy, horror, or erotic charge of the story so far when the context supports it. Do not default to sanitized generic RPG material.
+
+Write ONLY raw prose.
+Do not return JSON.
+Do not return XML.
+Do not use markdown headings, bullet lists, option lists, stat blocks, or page labels.
+
+The prose should feel like an actual story scene, not a scenario summary:
+- Around 600 words. Aim for 500-750 words unless the scene truly needs a little more room.
+- Include character dialogue where natural.
+- Keep one continuous scene/moment with escalating tension.
+- Use the party's apparent personalities, goals, strengths, weaknesses, and recent context.
+- Make the challenge suitable for investigation, travel, ruins, survival, infiltration, decoding, social obstacles, or environmental hazards.
+- Avoid replacing the user's agency with a new main scene, but do not avoid mature, brutal, intimate, political, comic, horrific, or genre-specific material when it is in accordance with the story so far.
+- Make the complication an obstacle or texture inside the parent action, not a replacement for it.
+- End at a clear cliffhanger or decision point where the party must choose an approach.
+- Do not write the choices.
+- Do not resolve the chapter.
+
+This is chapter 1 of at most {{MAX_STEPS}} Adventure Book chapters.
+
+Chapter pacing contract:
+{{PACING_CONTRACT}}
+
+Use the pacing contract to decide how much to open, escalate, or resolve. Chapter 1 usually opens the bounded complication and ends at a concrete choice point rather than resolving it.

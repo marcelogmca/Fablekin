@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Story Scripts Guide</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; line-height: 1.6; color: #e0e0e0; background-color: #0f0f0f; max-width: 800px; margin: 0 auto; }
+        h1 { color: #b83b5e; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { color: #b83b5e; margin-top: 30px; }
+        code { background: #1e1e1e; color: #ffeb3b; padding: 2px 5px; border-radius: 3px; border: 1px solid #333; }
+        pre { background: #1a1a1a; color: #ccc; padding: 20px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+        .comment { color: #5c6370; font-style: italic; }
+        .note { background: rgba(184, 59, 94, 0.1); border-left: 5px solid #b83b5e; padding: 15px; margin: 20px 0; color: #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Story Scripts</h1>
+    <p>Story Scripts are project-level <code>.md</code> files (though they contain JavaScript logic) that allow you to customize the behavior of the engine for a specific adventure.</p>
+
+    <div class="note">
+        <strong>Important:</strong> Story Scripts are executable local code. Fablekin asks you to review and approve each new or changed script, but approval is not a security sandbox. Only trust scripts you wrote, reviewed, or received from a reputable author.
+    </div>
+
+    <h2>Basic Architecture</h2>
+    <p>A Story Script is essentially a module that exports an object with hooks. These hooks allow you to intercept and modify the state of the story at various points.</p>
+
+    <pre>
+<span class="keyword">module.exports</span> = {
+    id: <span class="string">'my_custom_script'</span>,
+    hooks: {
+        <span class="comment">// This hook runs before a turn renders, allowing you to inject VFX/SFX</span>
+        <span class="string">'HOOK_VN_BLOCKING_TASKS'</span>: {
+            priority: <span class="number">10</span>,
+            run: <span class="keyword">async</span> (context, tools) => {
+                <span class="keyword">const</span> { processed } = context;
+                
+                <span class="comment">// Example: Add a pixelate effect if the character is 'mysterious'</span>
+                <span class="keyword">if</span> (processed.tags.includes(<span class="string">'glitch'</span>)) {
+                    processed.vfx.push({ type: <span class="string">'pixelate'</span>, intensity: <span class="number">0.3</span> });
+                }
+            }
+        }
+    }
+};</pre>
+
+    <h2>Available Hooks</h2>
+    <ul>
+        <li><strong>HOOK_VN_BLOCKING_TASKS</strong>: Executed by the renderer before displaying the next beat. Perfect for visual/audio overrides.</li>
+        <li><strong>HOOK_TURN_START</strong>: Executed by the backend when a new turn is initiated by the player.</li>
+        <li><strong>HOOK_VN_GUI_READY</strong>: Executed once the UI has finished loading the new state.</li>
+    </ul>
+
+    <h2>Global Context</h2>
+    <p>The <code>context</code> object contains the current story state, including <code>turnContext</code>, <code>processed</code> data (VFX, SFX, background), and <code>meta</code> information.</p>
+
+    <h2>Included Tools</h2>
+    <p>The <code>tools</code> object provides access to the engine's core capabilities:</p>
+    <ul>
+        <li><code>tools.llm.call</code>: Make resilient AI requests.</li>
+        <li><code>tools.socket.emit</code>: Send custom events to the UI.</li>
+        <li><code>tools.db.chat</code>: Interact with the narrative history.</li>
+    </ul>
+</body>
+</html>

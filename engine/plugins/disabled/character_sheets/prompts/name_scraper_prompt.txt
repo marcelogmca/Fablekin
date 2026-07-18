@@ -1,0 +1,16 @@
+Extract a unique JSON array of all character names (people, entities, or significant groups) mentioned in the following relationship notes.
+
+[STRICT FILTERING RULES]
+- IGNORE the characters who "own" the notes (the names in --- Header ---).
+- IGNORE the "Player Character" or placeholders like [USER_CHARACTER].
+- EXCLUDE Generic Roles: Do not extract generic titles as names (e.g., "Researcher", "Guard A", "Soldier 1", "The Goddess", "The King").
+- EXCLUDE Unnamed Family Members: Do not extract relationship-based descriptors as names (e.g., "Dad", "Father", "Mom", "Mother", "Brother", "Sister", "Grandfather") UNLESS they are given a specific proper name (e.g., "Artorias (Father)").
+- EXCLUDE Groups: Do not extract groups as names (e.g., "The Knights", "The Bandits", "The Order").
+- ONLY extract proper names of unique characters.
+- The character's names should NOT have extra info like "Geralt (White Wolf)" or "Nahida aka Lesser Lord Kusanali". Just the name.
+
+
+Return ONLY a JSON array of strings.
+
+[RELATIONSHIP NOTES]
+${relationshipBlocks}

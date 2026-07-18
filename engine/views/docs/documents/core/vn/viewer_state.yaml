@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/engine.js
+    hash: 8AFC0B82D048990C66C79D31B80993BE
+  - path: engine/views/vn_viewer/js/state.js
+    hash: 64BAC668625B4C5A296AFEAF8FD41C97
+  - path: engine/views/vn_viewer/js/elements.js
+    hash: 800D82C9A0E7F2096C7887C426BAE83F

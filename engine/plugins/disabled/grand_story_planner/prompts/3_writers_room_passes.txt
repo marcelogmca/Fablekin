@@ -1,0 +1,9 @@
+# WRITERS' ROOM ADVICE INSTRUCTION
+
+Use this single deterministic call to transform the research into advice.
+
+Do not perform fresh story archaeology. Treat Phase 1 as the diagnosis and Phase 2 as the quality benchmark. Your task is to connect them:
+- Which Phase 1 problems matter most?
+- Which Phase 2 mechanisms best answer those problems?
+- What practical choices would fix the story without copying the reference, forcing the player, or drafting the scene?
+- What traps should the creative plan avoid?

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turn-Bounded Data | Plugin Architecture</title>
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --surface-color: #1a1a1a;
+            --accent: #b83b5e;
+            --accent-bg: rgba(184, 59, 94, 0.15);
+            --emerald: #10b981;
+            --emerald-bg: rgba(16, 185, 129, 0.15);
+            --plugin-blue: #3b82f6;
+            --plugin-blue-bg: rgba(59, 130, 246, 0.15);
+            --orange: #f97316;
+            --orange-bg: rgba(249, 115, 22, 0.15);
+            --zinc-700: #333;
+            --zinc-800: #222;
+            --zinc-900: #1a1a1a;
+            --text-zinc: #a0a0a0;
+            --text-white: #e0e0e0;
+            --code-yellow: #ffeb3b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid var(--zinc-800);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-left h1 {
+            font-size: 2.2rem;
+            margin: 0;
+            color: var(--text-white);
+            font-weight: 700;
+        }
+
+        .header-left p {
+            font-size: 0.85rem;
+            color: var(--text-zinc);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .version-info {
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--text-zinc);
+            opacity: 0.5;
+        }
+
+        .ref-badge {
+            display: inline-block;
+            background: var(--accent-bg);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem 0; color: var(--accent); }
+        h3 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem 0; color: var(--text-white); }
+        p { margin-bottom: 1rem; color: var(--text-zinc); }
+        strong { color: var(--text-white); }
+
+        .card {
+            background: var(--zinc-900);
+            border: 1px solid var(--zinc-800);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .callout {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+        .callout.rule { background: var(--accent-bg); border-left: 4px solid var(--accent); color: #fda4af; }
+        .callout.tip { background: var(--emerald-bg); border-left: 4px solid var(--emerald); color: #6ee7b7; }
+        .callout.info { background: var(--plugin-blue-bg); border-left: 4px solid var(--plugin-blue); color: #93c5fd; }
+
+        code {
+            background: #1e1e1e;
+            color: var(--code-yellow);
+            padding: 2px 5px;
+            border-radius: 3px;
+            border: 1px solid var(--zinc-800);
+            font-size: 0.85em;
+        }
+
+        pre {
+            background: #000;
+            padding: 1.25rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--emerald);
+            overflow-x: auto;
+            border: 1px solid var(--zinc-800);
+            line-height: 1.5;
+        }
+
+        pre code {
+            background: transparent;
+            border: none;
+            padding: 0;
+            color: inherit;
+            font-size: inherit;
+        }
+
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+        .comment { color: #5c6370; font-style: italic; }
+        .sql { color: #61afef; font-weight: 600; }
+
+        .pattern-label {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-bottom: 0.75rem;
+        }
+        .label-required { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent); }
+        .label-standard { background: var(--emerald-bg); color: var(--emerald); border: 1px solid var(--emerald); }
+        .label-optional { background: var(--plugin-blue-bg); color: var(--plugin-blue); border: 1px solid var(--plugin-blue); }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-family: monospace;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .flow-arrow { color: var(--text-zinc); font-size: 1.2rem; }
+        .flow-delete { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent); }
+        .flow-insert { background: var(--emerald-bg); color: var(--emerald); border: 1px solid var(--emerald); }
+        .flow-query { background: var(--plugin-blue-bg); color: var(--plugin-blue); border: 1px solid var(--plugin-blue); }
+
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--zinc-800);
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--text-zinc);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <div class="ref-badge">Architecture Reference</div>
+            <h1>Turn-Bounded Data</h1>
+            <p>Plugin Data Integrity in a Branching Timeline</p>
+        </div>
+        <div class="version-info">
+            PROJECT: DYNAMIC NARRATIVE ENGINE<br>
+            SCOPE: PLUGIN DATA LAYER<br>
+            STATUS: CANONICAL
+        </div>
+    </header>
+
+    <div class="callout rule">
+        <strong>The Golden Rule:</strong> Every query over timeline-dependent rows must include <code>turn_number &lt;= ?</code> bound to the current turn context. Project-wide configuration and lookup tables do not need a turn bound unless their meaning changes across the story timeline.
+    </div>
+
+    <div class="callout tip">
+        <strong>Prefer the smallest storage API:</strong> use <code>tools.pluginState</code> for plugin-owned runtime or per-turn state and <code>tools.facts</code> for scoped timeline facts. Reach for custom SQL only when those higher-level APIs cannot represent the data or query you need.
+    </div>
+
+    <!-- Section 1: The Problem -->
+    <section>
+        <h2>The Problem: Branching & Rewinds</h2>
+        <p>Fablekin lets players <strong>rewind</strong> to any earlier turn and <strong>branch</strong> the story from there. When this happens, the database still contains data written by turns that no longer exist in the current timeline.</p>
+
+        <div class="card">
+            <h3>Why Not Just Delete Future Data?</h3>
+            <p>Aggressive deletion is fragile, slow, and creates cascading complexity:</p>
+            <ul style="color: var(--text-zinc); padding-left: 1.25rem;">
+                <li>Every plugin would need custom cleanup logic for its own tables.</li>
+                <li>Deletion hooks add latency to every rewind operation.</li>
+                <li>Branching copies the entire database — you'd need to audit every table in the copy.</li>
+                <li>For lightweight text data (facts, state entries, ledger rows), the storage cost of "orphaned" rows is negligible.</li>
+            </ul>
+            <p>Instead, we treat the database as an <strong>append-only log</strong> and control visibility at query time.</p>
+        </div>
+    </section>
+
+    <!-- Section 2: Turn-Bounded Queries -->
+    <section>
+        <h2>Pattern 1: Turn-Bounded Queries</h2>
+        <div class="pattern-label label-required">Required</div>
+
+        <p>The primary mechanism for timeline safety. By capping every query at the current turn number, "future" data from abandoned branches becomes invisible without ever being deleted.</p>
+
+        <div class="card">
+            <h3>The Wrong Way</h3>
+            <pre><code><span class="comment">-- This leaks data from future/abandoned turns after a rewind</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> world_state <span class="sql">WHERE</span> character_id = ?;</code></pre>
+
+            <h3>The Right Way</h3>
+            <pre><code><span class="comment">-- Strictly bounded to the current timeline position</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> world_state
+<span class="sql">WHERE</span> character_id = ?
+  <span class="sql">AND</span> turn_number &lt;= ?;</code></pre>
+
+            <div class="callout tip">
+                <strong>Where does the turn number come from?</strong> In a hook handler, use <code>turnContext.turnNumber</code>. An exported function or terminal command should accept an explicit turn number or derive it from a valid current turn context; it must not silently query all future rows.
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Aggregation Queries</h3>
+            <p>The bound applies to <strong>all</strong> query types — including aggregations like <code>MAX()</code>, <code>GROUP BY</code>, and subqueries. A common mistake is forgetting the bound in a subquery:</p>
+            <pre><code><span class="comment">-- ❌ WRONG: The subquery returns the global maximum, not the timeline-local one</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> facts f1
+<span class="sql">INNER JOIN</span> (
+    <span class="sql">SELECT</span> target, <span class="sql">MAX</span>(turn_number) <span class="sql">AS</span> max_turn
+    <span class="sql">FROM</span> facts
+    <span class="sql">GROUP BY</span> target
+) f2 <span class="sql">ON</span> f1.target = f2.target
+
+<span class="comment">-- ✅ CORRECT: Both outer and inner queries are bounded</span>
+<span class="sql">SELECT</span> * <span class="sql">FROM</span> facts f1
+<span class="sql">INNER JOIN</span> (
+    <span class="sql">SELECT</span> target, <span class="sql">MAX</span>(turn_number) <span class="sql">AS</span> max_turn
+    <span class="sql">FROM</span> facts
+    <span class="sql">WHERE</span> turn_number &lt;= ?
+    <span class="sql">GROUP BY</span> target
+) f2 <span class="sql">ON</span> f1.target = f2.target
+<span class="sql">WHERE</span> f1.turn_number &lt;= ?</code></pre>
+        </div>
+    </section>
+
+    <!-- Section 3: Upsert-by-Turn -->
+    <section>
+        <h2>Pattern 2: Upsert-by-Turn</h2>
+        <div class="pattern-label label-standard">Standard</div>
+
+        <p>When writing data for a turn, always <strong>delete the current turn's entries first</strong>, then insert fresh data. This guarantees idempotency — if the user re-generates a turn (without rewinding), the plugin doesn't produce duplicate rows.</p>
+
+        <div class="flow-diagram">
+            <span class="flow-step flow-delete">DELETE WHERE turn = N</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step flow-insert">INSERT (turn = N, ...)</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step flow-query">SELECT WHERE turn ≤ N</span>
+        </div>
+
+        <div class="card">
+            <h3>Implementation</h3>
+            <pre><code><span class="comment">// Inside a hook handler (e.g., HOOK_VN_BACKGROUND_TASKS)</span>
+<span class="keyword">const</span> turnNum = turnContext.turnNumber;
+
+<span class="comment">// 1. Wipe any previous attempt at this turn</span>
+<span class="keyword">await</span> tools.db.chat.execute(
+    <span class="string">`DELETE FROM my_data WHERE turn_number = ?`</span>,
+    [turnNum]
+);
+
+<span class="comment">// 2. Insert the fresh results</span>
+<span class="keyword">await</span> tools.db.chat.execute(
+    <span class="string">`INSERT INTO my_data (turn_number, key, value) VALUES (?, ?, ?)`</span>,
+    [turnNum, <span class="string">'mood'</span>, <span class="string">'contemplative'</span>]
+);</code></pre>
+
+            <div class="callout info">
+                Use <code>tools.db.chat.query(sql, params)</code> for reads and <code>tools.db.chat.execute(sql, params)</code> for writes in the active chat database. Use <code>tools.db.project</code> only for genuinely project-wide data.
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Why This Works for Branching -->
+    <section>
+        <h2>Why This Works for Branching</h2>
+
+        <div class="card">
+            <p>When a user branches at Turn 20:</p>
+            <ol style="color: var(--text-zinc); padding-left: 1.25rem; line-height: 2;">
+                <li>The engine <strong>copies</strong> the entire <code>.db</code> file to a new path.</li>
+                <li>The new database still contains Turns 21–50 from the original branch.</li>
+                <li>The new branch starts generating from Turn 21.</li>
+                <li>Because the new Turn 21 uses <strong>Upsert-by-Turn</strong>, it overwrites the old Turn 21's data.</li>
+                <li>Because all queries use <strong>Turn-Bounded Queries</strong>, Turns 22–50 from the old branch are invisible.</li>
+            </ol>
+
+            <div class="callout tip">
+                <strong>Zero cleanup required.</strong> The old data is harmless ballast. It will never be read, and if the user continues the new branch past Turn 50, the old rows are gradually overwritten by the upsert pattern.
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Physical Files — Managed Storage -->
+    <section>
+        <h2>Physical Files: Managed Storage</h2>
+        <div class="pattern-label label-standard">Standard</div>
+
+        <p>If your plugin needs to write files to disk (audio, images, cached outputs), use the engine's <strong>managed plugin storage</strong> directory. The engine isolates files by chat and turn storage key, copies and prunes them during branching, and removes the full chat directory when that chat is deleted.</p>
+
+        <div class="card">
+            <h3>Directory Structure</h3>
+            <pre><code>workspace/projects/[ProjectName]/
+└── plugins/
+    └── [ChatName]/            <span class="comment">← deleted when chat is deleted</span>
+        └── [TurnStorageKey]/  <span class="comment">← main turn "53" or interlude "53.1"</span>
+            └── [PluginId]/    <span class="comment">← your plugin's files live here</span>
+                ├── output.wav
+                └── cache.json</code></pre>
+
+            <div class="callout tip">
+                <strong>Lifecycle behavior:</strong>
+                <ul style="margin: 0.5rem 0 0 0; padding-left: 1.25rem;">
+                    <li><strong>Turn deleted (rewind):</strong> the engine fires <code>HOOK_TURN_DELETED</code>. Plugins that created physical files for that turn must remove them in this hook.</li>
+                    <li><strong>Chat deleted:</strong> The entire <code>[ChatName]/</code> folder is removed.</li>
+                    <li><strong>Chat branched:</strong> The folder is copied to the new branch, then storage keys whose base turn is beyond the branch point are pruned.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Accessing Managed Storage</h3>
+            <p>Use the <code>tools.project.getChatPluginStorage()</code> helper to get paths. The engine provides both absolute and relative paths:</p>
+            <pre><code><span class="comment">// Inside any hook handler</span>
+<span class="keyword">const</span> storage = tools.project.getChatPluginStorage();
+
+<span class="comment">// storage.absolutePath → Full OS path for fs.writeFile()</span>
+<span class="comment">// storage.relativePath → "plugins/MyChat/42/my_plugin"</span>
+<span class="comment">// storage.chatName    → "MyChat"</span>
+<span class="comment">// storage.turnNumber  → 42</span>
+<span class="comment">// storage.storageTurnKey → "42" or an interlude key such as "42.1"</span>
+
+<span class="comment">// Ensure the directory exists, then write your file</span>
+<span class="keyword">await</span> fs.mkdir(storage.absolutePath, { recursive: <span class="keyword">true</span> });
+<span class="keyword">await</span> fs.writeFile(
+    path.join(storage.absolutePath, <span class="string">'output.wav'</span>),
+    audioBuffer
+);</code></pre>
+        </div>
+
+        <div class="callout info">
+            <strong>When do you need lifecycle hooks?</strong> Use <code>HOOK_TURN_DELETED</code> to remove managed files belonging to a deleted turn. Use <code>HOOK_CHAT_DELETED</code> or <code>HOOK_CHAT_BRANCHED</code> only for storage outside the managed hierarchy, such as a remote service or shared cross-chat cache.
+        </div>
+    </section>
+
+
+    <!-- Summary -->
+    <section>
+        <h2>Summary</h2>
+        <div class="card" style="border-left: 4px solid var(--accent);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--zinc-700); text-align: left;">
+                        <th style="padding: 8px 0; color: var(--text-zinc);">Pattern</th>
+                        <th style="padding: 8px 0; color: var(--text-zinc);">When</th>
+                        <th style="padding: 8px 0; color: var(--text-zinc);">Required?</th>
+                    </tr>
+                </thead>
+                <tbody style="color: var(--text-zinc);">
+                    <tr style="border-bottom: 1px solid var(--zinc-800);">
+                        <td style="padding: 10px 0;"><strong>Turn-Bounded Queries</strong></td>
+                        <td style="padding: 10px 0;">Timeline-dependent reads</td>
+                        <td style="padding: 10px 0;"><span class="pattern-label label-required" style="margin: 0;">Required</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--zinc-800);">
+                        <td style="padding: 10px 0;"><strong>Upsert-by-Turn</strong></td>
+                        <td style="padding: 10px 0;">Regeneratable per-turn writes</td>
+                        <td style="padding: 10px 0;"><span class="pattern-label label-standard" style="margin: 0;">Standard</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--zinc-800);">
+                        <td style="padding: 10px 0;"><strong>Managed Storage</strong></td>
+                        <td style="padding: 10px 0;">Writing physical files to disk</td>
+                        <td style="padding: 10px 0;"><span class="pattern-label label-standard" style="margin: 0;">Standard</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0;"><strong>Deletion Hooks</strong></td>
+                        <td style="padding: 10px 0;">Turn deletion, or external/shared storage</td>
+                        <td style="padding: 10px 0;"><span class="pattern-label label-standard" style="margin: 0;">As needed</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        <span>ARCHITECTURE REFERENCE</span>
+        <span>PLUGIN DATA LAYER</span>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+Based on the provided world lore and character briefs, extract the initial personality vectors for each character.
+
+For each character, you must define the following traits: ${traitList}
+
+[WORLD LORE]
+${canon}
+
+[CHARACTERS]
+${characterBlocks}
+
+[INSTRUCTIONS]
+- For each character, identify their baseline personality traits.
+- Use your knowledge of fiction if the character is a known entity, otherwise extrapolate from the brief and world lore.
+- Return ONLY a JSON object:
+{
+  "characters": {
+    "CharacterName": {
+      "origin": "Brief origin summary...",
+      "vectors": [
+        { "predicate": "trait_name", "value": 50, "context": "Reasoning..." },
+        ... (for each trait in ${traitList})
+      ]
+    }
+  }
+}
+
+[TRAITS LIST]
+${traitList}

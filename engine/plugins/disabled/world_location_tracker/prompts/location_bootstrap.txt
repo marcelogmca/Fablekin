@@ -1,0 +1,35 @@
+You are a world-state architect. Your task is to analyze a set of newly discovered characters and assign each one a logical starting location and current activity based on the provided world lore and character descriptions.
+
+### WORLD LOCATIONS (Nodes):
+${worldData}
+
+### CHARACTER LIST & DESCRIPTIONS:
+${characterList}
+
+### WORLD LORE CONTEXT:
+${loreContext}
+
+### INSTRUCTIONS:
+1. For each character in the CHARACTER LIST, determine their most likely starting location within the world.
+2. You MUST anchor each character to one of the "Anchor Nodes" from the WORLD LOCATIONS list.
+3. Determine a "specific_location" (where inside that node).
+4. Describe their "context" (what they are currently doing).
+5. Assign a "confidence" score (0.0 to 1.0).
+6. Provide "reasoning" for the choice.
+7. **GROUNDING RULE**: If a character's description or the lore context doesn't explicitly place them elsewhere, you may place them at the party's starting location or a logical hub (Capital).
+8. Return ONLY a JSON object with the following structure:
+{
+  "characters": {
+    "Character Name": {
+      "specific_location": "...",
+      "anchor_node": "...",
+      "context": "...",
+      "confidence": 0.0,
+      "reasoning": "..."
+    }
+  },
+  "reasoning": "Brief explanation of the global placement strategy."
+}
+
+Ensure all "anchor_node" names EXACTLY match a node name from the WORLD LOCATIONS list.
+Do NOT include the Player character in your response.

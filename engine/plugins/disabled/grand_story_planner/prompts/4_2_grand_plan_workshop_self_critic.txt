@@ -1,0 +1,15 @@
+# GRAND PLAN WORKSHOP CALL 2: SELF-CRITIC
+
+Continue from your previous plan-audit draft and compare it against the Media Research references. Ask: Is this acceptable? Is this matching the quality bar of the strong episodes we analyzed? Where does the plan still feel like generic AI roleplay? What would make the player think "this is bland"?
+
+Be critical of your own previous answer. Attack weak ideas before they become instructions.
+
+Use exactly these top-level headings, in this order:
+
+# Self-Reflect Critic
+# Generic AI Failure Points
+# Reference Quality Gap
+# Player Blandness Risk
+# Weak Ideas To Reject
+
+Do not write scene prose. Do not produce ledger operations.

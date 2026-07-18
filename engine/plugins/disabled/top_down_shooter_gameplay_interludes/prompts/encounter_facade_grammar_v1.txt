@@ -1,0 +1,22 @@
+EncounterFacade v1 is line-oriented. Do not output JSON.
+
+Required encounter line:
+encounter "Title" id your_id length=short|medium|long difficulty=easy|normal|hard mode=waves|survive|boss
+
+Optional style line:
+style readable mobile_crossfire duel swarm ring_pressure aimed_pressure
+
+Wave lines:
+wave wave_id enemy=chaser|turret|ranger|charger count=solo|small|medium|large pressure=light|medium|heavy pattern=auto|fan|spiral|radial|aimed|line|rain spawn=edge|random|center pickup=none|heal|cooldown
+
+Boss line (required for mode=boss):
+boss boss_id name="Display Name" deck=fan,radial,line,aimed,spiral,rain pressure=light|medium|heavy phases=2|3 adds=none|light|medium pickup=none|heal|cooldown|both
+
+Optional encounter background:
+encounter ... bg=#c9a36a
+
+Only these commands are allowed:
+encounter, style, wave, boss
+
+Do not write low-level tuning numbers (hp, speed, radius, damage, cooldowns, intervals, bullet counts, spread, budgets, phase thresholds, modifiers).
+Do not use cut mechanics (hazards, objects, capture/protect goals, statuses, arena modifiers, music scripting, flags/counters, nested delayed action groups).

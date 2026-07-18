@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Plugin Documentation</title>
+    <link rel="stylesheet" href="../../../themes/active/global.css">
+    <style>
+        body { padding: 2rem; background: var(--bg-app-background); color: var(--text-main); }
+        main { max-width: 800px; margin: 0 auto; }
+        code { color: var(--color-primary); }
+        section { margin: 1.5rem 0; padding: 1rem; background: var(--bg-surface-2); border-radius: var(--radius-md); }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Plugin Documentation Example</h1>
+        <p>The plugin manifest registers this page through its <code>documentation</code> array.</p>
+        <section>
+            <h2>Manifest fields</h2>
+            <p><code>id</code> is globally unique, <code>title</code> is shown in navigation, <code>description</code> summarizes the page, and <code>category</code> groups it.</p>
+        </section>
+        <section>
+            <h2>Path resolution</h2>
+            <p>The <code>path</code> is relative to the plugin folder. Keep documentation assets inside that folder so the example remains portable.</p>
+        </section>
+    </main>
+</body>
+</html>

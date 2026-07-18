@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/vn_manager/vn_manager.js
+    hash: 290FABB1543C32821D95A0CBEA1987A4
+  - path: engine/modules/vn_manager/ucp_parser.js
+    hash: E54D6F962229B6127C2D5A470D648E40
+  - path: engine/modules/vn_manager/sequence_api.js
+    hash: 657CB59207EEB5ABCA86DF490C277530

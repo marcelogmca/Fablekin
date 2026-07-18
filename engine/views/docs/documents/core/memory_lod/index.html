@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory LOD: RP AI System</title>
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --surface-color: #1a1a1a;
+            --accent: #b83b5e;
+            --accent-bg: rgba(184, 59, 94, 0.15);
+            --sky: #0ea5e9;
+            --sky-bg: rgba(14, 165, 233, 0.15);
+            --amber: #f59e0b;
+            --amber-bg: rgba(245, 158, 11, 0.15);
+            --purple: #a855f7;
+            --purple-bg: rgba(168, 85, 247, 0.15);
+            --zinc-700: #333;
+            --zinc-800: #222;
+            --zinc-900: #1a1a1a;
+            --text-zinc: #a0a0a0;
+            --text-white: #e0e0e0;
+            --code-bg: #1e1e1e;
+            --code-yellow: #ffeb3b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--zinc-800);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-left h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .header-left p {
+            font-size: 0.8rem;
+            color: var(--text-zinc);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .token-display {
+            text-align: right;
+        }
+
+        .token-val {
+            font-family: monospace;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .token-label {
+            font-size: 0.7rem;
+            color: var(--text-zinc);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2.5rem;
+        }
+
+        /* Sidebar/Controls */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .phase-btn {
+            background: var(--zinc-900);
+            border: 1px solid var(--zinc-800);
+            color: var(--text-white);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .phase-btn:hover {
+            border-color: var(--accent);
+            background: rgba(184, 59, 94, 0.05);
+        }
+
+        .phase-btn.active {
+            background: var(--accent-bg);
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px rgba(184, 59, 94, 0.15);
+        }
+
+        .phase-btn .phase-num {
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: var(--text-zinc);
+            display: block;
+            margin-bottom: 0.4rem;
+            letter-spacing: 1px;
+        }
+
+        .phase-btn.active .phase-num {
+            color: var(--accent);
+        }
+
+        .phase-btn h3 {
+            margin: 0 0 0.4rem 0;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .phase-btn p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        /* Legend */
+        .legend {
+            background: rgba(30, 30, 30, 0.4);
+            border: 1px solid var(--zinc-800);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.65rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--text-zinc);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--radius-round);
+        }
+
+        /* Timeline/Content Area */
+        .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .timeline-scroll {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 15px;
+            border: 1px solid var(--zinc-800);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .ch-block {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--zinc-800);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .ch-id {
+            width: 50px;
+            font-family: monospace;
+            opacity: 0.4;
+            font-weight: bold;
+        }
+
+        .ch-label {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .ch-tokens {
+            font-family: monospace;
+            opacity: 0.4;
+            font-size: 0.75rem;
+        }
+
+        .elevate-btn {
+            background: none;
+            border: 1px solid transparent;
+            color: var(--accent);
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+        }
+
+        .elevate-btn:hover {
+            opacity: 1;
+            border-color: var(--accent);
+            background: var(--accent-bg);
+        }
+
+        /* LOD Variant Classes */
+        .lod-full { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+        .lod-summary { background: var(--sky-bg); border-color: var(--sky); color: #bae6fd; }
+        .lod-synopsis { background: var(--zinc-900); border-color: var(--zinc-800); color: #a0a0a0; }
+        .lod-arc { background: var(--purple-bg); border-color: var(--purple); color: #e9d5ff; }
+        .lod-elevated { background: var(--amber-bg); border-color: var(--amber); color: #fde68a; box-shadow: 0 0 15px rgba(245, 158, 11, 0.15); }
+
+        .arc-group {
+            background: var(--purple-bg);
+            border: 1px solid var(--purple);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .arc-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.6rem;
+        }
+
+        .arc-title {
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #d4e0ff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .arc-range {
+            font-size: 0.7rem;
+            font-family: monospace;
+            opacity: 0.6;
+        }
+
+        .arc-viz {
+            display: flex;
+            gap: 3px;
+            height: 4px;
+        }
+
+        .arc-viz-bar {
+            flex: 1;
+            background: rgba(168, 85, 247, 0.3);
+            border-radius: var(--radius-3xs, 2px);
+        }
+
+        /* Slotted RAG Section */
+        .rag-section {
+            margin-top: 1rem;
+            background: var(--zinc-900);
+            border: 1px solid var(--zinc-800);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rag-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at center, var(--accent), transparent 70%);
+            opacity: 0.03;
+            pointer-events: none;
+        }
+
+        .rag-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .memory-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--zinc-800);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            display: flex;
+            gap: 1rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .memory-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .memory-ch {
+            width: 40px;
+            height: 40px;
+            background: var(--zinc-800);
+            border: 1px solid var(--zinc-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--code-yellow);
+            border-radius: var(--radius-md);
+            flex-shrink: 0;
+        }
+
+        .memory-content p {
+            margin: 0;
+            font-size: 0.9rem;
+            font-style: italic;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .memory-tag {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeIn 0.4s cubic-bezier(0, 0, 0.2, 1) forwards; }
+
+        /* Custom Scrollbar */
+        .timeline-scroll::-webkit-scrollbar { width: 8px; }
+        .timeline-scroll::-webkit-scrollbar-track { background: transparent; }
+        .timeline-scroll::-webkit-scrollbar-thumb { background: var(--zinc-800); border-radius: var(--radius-sm); border: 2px solid var(--bg-color); }
+        .timeline-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <h1>Memory LOD System</h1>
+            <p>Advanced Narrative Context Archiving</p>
+        </div>
+        <div class="token-display">
+            <div class="token-label">Active Context Budget</div>
+            <div id="total-tokens" class="token-val">0</div>
+            <div class="token-label">Tokens in memory</div>
+        </div>
+    </header>
+
+    <div class="grid-container">
+        <!-- Dashboard Sidebar -->
+        <aside class="controls">
+            <section>
+                <div id="phase-buttons" class="controls">
+                    <!-- Buttons will be rendered here -->
+                </div>
+            </section>
+
+            <section id="elevation-budget-section" class="hidden animate-in">
+                <p style="font-size: 0.7rem; color: var(--amber); margin-bottom: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Elevation Allocation</p>
+                <div style="height: 4px; background: var(--zinc-800); border-radius: var(--radius-3xs, 2px); overflow: hidden; margin-bottom: 0.6rem;">
+                    <div id="budget-bar" style="height: 100%; background: var(--amber); width: 0%; transition: width 0.4s ease;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-family: monospace; color: var(--text-zinc);">
+                    <span>Budget Status</span>
+                    <span id="budget-count" style="color: var(--amber);">0 / 3</span>
+                </div>
+            </section>
+
+            <div class="legend animate-in">
+                <div class="legend-item"><div class="dot" style="background: var(--accent);"></div> Full-Text</div>
+                <div class="legend-item"><div class="dot" style="background: var(--sky);"></div> Summary</div>
+                <div class="legend-item"><div class="dot" style="background: var(--text-zinc);"></div> Synopsis</div>
+                <div class="legend-item"><div class="dot" style="background: var(--purple);"></div> Arc Summary</div>
+            </div>
+        </aside>
+
+        <!-- Main Visualization -->
+        <main class="timeline-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                <p style="font-size: 0.7rem; font-weight: bold; color: var(--text-zinc); text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">Context Archival Timeline</p>
+            </div>
+            
+            <div id="timeline" class="timeline-scroll">
+                <!-- Chapters will be rendered here -->
+            </div>
+
+            <!-- Slotted RAG -->
+            <section class="rag-section animate-in">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.2rem; color: var(--accent); font-weight: 700;">Slotted RAG Integration</h3>
+                        <p style="margin: 0; font-size: 0.8rem; color: var(--text-zinc);">Preserving high-priority memory fragments within synopsis slots.</p>
+                    </div>
+                </div>
+                <div class="rag-grid">
+                    <div class="memory-card">
+                        <div class="memory-ch">CH 4</div>
+                        <div class="memory-content">
+                            <div class="memory-tag">Memory Fragment</div>
+                            <p>"The character's childhood locket was mentioned here."</p>
+                        </div>
+                    </div>
+                    <div class="memory-card">
+                        <div class="memory-ch">CH 12</div>
+                        <div class="memory-content">
+                            <div class="memory-tag">Memory Fragment</div>
+                            <p>"A secret password was whispered in the alleyway."</p>
+                        </div>
+                    </div>
+                    <div class="memory-card">
+                        <div class="memory-ch">CH 18</div>
+                        <div class="memory-content">
+                            <div class="memory-tag">Memory Fragment</div>
+                            <p>"The recurring villain made their first appearance."</p>
+                        </div>
+                    </div>
+                    <div class="memory-card">
+                        <div class="memory-ch">CH 5</div>
+                        <div class="memory-content">
+                            <div class="memory-tag">Memory Fragment</div>
+                            <p>"A specific promise was made under the oak tree."</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const PHASES = [
+            { id: 1, title: "Phase 1: Basic LOD", description: "Standard sliding window with three levels of detail and basic Slotted RAG." },
+            { id: 2, title: "Phase 2: Arc System", description: "Old synopses are grouped into static Arcs to save context space." },
+            { id: 3, title: "Phase 3: Dynamic Compression", description: "Dynamic compression of synopses into Arcs based on memory presence." },
+            { id: 4, title: "Phase 4: Elevation", description: "Important old chapters can be 'elevated' back to higher detail using a budget." }
+        ];
+
+        const TOKEN_COSTS = { full: 2500, summary: 250, synopsis: 100, arc: 500 };
+        const MEMORY_INDICES = [4, 5, 12, 18, 24, 32, 38, 42];
+
+        let currentPhaseId = 1;
+        let elevatedIds = [];
+
+        function renderPhases() {
+            const container = document.getElementById('phase-buttons');
+            container.innerHTML = '';
+            PHASES.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = `phase-btn ${currentPhaseId === p.id ? 'active' : ''}`;
+                btn.onclick = () => {
+                    currentPhaseId = p.id;
+                    if (currentPhaseId !== 4) elevatedIds = [];
+                    else if (elevatedIds.length === 0) elevatedIds = [15, 28];
+                    updateUI();
+                };
+                btn.innerHTML = `
+                    <span class="phase-num">PHASE 0${p.id}</span>
+                    <h3>${p.title}</h3>
+                    <p>${p.description}</p>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function generateTimeline() {
+            const totalChapters = 50;
+            const chapters = [];
+            for (let i = 1; i <= totalChapters; i++) {
+                let type = 'synopsis';
+                let tokens = TOKEN_COSTS.synopsis;
+
+                if (i > 45) { type = 'full'; tokens = TOKEN_COSTS.full; }
+                else if (i > 35) { type = 'summary'; tokens = TOKEN_COSTS.summary; }
+
+                const isElevated = elevatedIds.includes(i);
+                chapters.push({
+                    id: i,
+                    type,
+                    tokens: isElevated ? TOKEN_COSTS.full : tokens,
+                    isElevated,
+                    hasMemories: MEMORY_INDICES.includes(i)
+                });
+            }
+
+            if (currentPhaseId < 2) return chapters;
+
+            const processed = [];
+            let currentArc = [];
+
+            const flushArc = () => {
+                if (currentArc.length > 0) {
+                    if (currentArc.length >= 3 && currentPhaseId >= 3) {
+                        processed.push({ type: 'arc_group', id: `arc-${currentArc[0].id}-${currentArc[currentArc.length-1].id}`, chapters: [...currentArc], tokens: TOKEN_COSTS.arc });
+                    } else if (currentPhaseId === 2 && currentArc.length === 10 && currentArc[0].id <= 20) {
+                        processed.push({ type: 'arc_group', id: `arc-${currentArc[0].id}-${currentArc[currentArc.length-1].id}`, chapters: [...currentArc], tokens: TOKEN_COSTS.arc });
+                    } else {
+                        processed.push(...currentArc);
+                    }
+                    currentArc = [];
+                }
+            };
+
+            for (const ch of chapters) {
+                const canBeInArc = ch.type === 'synopsis' && !ch.hasMemories && !ch.isElevated;
+                if (currentPhaseId >= 3) {
+                    if (canBeInArc) currentArc.push(ch);
+                    else { flushArc(); processed.push(ch); }
+                } else if (currentPhaseId === 2) {
+                    if (ch.id <= 20) {
+                        currentArc.push(ch);
+                        if (currentArc.length === 10) flushArc();
+                    } else { flushArc(); processed.push(ch); }
+                } else {
+                    processed.push(ch);
+                }
+            }
+            flushArc();
+            return processed;
+        }
+
+        function toggleElevation(id) {
+            if (elevatedIds.includes(id)) {
+                elevatedIds = elevatedIds.filter(i => i !== id);
+            } else {
+                if (elevatedIds.length >= 3) return;
+                elevatedIds.push(id);
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            renderPhases();
+            const timelineContainer = document.getElementById('timeline');
+            timelineContainer.innerHTML = '';
+
+            const timelineData = generateTimeline();
+            let totalTokens = 0;
+
+            timelineData.forEach(item => {
+                if (item.type === 'arc_group') {
+                    totalTokens += item.tokens;
+                    const div = document.createElement('div');
+                    div.className = 'arc-group animate-in';
+                    div.innerHTML = `
+                        <div class="arc-header">
+                            <div class="arc-title">Narrative Arc</div>
+                            <div class="arc-range">CH ${item.chapters[0].id} - ${item.chapters[item.chapters.length-1].id}</div>
+                        </div>
+                        <div class="arc-viz">
+                            ${item.chapters.map(() => '<div class="arc-viz-bar"></div>').join('')}
+                        </div>
+                        <div style="font-family: monospace; font-size: 0.65rem; text-align: right; opacity: 0.5; margin-top: 5px;">~${item.tokens} tkn</div>
+                    `;
+                    timelineContainer.appendChild(div);
+                } else {
+                    totalTokens += item.tokens;
+                    const div = document.createElement('div');
+                    let lodClass = `lod-${item.type}`;
+                    if (item.isElevated) lodClass = 'lod-elevated';
+                    
+                    div.className = `ch-block ${lodClass} animate-in`;
+                    
+                    let label = item.isElevated ? 'Elevated Full-Text' : (item.type.charAt(0).toUpperCase() + item.type.slice(1));
+                    if (label === 'Full') label = 'Full-Text';
+
+                    let memoryTag = item.hasMemories && currentPhaseId >= 3 ? '<span style="font-size: 0.6rem; background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px; margin-left: 5px; opacity: 0.8;">MEM</span>' : '';
+
+                    div.innerHTML = `
+                        <div class="ch-id">CH ${item.id}</div>
+                        <div class="ch-label">${label}${memoryTag}</div>
+                        <div class="ch-tokens">~${item.tokens} tkn</div>
+                        ${currentPhaseId === 4 && item.type !== 'full' ? `
+                            <button class="elevate-btn" onclick="toggleElevation(${item.id})">
+                                ${item.isElevated ? '▼' : '▲'}
+                            </button>
+                        ` : ''}
+                    `;
+                    timelineContainer.appendChild(div);
+                }
+            });
+
+            document.getElementById('total-tokens').innerText = totalTokens.toLocaleString();
+
+            const elevationSection = document.getElementById('elevation-budget-section');
+            if (currentPhaseId === 4) {
+                elevationSection.classList.remove('hidden');
+                document.getElementById('budget-bar').style.width = `${(elevatedIds.length / 3) * 100}%`;
+                document.getElementById('budget-count').innerText = `${elevatedIds.length} / 3`;
+            } else {
+                elevationSection.classList.add('hidden');
+            }
+        }
+
+        // Init
+        updateUI();
+    </script>
+</body>
+</html>

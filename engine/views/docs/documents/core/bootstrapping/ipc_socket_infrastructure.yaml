@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/main_process/bootstrap/socket_connection.js
+    hash: 17BBF66E7C3B00567E0A90789FC5A8A8
+  - path: engine/modules/main_process/bootstrap/socket_event_routes.js
+    hash: 3FBE149DC1E889D2C6ABFCE358908EF7
+  - path: engine/modules/main_process/bootstrap/socket_emit_helpers.js
+    hash: D501989BB5FE91DF3C9AB42BBBC9921E

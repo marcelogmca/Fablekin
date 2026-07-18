@@ -1,0 +1,11 @@
+documented_files:
+  - path: engine/views/log_viewer/renderer_logs.js
+    hash: C56BFDD8EE5B3C8BD3F7801E5CBB95F1
+  - path: engine/views/timeline/renderer_timeline.js
+    hash: 86DCB4130D5BE9B02C3740606E635579
+  - path: engine/views/memory_inspector/renderer_memory.js
+    hash: C6A273686D134519BAFD20FD7B8AE7B4
+  - path: engine/views/memory_inspector/terminal_commands.js
+    hash: AA87FA05D20195D6374C95F125260B85
+  - path: engine/views/docs/renderer_docs.js
+    hash: 139C16322EA1DF7DBB2672D91884FD29

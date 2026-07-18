@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/content_manager/modules/directives.js
+    hash: 905A81AFEFF38284A8B1D0EFE7D81AFB
+  - path: engine/views/content_manager/modules/ui_renderer.js
+    hash: DD60793352996ED667549D25BEC7D548

@@ -1,0 +1,30 @@
+You are a music director preparing reusable OST pools for a visual novel scene.
+${project_directives}
+
+${historyContext}
+Current chapter script:
+${numberedScript}
+${extraDetails}
+${backgroundSelectionSignal}
+
+${recentOSTHistory}
+VARIETY NUDGE: ${diversitySeed}
+
+Available candidate OST filenames:
+${filenames}
+
+Task:
+1. Group these filenames into 4 categories: calm, happy, sad, battle.
+2. Return 3 to 8 filenames per category.
+3. Use ONLY filenames from the provided list.
+4. Overlap between categories is allowed only if genuinely fitting.
+5. Prefer variety and avoid recently used tracks when reasonable.
+
+Output format:
+Respond with ONLY valid JSON using this schema:
+{
+  "calm": ["fileA.mp3", "fileB.mp3"],
+  "happy": ["fileC.mp3", "fileD.mp3"],
+  "sad": ["fileE.mp3", "fileF.mp3"],
+  "battle": ["fileG.mp3", "fileH.mp3"]
+}

@@ -1,0 +1,1001 @@
+const { HumanMessage, AIMessage, SystemMessage } = require("@langchain/core/messages");
+const { ChatOpenAI } = require("@langchain/openai");
+const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
+const { ChatAnthropic } = require("@langchain/anthropic");
+const { Logger, TurnLogger, readSettings, calculateCrc, sendUiNotification, repairHallucinatedLists } = require('./utils');
+const cancellation = require('./pipeline_cancellation.js');
+const { PipelineAbortError } = require('./plugin_manager/runtime/errors.js');
+const devCache = require('./memory_manager/storage/devcache');
+const JSON5 = require('json5');
+const { jsonrepair } = require('jsonrepair');
+const { extractReasoningContent } = require('./llm_response_metadata.js');
+const { resolveModelAlias: resolveModelAliasFromSettings } = require('./model_routing.js');
+
+// #region REFUSAL DETECTION
+const levenshtein = require('js-levenshtein');
+
+const REFUSAL_STRINGS = [
+  "I'm unable to fulfill",
+  "I can't fulfill",
+  "I'm sorry, but I can't help with that",
+  "I’m sorry, but I can’t help with that",
+  "I cannot fulfill",
+  "I can't help",
+  "I cannot create",
+  "I am unable to write",
+  "I'm sorry, but it goes against",
+  "I'm here to promote",
+  "I'm an artificial intelligence",
+  "can't complete your request",
+  "unable to assist",
+  "programmed to adhere",
+  "strict content",
+  "strict contente",
+  "safety guidelines",
+  "ethical guidelines"
+];
+
+/**
+ * Checks if the LLM output contains refusal phrases.
+ * This is not to jailbreak, but to prevent the system from "accepting" a refusal output and pollute the DB permanently.
+ * If the LLM call exceeds retries the system will usually handle it with graceful degradation, it's better than polluting the DB with refusals.
+ */
+function containsRefusalFuzzy(text) {
+  if (!text || typeof text !== 'string') return false;
+  // Check first 1000 characters
+  const searchArea = text.substring(0, 1000).toLowerCase();
+
+  for (const refusal of REFUSAL_STRINGS) {
+    const target = refusal.toLowerCase();
+
+    // Quick exact match first
+    if (searchArea.includes(target)) {
+      return true;
+    }
+
+    const targetLen = target.length;
+    const threshold = 0.9;
+    const maxEdits = Math.floor(targetLen * (1 - threshold));
+
+    // Sliding window for substring fuzzy match
+    for (let i = 0; i <= searchArea.length - targetLen + maxEdits; i++) {
+      for (let lenOffset = -maxEdits; lenOffset <= maxEdits; lenOffset++) {
+        const subLen = targetLen + lenOffset;
+        if (i + subLen > searchArea.length || subLen <= 0) continue;
+
+        const sub = searchArea.substring(i, i + subLen);
+        const dist = levenshtein(sub, target);
+        if (dist <= maxEdits) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+// #endregion
+
+// #region JSON REPAIR
+function extractJsonCandidate(content) {
+  const text = String(content ?? '');
+  const startBrace = text.indexOf('{');
+  const startBracket = text.indexOf('[');
+  let startIdx = -1;
+  if (startBrace !== -1 && (startBracket === -1 || startBrace < startBracket)) startIdx = startBrace;
+  else if (startBracket !== -1) startIdx = startBracket;
+
+  const endBrace = text.lastIndexOf('}');
+  const endBracket = text.lastIndexOf(']');
+  let endIdx = -1;
+  if (endBrace !== -1 && (endBracket === -1 || endBrace > endBracket)) endIdx = endBrace;
+  else if (endBracket !== -1) endIdx = endBracket;
+
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    return text.substring(startIdx, endIdx + 1);
+  }
+
+  return text;
+}
+
+/**
+ * Parses JSON-ish LLM output using the same tolerant repair cascade as callLLM.
+ * @param {string|object} input Raw LLM text, persisted JSON text, or an already parsed object.
+ * @param {object} [options]
+ * @param {boolean} [options.returnMeta=false] Return { data, method } instead of the parsed value.
+ * @returns {object|Array|any}
+ */
+function repairJson(input, options = {}) {
+  const returnMeta = options.returnMeta === true;
+
+  if (input && typeof input === 'object') {
+    return returnMeta ? { data: input, method: 'already_object' } : input;
+  }
+
+  const content = String(input ?? '');
+  if (!content.trim()) {
+    throw new Error('Cannot parse empty JSON content.');
+  }
+
+  let cleaned = extractJsonCandidate(content);
+  cleaned = repairHallucinatedLists(cleaned);
+
+  const attempts = [
+    {
+      method: 'JSON.parse',
+      parse: () => JSON.parse(cleaned)
+    },
+    {
+      method: 'JSON5',
+      parse: () => JSON5.parse(cleaned)
+    },
+    {
+      method: 'jsonrepair',
+      parse: () => JSON5.parse(jsonrepair(cleaned))
+    },
+    {
+      method: 'jsonrepair_whole_content',
+      parse: () => JSON5.parse(jsonrepair(content))
+    }
+  ];
+
+  let lastError = null;
+  for (const attempt of attempts) {
+    try {
+      const data = attempt.parse();
+      return returnMeta ? { data, method: attempt.method } : data;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw new Error(`JSON parsing failed after all attempts (JSON.parse, JSON5, jsonrepair). Final error: ${lastError?.message || 'unknown parse error'}`);
+}
+// #endregion
+
+// #region MODULE IMPORTS
+// Removed top-level settings read to ensure we always use the latest patched settings
+// const settings = readSettings(); 
+// #endregion
+
+// #region PROVIDER INSTANTIATION
+function normalizeProviderKey(providerKey) {
+  const key = String(providerKey || '').trim().toLowerCase();
+  if (key === 'nano gpt' || key === 'nano-gpt' || key === 'nanogpt' || key === 'nano_gpt') {
+    return 'nano_gpt';
+  }
+  return key;
+}
+
+function resolveCallProviderKey(routeProvider, providerOverride = null) {
+  const providerKey = normalizeProviderKey(routeProvider);
+  const overrideKey = normalizeProviderKey(providerOverride);
+  if (overrideKey && overrideKey !== providerKey) {
+    throw new Error(
+      `Resolved model route uses '${providerKey}', but '${overrideKey}' was passed as an override. ` +
+      'Provider overrides are no longer supported; configure the alias in Settings > Models & Routing.'
+    );
+  }
+  return providerKey;
+}
+
+function normalizeProviderConfig(providerConfig) {
+  if (providerConfig && typeof providerConfig === 'object' && !Array.isArray(providerConfig)) {
+    return providerConfig;
+  }
+
+  if (typeof providerConfig === 'string') {
+    const trimmed = providerConfig.trim();
+    if (!trimmed) return {};
+    try {
+      const parsed = JSON5.parse(trimmed);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch (error) {
+      Logger.warn('LLM', `Failed to parse provider config JSON string: ${error.message}`);
+      return {};
+    }
+  }
+
+  return {};
+}
+
+function getProviderConfig(settings, providerKey) {
+  const providerRegistry = settings.infrastructure?.providers || {};
+
+  if (providerKey === 'nano_gpt') {
+    return normalizeProviderConfig(
+      providerRegistry.nano_gpt
+      || providerRegistry.nanogpt
+      || providerRegistry['nano-gpt']
+      || providerRegistry['nano gpt']
+      || {}
+    );
+  }
+
+  return normalizeProviderConfig(providerRegistry[providerKey] || {});
+}
+
+function getConfiguredProviderKeys(settings) {
+  return Object.keys(settings.infrastructure?.providers || {});
+}
+
+/**
+ * Ensures that a specific provider is instantiated with the latest settings.
+ * @param {string} providerKey 
+ * @returns {object|null}
+ */
+function getProviderInstance(providerKey) {
+  const settings = readSettings();
+  const providerKeyLower = normalizeProviderKey(providerKey);
+
+  // Return cached instance if it exists
+  // if (providers[providerKeyLower]) return providers[providerKeyLower];
+
+  // We re-instantiate if called, OR we could cache. 
+  // Given that settings can change (API keys), caching might be tricky unless we invalidate.
+  // For now, let's instantiate on demand to ensure latest keys are used.
+
+  try {
+    switch (providerKeyLower) {
+      case 'openai': {
+        const config = getProviderConfig(settings, 'openai');
+        if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
+          return new ChatOpenAI({ apiKey: config.apiKey });
+        }
+        break;
+      }
+      case 'openrouter': {
+        const config = getProviderConfig(settings, 'openrouter');
+        if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
+          return new ChatOpenAI({
+            apiKey: config.apiKey,
+            configuration: {
+              baseURL: config.url,
+              defaultHeaders: {
+                'HTTP-Referer': 'http://localhost:14541',
+                'X-Title': 'Fablekin Engine',
+              },
+            },
+          });
+        }
+        break;
+      }
+      case 'gemini': {
+        const config = getProviderConfig(settings, 'gemini');
+        if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
+          const geminiRoute = Object.values(settings.infrastructure?.llm_routing?.aliases || {})
+            .find(route => normalizeProviderKey(route?.provider) === 'gemini' && String(route?.model || '').trim());
+          if (!geminiRoute) {
+            throw new Error('Gemini has no configured model alias. Configure a Gemini route in Settings > Models & Routing.');
+          }
+          return new ChatGoogleGenerativeAI({
+            apiKey: config.apiKey,
+            model: geminiRoute.model,
+          });
+        }
+        break;
+      }
+      case 'anthropic': {
+        const config = getProviderConfig(settings, 'anthropic');
+        if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
+          return new ChatAnthropic({ apiKey: config.apiKey });
+        }
+        break;
+      }
+      case 'deepseek': {
+        const config = getProviderConfig(settings, 'deepseek');
+        if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
+          return new ChatOpenAI({
+            apiKey: config.apiKey,
+            configuration: { baseURL: config.url },
+          });
+        }
+        break;
+      }
+      case 'nano_gpt': {
+        const config = getProviderConfig(settings, 'nano_gpt');
+        if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
+          return new ChatOpenAI({
+            apiKey: config.apiKey,
+            configuration: {
+              baseURL: config.url || 'https://nano-gpt.com/api/v1',
+            },
+          });
+        }
+        break;
+      }
+    }
+  } catch (err) {
+    Logger.error('LLM', `Failed to instantiate ${providerKey} client`, err);
+  }
+
+  return null;
+}
+// #endregion
+
+// #region MODEL RESOLUTION
+/**
+ * Resolves a global model alias to its provider-backed route.
+ * @param {string} modelAlias - The alias such as "veryhighendmodel".
+ * @returns {{alias: string, provider: string, model: string, subprovider?: string}}
+ */
+function resolveModelAlias(modelAlias) {
+  return resolveModelAliasFromSettings(readSettings(), modelAlias);
+}
+
+function parseSubproviderList(subprovider) {
+  return String(subprovider || '')
+    .split(',')
+    .map(slug => slug.trim())
+    .filter(Boolean);
+}
+
+function normalizeOpenRouterReasoningModel(modelName, extra = {}) {
+  const baseExtra = extra && typeof extra === 'object' && !Array.isArray(extra) ? extra : {};
+  const model = String(modelName || '');
+  const match = model.match(/:(thinking|no[_-]?thinking|nothinking)$/i);
+  if (!match) return { model, extra: baseExtra };
+
+  const marker = match[1].toLowerCase().replace(/[-_]/g, '');
+  const effort = marker === 'thinking' ? 'high' : 'none';
+  const normalizedExtra = {
+    ...baseExtra,
+    reasoning: {
+      ...(baseExtra.reasoning && typeof baseExtra.reasoning === 'object' && !Array.isArray(baseExtra.reasoning)
+        ? baseExtra.reasoning
+        : {}),
+      effort
+    }
+  };
+
+  return {
+    model: model.slice(0, -match[0].length),
+    extra: normalizedExtra,
+    reasoningMarker: match[0],
+    reasoningEffort: effort
+  };
+}
+
+function asFiniteNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function firstFiniteNumber(...values) {
+  for (const value of values) {
+    const number = asFiniteNumber(value);
+    if (number !== null) return number;
+  }
+  return null;
+}
+
+function mergePlainUsageObjects(...objects) {
+  const merged = {};
+  for (const obj of objects) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) continue;
+    Object.assign(merged, obj);
+  }
+  return Object.keys(merged).length > 0 ? merged : null;
+}
+
+function getNestedUsageValue(usage, path) {
+  if (!usage || typeof usage !== 'object') return undefined;
+  return path.reduce((current, key) => current?.[key], usage);
+}
+
+function extractReasoningTokenCount(usage) {
+  return firstFiniteNumber(
+    usage?.reasoning_tokens,
+    usage?.reasoningTokens,
+    usage?.native_tokens_reasoning,
+    usage?.nativeTokensReasoning,
+    usage?.completion_tokens_details?.reasoning_tokens,
+    usage?.completionTokensDetails?.reasoningTokens,
+    usage?.completionTokensDetails?.reasoning_tokens,
+    usage?.output_token_details?.reasoning,
+    usage?.outputTokenDetails?.reasoning,
+    getNestedUsageValue(usage, ['output_token_details', 'reasoning_tokens']),
+    getNestedUsageValue(usage, ['outputTokenDetails', 'reasoning_tokens'])
+  );
+}
+
+function extractCachedInputTokenCount(usage) {
+  return firstFiniteNumber(
+    usage?.cached_input_tokens,
+    usage?.cachedInputTokens,
+    usage?.cache_read_tokens,
+    usage?.cacheReadTokens,
+    usage?.cache_read_input_tokens,
+    usage?.prompt_tokens_details?.cached_tokens,
+    usage?.promptTokensDetails?.cachedTokens,
+    usage?.input_token_details?.cache_read,
+    usage?.input_token_details?.cached_tokens,
+    usage?.inputTokenDetails?.cacheRead,
+    usage?.inputTokenDetails?.cachedTokens,
+    usage?.cachedTokens
+  );
+}
+
+function extractCacheWriteTokenCount(usage) {
+  return firstFiniteNumber(
+    usage?.cache_write_tokens,
+    usage?.cacheWriteTokens,
+    usage?.cache_creation_input_tokens,
+    usage?.prompt_tokens_details?.cache_write_tokens,
+    usage?.promptTokensDetails?.cacheWriteTokens,
+    usage?.input_token_details?.cache_write,
+    usage?.inputTokenDetails?.cacheWrite
+  );
+}
+
+function normalizeUsageData(providerKey, response) {
+  const additionalKwargs = mergePlainUsageObjects(
+    response?.additional_kwargs,
+    response?.lc_kwargs?.additional_kwargs
+  ) || {};
+  const responseMetadata = response?.response_metadata || {};
+  const tokenUsage = mergePlainUsageObjects(
+    responseMetadata.tokenUsage,
+    responseMetadata.token_usage
+  );
+  const usageMetadata = mergePlainUsageObjects(
+    response?.usage_metadata,
+    response?.usageMetadata
+  );
+
+  const usage = mergePlainUsageObjects(
+    additionalKwargs.usage,
+    responseMetadata.usage,
+    tokenUsage,
+    usageMetadata
+  );
+
+  if (!usage) return null;
+
+  const promptTokens = firstFiniteNumber(
+    usage.prompt_tokens,
+    usage.promptTokens,
+    usage.input_tokens,
+    usage.inputTokens
+  );
+  const completionTokens = firstFiniteNumber(
+    usage.completion_tokens,
+    usage.completionTokens,
+    usage.output_tokens,
+    usage.outputTokens
+  );
+  const totalTokens = firstFiniteNumber(
+    usage.total_tokens,
+    usage.totalTokens,
+    promptTokens !== null && completionTokens !== null ? promptTokens + completionTokens : null
+  );
+  const reasoningTokens = extractReasoningTokenCount(usage);
+  const cachedInputTokens = extractCachedInputTokenCount(usage);
+  const cacheWriteTokens = extractCacheWriteTokenCount(usage);
+  const visibleCompletionTokens = firstFiniteNumber(
+    usage.visible_completion_tokens,
+    usage.visibleCompletionTokens,
+    usage.output_token_details?.visible,
+    usage.outputTokenDetails?.visible
+  );
+  const generationTokens = firstFiniteNumber(
+    usage.generation_tokens,
+    usage.generationTokens,
+    completionTokens,
+    visibleCompletionTokens !== null || reasoningTokens !== null
+      ? Math.max(visibleCompletionTokens || 0, (visibleCompletionTokens || 0) + (reasoningTokens || 0))
+      : null
+  );
+
+  const normalized = { ...usage };
+  normalized.provider = normalized.provider || providerKey;
+
+  if (promptTokens !== null) {
+    normalized.prompt_tokens = promptTokens;
+    normalized.promptTokens = promptTokens;
+  }
+  if (completionTokens !== null) {
+    normalized.completion_tokens = completionTokens;
+    normalized.completionTokens = completionTokens;
+  }
+  if (totalTokens !== null) {
+    normalized.total_tokens = totalTokens;
+    normalized.totalTokens = totalTokens;
+  }
+  if (generationTokens !== null) {
+    normalized.generation_tokens = generationTokens;
+    normalized.generationTokens = generationTokens;
+  }
+  if (reasoningTokens !== null) {
+    normalized.reasoning_tokens = reasoningTokens;
+    normalized.reasoningTokens = reasoningTokens;
+    normalized.completion_tokens_details = {
+      ...(normalized.completion_tokens_details || {}),
+      reasoning_tokens: reasoningTokens
+    };
+    normalized.output_token_details = {
+      ...(normalized.output_token_details || {}),
+      reasoning: reasoningTokens
+    };
+  }
+  if (visibleCompletionTokens !== null) {
+    normalized.visible_completion_tokens = visibleCompletionTokens;
+    normalized.visibleCompletionTokens = visibleCompletionTokens;
+  } else if (generationTokens !== null && reasoningTokens !== null) {
+    const inferredVisibleTokens = Math.max(0, generationTokens - reasoningTokens);
+    normalized.visible_completion_tokens = inferredVisibleTokens;
+    normalized.visibleCompletionTokens = inferredVisibleTokens;
+  }
+  if (cachedInputTokens !== null) {
+    normalized.cached_input_tokens = cachedInputTokens;
+    normalized.cachedInputTokens = cachedInputTokens;
+    normalized.cache_read_tokens = cachedInputTokens;
+    normalized.cacheReadTokens = cachedInputTokens;
+  }
+  if (cacheWriteTokens !== null) {
+    normalized.cache_write_tokens = cacheWriteTokens;
+    normalized.cacheWriteTokens = cacheWriteTokens;
+  }
+  if (promptTokens !== null && cachedInputTokens !== null) {
+    const boundedCachedTokens = Math.min(Math.max(0, cachedInputTokens), Math.max(0, promptTokens));
+    const boundedCacheWriteTokens = Math.min(
+      Math.max(0, cacheWriteTokens || 0),
+      Math.max(0, promptTokens - boundedCachedTokens)
+    );
+    normalized.uncached_input_tokens = Math.max(0, promptTokens - boundedCachedTokens - boundedCacheWriteTokens);
+    normalized.uncachedInputTokens = normalized.uncached_input_tokens;
+    normalized.cache_hit_ratio = promptTokens > 0 ? boundedCachedTokens / promptTokens : 0;
+    normalized.cacheHitRatio = normalized.cache_hit_ratio;
+  }
+
+  return normalized;
+}
+// #endregion
+
+// #region MASTER LLM CALL
+/**
+ * A robust, universal function for making requests to Large Language Models (LLMs) via LangChain.
+ *
+ * This is the central entry point for all LLM interactions in the system. It provides a consistent,
+ * resilient, and observable interface, abstracting away provider-specific complexities.
+ *
+ * Key Features:
+ * - **Multi-Provider Support:** Works with any configured LangChain provider (e.g., OpenRouter, Ollama).
+ * - **Custom Retry Logic:** Implements a manual retry loop with configurable attempts, providing detailed
+ *   logging for each attempt and preventing conflicts with library-level retries.
+ * - **Resilient JSON Parsing:** If `expectJson` is true, it cleans the LLM response (removing markdown fences
+ *   and conversational fluff) before attempting to parse, and retries the entire call if parsing fails.
+ * - **Flexible Regex Validation:** Can validate the raw text response against a regular expression,
+ *   retrying the call if the pattern does not match.
+ * - **Provider-Specific Routing:** Lets aliases use `subprovider` for OpenRouter and NanoGPT routing,
+ *   ensuring deterministic behavior and cost control.
+ * - **Response Sanitization:** Optionally removes CJK character artifacts from responses, configurable in settings.
+ *
+ * @param {object} params - The parameters for the LLM call.
+ * @param {Array<{role: 'system'|'user'|'assistant', content: string}>} params.messages - The message payload in standard OpenAI format.
+ * @param {string} params.model - A global model alias such as 'veryhighendmodel'. Its route selects the provider and concrete model.
+ * @param {number} [params.retries=1] - The number of times to automatically retry on API errors or validation failures. (Total attempts = retries + 1).
+ * @param {number} [params.timeout=600000] - The request timeout in milliseconds.
+ * @param {object} [params.extra={}] - Extra parameters (e.g., temperature, topP) to be passed into the `modelKwargs` of the LangChain call.
+ * @param {boolean} [params.expectJson=false] - If true, validates and parses the response as JSON.
+ * @param {RegExp} [params.validationRegex=null] - If provided, tests the string response against this regex. The call fails and retries if the regex does not match.
+ * @param {function} [params.validateFn=null] - If provided, an optional validation function that receives (content, messages) and must return true/false or throw an error.
+ * @param {number} [params.minWords=0] - Minimum number of whitespace-delimited words required in a string response. Undersized responses are retried.
+ * @returns {Promise<{content: (string|object), model: string}>} A promise that resolves to an object containing the LLM's response content (as a string, or a parsed object if expectJson is true) and the final resolved model name used for the call.
+ * @throws {Error} Throws an error if the provider is invalid, or if all retry attempts fail. The error will contain the message from the last failed attempt.
+ */
+async function callLLM({ messages, model, provider = null, retries = 1, timeout = 600000, extra = {}, expectJson = false, validationRegex = null, validateFn = null, minCharacters = 0, minWords = 0, callingModule = 'LLM', turnLogTitle = null }) {
+  const safeModule = callingModule || 'LLM';
+  const numericMinWords = Number(minWords);
+  const effectiveMinWords = Number.isFinite(numericMinWords) ? Math.max(0, Math.floor(numericMinWords)) : 0;
+  const settings = readSettings();
+  cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
+
+  const route = resolveModelAlias(model);
+  const providerKey = resolveCallProviderKey(route.provider, provider);
+  const baseModelInstance = getProviderInstance(providerKey);
+  const rawResolvedModel = route.model;
+  const openRouterReasoningModel = providerKey === 'openrouter'
+    ? normalizeOpenRouterReasoningModel(rawResolvedModel, extra)
+    : { model: rawResolvedModel, extra };
+  const resolvedModel = openRouterReasoningModel.model;
+  const normalizedExtra = openRouterReasoningModel.extra;
+  const subprovider = route.subprovider;
+  if (openRouterReasoningModel.reasoningMarker) {
+    Logger.log(
+      safeModule,
+      resolvedModel,
+      `Translated OpenRouter model suffix ${openRouterReasoningModel.reasoningMarker} to reasoning.effort=${openRouterReasoningModel.reasoningEffort}.`
+    );
+  }
+
+  if (!baseModelInstance) {
+    const providerConfig = getProviderConfig(settings, providerKey);
+    if (providerKey !== 'ollama' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
+      throw new Error(`Provider '${providerKey}' is configured but has no API key. Set it in Settings > Secrets.`);
+    }
+    const available = getConfiguredProviderKeys(settings).join(', ');
+    throw new Error(`Model alias '${model}' routes through unavailable provider '${providerKey}'. Available providers are: ${available}`);
+  }
+
+  // --- LOCAL DEV CACHE LOOKUP ---
+  let requestCrc = null;
+  if (settings.infrastructure?.enable_dev_cache) {
+    const requestFingerprint = {
+      messages,
+      provider: providerKey,
+      model: resolvedModel,
+      subprovider,
+      extra: normalizedExtra,
+      expectJson,
+      validationRegex: validationRegex ? validationRegex.source : null,
+      minCharacters
+    };
+    if (effectiveMinWords > 0) requestFingerprint.minWords = effectiveMinWords;
+    requestCrc = calculateCrc(JSON.stringify(requestFingerprint));
+    const cached = await devCache.get(requestCrc, resolvedModel);
+    if (cached) {
+      cancellation.throwIfCancelled(`LLM cache hit for ${safeModule}`);
+      Logger.log(safeModule, resolvedModel, "LOCAL DEV CACHE HIT");
+      const usageData = { is_local_cache: true, cost: 0, prompt_tokens: 0, completion_tokens: 0 };
+      TurnLogger.linkUsage(providerKey, resolvedModel, cached, usageData);
+
+      return { 
+        content: cached, 
+        model: resolvedModel, 
+        provider: providerKey,
+        usage: usageData 
+      };
+    }
+  }
+
+  const totalAttempts = retries + 1;
+
+  try {
+    for (let attempt = 1; attempt <= totalAttempts; attempt++) {
+      cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
+      try {
+        const callExtraParams = { ...normalizedExtra };
+        // --- REASONING NORMALIZATION ---
+        if (callExtraParams.reasoning) {
+          const r = callExtraParams.reasoning;
+          if (providerKey === 'openrouter') {
+            // OpenRouter supports the unified 'reasoning' object directly via modelKwargs.
+            // No changes needed to the structure, but we ensure it persists here.
+            Logger.log(safeModule, resolvedModel, `Reasoning configuration detected: ${JSON.stringify(r)}`);
+          } else if (providerKey === 'openai' || providerKey === 'deepseek') {
+            // Map to OpenAI-style reasoning_effort if present
+            if (r.effort) {
+              const effortMap = {
+                'none': 'none',
+                'minimal': 'low',
+                'low': 'low',
+                'medium': 'medium',
+                'high': 'high',
+                'xhigh': 'xhigh'
+              };
+              callExtraParams.reasoning_effort = effortMap[r.effort] || r.effort;
+            }
+            // For OpenAI/DeepSeek, we strip the internal 'reasoning' object to avoid unknown param errors
+            delete callExtraParams.reasoning;
+          }
+        }
+
+        // Let aliases use the same `subprovider` field across providers, then map it
+        // to each upstream API's routing shape.
+        const providerOrder = parseSubproviderList(subprovider);
+        if (providerOrder.length > 0) {
+          const existingProviderPrefs =
+            callExtraParams.provider && typeof callExtraParams.provider === 'object' && !Array.isArray(callExtraParams.provider)
+              ? callExtraParams.provider
+              : {};
+
+          if (providerKey === 'openrouter') {
+            callExtraParams.provider = {
+              ...existingProviderPrefs,
+              order: providerOrder,
+              allow_fallbacks: false
+            };
+            Logger.log(
+              safeModule,
+              resolvedModel,
+              `Forcing OpenRouter provider order [${providerOrder.join(', ')}] with fallbacks disabled.`
+            );
+          } else if (providerKey === 'nano_gpt') {
+            callExtraParams.provider = {
+              ...existingProviderPrefs,
+              only: providerOrder,
+              allow_fallbacks: false
+            };
+            Logger.log(
+              safeModule,
+              resolvedModel,
+              `Forcing NanoGPT provider selection [${providerOrder.join(', ')}] with fallbacks disabled.`
+            );
+          }
+        }
+
+        if (providerKey === 'openrouter') {
+          // Conditionally add usage: {include: true} for OpenRouter if setting is enabled
+          if (settings.infrastructure?.include_cache_usage) {
+            callExtraParams.usage = { include: true };
+            Logger.log(safeModule, resolvedModel, `Including usage stats for OpenRouter call.`);
+          }
+        }
+
+        Logger.log(safeModule, resolvedModel, `Making API call attempt ${attempt}/${totalAttempts} via [${providerKey}]`, 'start');
+
+        // Create a dynamic instance for this specific call to avoid mutating the base instance
+        const dynamicInstance = new baseModelInstance.constructor({
+          ...baseModelInstance.lc_kwargs, // Copy original configuration (API key, baseURL)
+          model: resolvedModel,           // Support both 'model' (Gemini, Anthropic)
+          modelName: resolvedModel,       // and 'modelName' (OpenAI)
+          modelKwargs: callExtraParams,    // Pass extra params directly to the API request body
+          ...(baseModelInstance instanceof ChatOpenAI ? { __includeRawResponse: true } : {}),
+        });
+
+        // Disable LangChain's internal retries to rely solely on our custom loop
+        const configuredModel = dynamicInstance.withConfig({ retries: 0 });
+
+        // Convert standard message format to LangChain's message objects
+        const langChainMessages = messages.map(msg => {
+          switch (msg.role) {
+            case 'system': return new SystemMessage(msg.content);
+            case 'user': return new HumanMessage(msg.content);
+            case 'assistant': return new AIMessage(msg.content);
+            default: return new HumanMessage(msg.content);
+          }
+        });
+
+        const slowThresholdMs = 90000;
+        let slowWarningTimer = setTimeout(() => {
+          Logger.log(safeModule, resolvedModel, `API call is taking longer than ${Math.round(slowThresholdMs / 1000)}s... Waiting on [${providerKey}].`);
+        }, slowThresholdMs);
+
+        let response;
+        let llmAbort = null;
+        try {
+          llmAbort = cancellation.registerLlmCall({
+            callingModule: safeModule,
+            provider: providerKey,
+            model: resolvedModel,
+            attempt
+          });
+          const invokeOptions = llmAbort.signal ? { timeout, signal: llmAbort.signal } : { timeout };
+          response = await configuredModel.invoke(langChainMessages, invokeOptions);
+          llmAbort.throwIfCancelled(`LLM response for ${safeModule}`);
+        } finally {
+          clearTimeout(slowWarningTimer);
+          if (llmAbort) llmAbort.done();
+        }
+
+        let content = response.content;
+        const reasoning = extractReasoningContent(response);
+        cancellation.throwIfCancelled(`LLM response handling for ${safeModule}`);
+
+        // Sanitize CJK artifacts from multi-language models if enabled
+        if (content && typeof content === 'string') {
+          const sanitizeEnabled = settings.infrastructure?.sanitize_responses?.enabled ?? false;
+          if (sanitizeEnabled) {
+            const sanitizerRegex = /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uffef\u4e00-\u9faf\u3400-\u4dbf]/g;
+            const originalLength = content.length;
+            content = content.replace(sanitizerRegex, '');
+            if (content.length < originalLength) {
+              Logger.log(safeModule, resolvedModel, `Sanitized ${originalLength - content.length} Asian character artifacts from response.`);
+            }
+          }
+        }
+
+        // --- Minimum Characters Validation ---
+        // We treat an empty response (length 0) as invalid by default to trigger a retry.
+        const effectiveMinChars = Math.max(minCharacters, 1);
+        if (content.length < effectiveMinChars) {
+          throw new Error(`Response too short. Expected at least ${effectiveMinChars} characters, got ${content.length}. Retrying...`);
+        }
+
+        // --- Minimum Words Validation ---
+        if (effectiveMinWords > 0) {
+          const responseWordCount = typeof content === 'string'
+            ? (content.match(/\S+/g) || []).length
+            : 0;
+          if (responseWordCount < effectiveMinWords) {
+            throw new Error(`Response too short. Expected at least ${effectiveMinWords} words, got ${responseWordCount}. Retrying...`);
+          }
+        }
+
+        // --- Refusal Detection ---
+        if (typeof content === 'string' && containsRefusalFuzzy(content)) {
+          throw new Error(`AI refusal detected in response. Retrying to avoid polluting the DB...`);
+        }
+
+        // --- JSON Validation and Parsing ---
+        let finalContent = content;
+        if (expectJson) {
+          try {
+            const parsed = repairJson(content, { returnMeta: true });
+            finalContent = parsed.data;
+            Logger.log(safeModule, resolvedModel, `[${providerKey}] JSON parsed successfully via ${parsed.method} on attempt ${attempt}.`);
+          } catch (parseError) {
+            if (validateFn) {
+              try {
+                const rawAccepted = await validateFn(content, messages);
+                if (rawAccepted !== false) {
+                  finalContent = content;
+                  Logger.warn(
+                    safeModule,
+                    resolvedModel,
+                    `[${providerKey}] JSON parsing failed, but raw text passed custom validation; accepting raw response.`
+                  );
+                } else {
+                  throw new Error('Custom validation function returned false for raw text.');
+                }
+              } catch (rawValidationError) {
+                throw new Error(`Failed to parse JSON: ${parseError.message}. Raw text validation also failed: ${rawValidationError.message}. Original content: "${content}"`);
+              }
+            } else {
+            // If parsing fails, throw an error to trigger the main catch block for a retry
+              throw new Error(`Failed to parse JSON: ${parseError.message}. Original content: "${content}"`);
+            }
+          }
+        } else if (validationRegex) {
+          // --- Regex Validation ---
+          if (validationRegex.test(content)) {
+            Logger.log(safeModule, resolvedModel, `Validation regex passed on attempt ${attempt}.`);
+          } else {
+            // If the regex doesn't match, throw an error to trigger a retry
+            throw new Error(`Validation regex failed to match. Regex: /${validationRegex.source}/. Content: "${content}"`);
+          }
+        }
+
+        // --- Custom Validation Function ---
+        if (validateFn) {
+          try {
+            const isValid = await validateFn(finalContent, messages);
+            if (isValid === false) {
+              throw new Error(`Custom validation function returned false.`);
+            }
+            Logger.log(safeModule, resolvedModel, `Custom validation function passed on attempt ${attempt}.`);
+          } catch (valError) {
+            throw new Error(`Custom validation failed: ${valError.message}`);
+          }
+        }
+
+        // If all validations pass (or none were required), save to cache if enabled
+        if (settings.infrastructure?.enable_dev_cache && requestCrc) {
+          cancellation.throwIfCancelled(`LLM cache write for ${safeModule}`);
+          if (resolvedModel) {
+            await devCache.set(requestCrc, resolvedModel, finalContent);
+          } else {
+            Logger.warn(safeModule, 'Cache', `Skipping dev cache save: resolvedModel is empty for request CRC ${requestCrc}`);
+          }
+        }
+
+        Logger.log(safeModule, resolvedModel, `[${providerKey}] call successful on attempt ${attempt}.`, 'end', { responseLength: typeof finalContent === 'string' ? finalContent.length : JSON.stringify(finalContent).length });
+
+        // Extract detailed usage information if available. LangChain and
+        // OpenAI-compatible providers expose this under slightly different
+        // shapes, so normalize it before writing turn logs.
+        let usageData = normalizeUsageData(providerKey, response);
+        if (usageData) {
+          if (usageData.cached_input_tokens !== undefined) {
+            const promptTokens = Number(usageData.prompt_tokens || 0);
+            const cachedTokens = Number(usageData.cached_input_tokens || 0);
+            const cachePercent = promptTokens > 0 ? ((cachedTokens / promptTokens) * 100).toFixed(1) : '0.0';
+            Logger.log(safeModule, resolvedModel, `Prompt cache read: ${cachedTokens} / ${promptTokens} input tokens (${cachePercent}%).`);
+          } else if (providerKey === 'openrouter' && usageData.cache_discount !== undefined) {
+            Logger.log(safeModule, resolvedModel, `OpenRouter cache discount: ${usageData.cache_discount}`);
+          }
+        }
+
+        if ((usageData || reasoning) && finalContent) {
+          TurnLogger.linkUsage(providerKey, resolvedModel, finalContent, usageData, reasoning);
+        }
+
+        return { content: finalContent, model: resolvedModel, provider: providerKey, usage: usageData, reasoning };
+
+      } catch (error) {
+        if (error instanceof PipelineAbortError) {
+          throw error;
+        }
+        if (cancellation.isCancelled()) {
+          cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
+          throw error;
+        }
+
+        Logger.error(safeModule, resolvedModel, `Attempt ${attempt}/${totalAttempts} failed: ${error.message}`, 'end');
+
+        if (attempt === totalAttempts) {
+          Logger.error(safeModule, resolvedModel, `All ${totalAttempts} attempts failed. Propagating error.`);
+          if (turnLogTitle) {
+            error.kind = error.kind || 'retry_exhausted';
+            error.attemptNumber = attempt;
+            error.retriesLeft = 0;
+            TurnLogger.logError(turnLogTitle, error, resolvedModel, providerKey);
+            error.turnLoggerLogged = true;
+          }
+          throw error; // Propagate the final error up the call stack
+        }
+
+        // Notify the user about the retry to keep the UI alive and informative
+        sendUiNotification({
+          id: `retry_${safeModule}`,
+          message: `🔄 LLM retry: ${safeModule} (Attempt ${attempt}/${totalAttempts})...`,
+          blocking: true,
+          priority: 110,
+          icon: '🔄'
+        });
+
+        // Wait before the next retry
+        await new Promise(res => setTimeout(res, 1500));
+      }
+    }
+  } finally {
+    // Ensure the retry notification is cleared regardless of outcome
+    sendUiNotification({ id: `retry_${safeModule}`, type: 'clear' });
+  }
+}
+// #endregion
+
+// #region LANGCHAIN MODEL CONFIG
+/**
+ * Creates and configures a LangChain model instance based on settings.
+ * This is the bridge between our custom LLM logic and the LangChain ecosystem.
+ *
+ * @param {object} params - The configuration parameters.
+ * @param {string} params.model - A global model alias such as 'veryhighendmodel'.
+ * @param {number} [params.retries=3] - Number of retries for the LangChain instance.
+ * @param {object} [params.extra={}] - Extra parameters like temperature, topP, etc.
+ * @returns {{model: object, resolvedModelName: string}} A configured LangChain model object and the resolved model name string.
+ */
+function getLangChainModel({ model, provider = null, retries = 3, extra = {} }) {
+  const route = resolveModelAlias(model);
+  const providerKey = route.provider;
+  if (provider && normalizeProviderKey(provider) !== providerKey) {
+    throw new Error(`Model alias '${model}' routes through '${providerKey}', not '${provider}'.`);
+  }
+  const baseModelInstance = getProviderInstance(providerKey);
+
+  if (!baseModelInstance) {
+    const available = getConfiguredProviderKeys(readSettings()).join(', ');
+    throw new Error(`Model alias '${model}' routes through unavailable provider '${providerKey}'. Available: ${available}`);
+  }
+
+  const rawResolvedModelName = route.model;
+  const openRouterReasoningModel = providerKey === 'openrouter'
+    ? normalizeOpenRouterReasoningModel(rawResolvedModelName, extra)
+    : { model: rawResolvedModelName, extra };
+  const resolvedModelName = openRouterReasoningModel.model;
+  const normalizedExtra = openRouterReasoningModel.extra;
+
+  // Create a new, dynamically configured instance for this specific call
+  const dynamicInstance = new baseModelInstance.constructor({
+    ...baseModelInstance.lc_kwargs, // Inherit base config (API key, baseURL)
+    model: resolvedModelName,       // Support both 'model' (Gemini, Anthropic)
+    modelName: resolvedModelName,   // and 'modelName' (OpenAI)
+    ...normalizedExtra,              // Apply params like temperature, max_tokens
+    ...(baseModelInstance instanceof ChatOpenAI ? { __includeRawResponse: true } : {}),
+  });
+
+  // Apply LangChain-specific configurations like retries
+  const configuredModel = dynamicInstance.withConfig({
+    retries: retries,
+  });
+
+  // Return both the model object for chaining and the name for logging
+  return { model: configuredModel, resolvedModelName };
+}
+// #endregion
+
+// #region EXPORTS
+module.exports = {
+  callLLM,
+  getLangChainModel,
+  repairJson,
+  resolveModelAlias,
+  normalizeProviderKey,
+  normalizeOpenRouterReasoningModel,
+  resolveCallProviderKey
+};
+// #endregion

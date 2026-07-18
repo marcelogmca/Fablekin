@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plugin Development 101: From Simple to Complex</title>
+    <style>
+        body {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 40px;
+            background: #101010;
+            color: #e8e8e8;
+            font-family: system-ui, sans-serif;
+            line-height: 1.65;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #f06d8f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.25rem 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 0.75rem;
+            vertical-align: top;
+        }
+
+        th {
+            background: #191919;
+        }
+
+        pre {
+            background: #181818;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        code {
+            color: #8bc8ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Plugin Development 101: From Simple to Complex</h1>
+
+    <p>This guide walks through Fablekin plugin development from the smallest useful hook to complex custom VN UX. It is meant to be the first page a plugin author reads before jumping into the detailed SDK references.</p>
+    <p>For working starting points, use the <a href="examples.md">Plugin Example Catalog</a>.</p>
+
+    <h2>1. The Five Worlds</h2>
+
+    <p>
+        Most plugin confusion comes from mixing up where code runs. Keep this model in your head and the rest of the SDK becomes much easier to reason about.
+    </p>
+
+    <table>
+        <tr>
+            <th>API</th>
+            <th>Where it exists</th>
+            <th>Use it for</th>
+            <th>Short version</th>
+        </tr>
+        <tr>
+            <td><code>tools.*</code></td>
+            <td>Backend plugin callbacks in <code>index.js</code>.</td>
+            <td>Engine work: hooks, LLM calls, prompt injection, storage, settings, jobs, files, DBs, GUI intercept registration.</td>
+            <td>Backend plugin SDK.</td>
+        </tr>
+        <tr>
+            <td><code>socket</code></td>
+            <td>Frontend and backend transport.</td>
+            <td>Event streams and request/response calls between frontend UI and backend plugin listeners.</td>
+            <td>Wire between worlds.</td>
+        </tr>
+        <tr>
+            <td><code>window.bridge</code></td>
+            <td>Plugin tabs/windows loaded through <code>plugin_bridge.js</code>.</td>
+            <td>Normal plugin view communication: <code>bridge.emit</code>, <code>bridge.request</code>, <code>bridge.on</code>, view metadata, close.</td>
+            <td>Plugin page helper.</td>
+        </tr>
+        <tr>
+            <td><code>window.VN</code></td>
+            <td>Client-side VN viewer page.</td>
+            <td>Raw live VN viewer features: camera, sprite FX, title popouts, SFX, UCP commands, global Pixi plugin runtime.</td>
+            <td>Global VN toolbox.</td>
+        </tr>
+        <tr>
+            <td><code>bridge.*</code> in intercept JS</td>
+            <td>Client-side object passed to one GUI intercept run.</td>
+            <td>Managed intercept work: resolve/reject, cleanup, timers, asset loading, current surface, backend requests, UI locks, scoped actors/backgrounds, input submit, Pixi takeover.</td>
+            <td>Props for this injected UI.</td>
+        </tr>
+    </table>
+
+    <h3><code>VN.*</code> vs intercept <code>bridge.*</code></h3>
+
+    <p>
+        <code>VN.*</code> and intercept <code>bridge.*</code> are both client-side. The difference is ownership. <code>VN.*</code> is the global toolbox for the live VN page. Intercept <code>bridge.*</code> is the scoped handle passed into the current injected UI, like props passed into a component.
+    </p>
+
+    <p>
+        Inside intercepts, prefer <code>bridge.*</code> first because it is tied to the run lifecycle and can clean itself up. Reach for <code>VN.*</code> when you intentionally need raw global viewer control that the bridge does not expose.
+    </p>
+
+    <table>
+        <tr>
+            <th>Need</th>
+            <th>Prefer</th>
+            <th>Why</th>
+        </tr>
+        <tr>
+            <td>Temporarily hide dialogue during an intercept.</td>
+            <td><code>bridge.player.ui.lock({ dialogue: "hidden" })</code></td>
+            <td>Scoped lock, auto-released on cleanup.</td>
+        </tr>
+        <tr>
+            <td>Globally hide the VN dialogue from persistent injected code.</td>
+            <td><code>VN.ui.hideDialogue()</code></td>
+            <td>Direct live viewer command.</td>
+        </tr>
+        <tr>
+            <td>Add an intercept-owned Pixi object.</td>
+            <td><code>bridge.pixi.add(displayObject)</code></td>
+            <td>Tracked and removed when the intercept ends.</td>
+        </tr>
+        <tr>
+            <td>Register a long-lived Pixi VFX plugin.</td>
+            <td><code>VN.pixiPlugins.register(...)</code></td>
+            <td>Global VN renderer lifecycle.</td>
+        </tr>
+        <tr>
+            <td>Ask backend plugin code for data from an intercept.</td>
+            <td><code>bridge.socket.request(...)</code></td>
+            <td>Uses the run-scoped socket helper.</td>
+        </tr>
+    </table>
+
+    <h2>2. Plugin Folder Anatomy</h2>
+
+    <p>
+        A plugin is a folder under <code>engine/plugins/[plugin_id]</code>. The only required file is usually <code>index.js</code>. Larger plugins split logic into files such as <code>logic.js</code>, <code>ui.html</code>, <code>ui.css</code>, and <code>ui.js</code>.
+    </p>
+
+    <pre data-lang="text">engine/plugins/my_plugin/
+  index.js
+  ui.html
+  ui.css
+  ui.js
+  assets/
+  lib/</pre>
+
+    <p>
+        The plugin manifest is the exported object from <code>index.js</code>.
+    </p>
+
+    <pre data-lang="javascript">module.exports = {
+  id: "my_plugin",
+  name: "My Plugin",
+  version: "1.0.0",
+  author: "You",
+  category: "Gameplay",
+  description: "Adds a small mechanic to the VN.",
+
+  settingsSchema: {},
+  hooks: {},
+  views: [],
+  socketListeners: {},
+  exports: {}
+};</pre>
+
+    <p>
+        Official reference plugins set <code>isExamplePlugin: true</code>. This public manifest flag keeps examples in Developer &amp; Reference without marking them as unfinished product features.
+    </p>
+
+    <h2>3. The Smallest Useful Plugin</h2>
+
+    <p>
+        Hooks are backend lifecycle entry points. They receive <code>(context, tools)</code>. Use <code>context</code> to inspect the current project/turn and <code>tools</code> to safely interact with the engine.
+    </p>
+
+    <pre data-lang="javascript">module.exports = {
+  id: "hello_turn",
+  name: "Hello Turn",
+  hooks: {
+    HOOK_TURN_START: {
+      priority: 10,
+      run: async (context, tools) => {
+        tools.logger.log(`Starting turn ${context.turnNumber}`);
+      }
+    }
+  }
+};</pre>
+
+    <p>
+        Hook priority sorts listeners inside the same hook. Lower numbers run earlier. Use priorities only when order matters.
+    </p>
+
+    <h2>4. Choosing The Right Hook</h2>
+
+    <p>
+        Pick the hook that matches the work you want to do. Avoid doing expensive work earlier than needed.
+    </p>
+
+    <table>
+        <tr>
+            <th>Goal</th>
+            <th>Good hook</th>
+            <th>Notes</th>
+        </tr>
+        <tr>
+            <td>Initialize plugin/project state.</td>
+            <td><code>HOOK_PROJECT_LOADED</code> or <code>HOOK_CHAT_DB_INITIALIZED</code></td>
+            <td>Use for setup, cache warming, or pushing initial frontend state.</td>
+        </tr>
+        <tr>
+            <td>Add context to the LLM prompt.</td>
+            <td><code>HOOK_POST_PROMPT_BUILDER</code></td>
+            <td>Inject into prompt slots after standard context is gathered.</td>
+        </tr>
+        <tr>
+            <td>Register gameplay phases for Director handoff.</td>
+            <td><code>HOOK_DIRECTOR_PRE_PROMPT</code></td>
+            <td>Use <code>tools.director.registerCapability</code>.</td>
+        </tr>
+        <tr>
+            <td>Modify VN dialogue/sequence after text parsing.</td>
+            <td><code>HOOK_POST_DIALOGUE_PROCESSING</code> or <code>HOOK_POST_VN_GENERATION</code></td>
+            <td>Use <code>tools.sequence</code> where possible.</td>
+        </tr>
+        <tr>
+            <td>Run non-critical background work.</td>
+            <td><code>HOOK_VN_BACKGROUND_TASKS</code></td>
+            <td>Good for summaries, sync, analysis, and cache generation.</td>
+        </tr>
+        <tr>
+            <td>Inject persistent frontend code into the VN viewer.</td>
+            <td><code>HOOK_FRONTEND_INJECTION</code></td>
+            <td>Return <code>{ id, html, css, js }</code>.</td>
+        </tr>
+        <tr>
+            <td>Create checkpoint UI/gameplay during VN playback.</td>
+            <td><code>HOOK_GUI_GATEKEEPER</code> or later turn hooks</td>
+            <td>Register GUI intercept descriptors with <code>tools.gui</code>.</td>
+        </tr>
+    </table>
+
+    <h2>5. Settings</h2>
+
+    <p>
+        Settings give users control and give your plugin stable defaults. Define <code>settingsSchema</code>, then read values with <code>tools.settings.getSelf()</code>.
+    </p>
+
+    <pre data-lang="javascript">module.exports = {
+  id: "mood_booster",
+  settingsSchema: {
+    enabled: {
+      type: "checkbox",
+      label: "Enable Mood Boost",
+      default: true,
+      description: "Adds a small tone hint to the writer prompt."
+    },
+    intensity: {
+      type: "slider",
+      label: "Intensity",
+      min: 0,
+      max: 10,
+      step: 1,
+      default: 4
+    }
+  },
+  hooks: {
+    HOOK_POST_PROMPT_BUILDER: {
+      run: async (context, tools) => {
+        const settings = tools.settings.getSelf();
+        if (!settings.enabled) return;
+
+        tools.prompt.inject(
+          "plugin_guidance",
+          tools.prompt.wrap("mood_booster", `Mood intensity: ${settings.intensity}.`)
+        );
+      }
+    }
+  }
+};</pre>
+
+    <h2>6. Prompt And Narrative Plugins</h2>
+
+    <p>
+        Prompt plugins should add clear, bounded instructions. Prefer <code>tools.prompt.wrap</code> so your block is easy to inspect in logs.
+    </p>
+
+    <pre data-lang="javascript">hooks: {
+  HOOK_POST_PROMPT_BUILDER: {
+    priority: 50,
+    run: async (context, tools) => {
+      const directive = tools.directives.getSelf("creative_style");
+      if (!directive) return;
+
+      tools.prompt.inject(
+        "plugin_guidance",
+        tools.prompt.wrap("my_plugin_directive", directive, {
+          turn: context.turnNumber
+        })
+      );
+    }
+  }
+}</pre>
+
+    <p>
+        Good prompt plugins are specific about when they apply. They do not dump giant static text every turn unless that text is truly needed.
+    </p>
+    <p>
+        Prompt targets define cache scope. The default <code>root</code> target feeds the immutable Director/Writer prefix. Use <code>writer</code> or <code>director</code> for private suffix content. <code>HOOK_PRE_ORCHESTRATOR</code> is the final shared-prefix mutation point; later root injections are rejected and logged.
+    </p>
+    <pre data-lang="javascript">tools.prompt.inject("dynamic_knowledge", sharedContext, "root");
+tools.prompt.inject("directives", writerOnlyInstruction, "writer");
+tools.prompt.inject("simulation", directorOnlyPlan, "director");</pre>
+
+    <h2>7. Calling LLMs</h2>
+
+    <p>
+        Use <code>tools.llm.runTask</code>, <code>tools.llm.json</code>, <code>tools.llm.withSchema</code>, and <code>tools.llm.batch</code> instead of calling model services directly. Let the user select a global model alias; the engine resolves that alias and handles logging, retries, and JSON repair. Never store a provider or add a fallback provider in plugin settings.
+    </p>
+
+    <pre data-lang="javascript">settingsSchema: {
+  model_def: {
+    type: "select",
+    label: "Analysis Model",
+    options: "llm-aliases",
+    default: { model: "lowendmodel" }
+  }
+}
+
+const model = tools.settings.getSelf().model_def?.model;
+if (!model) throw new Error("Configure an Analysis Model before using this plugin.");
+
+const result = await tools.llm.json({
+  model,
+  messages: [
+    {
+      role: "system",
+      content: "Return strict JSON only."
+    },
+    {
+      role: "user",
+      content: "Choose a scene mood: " + context.output.text
+    }
+  ],
+  params: {
+    temperature: 0.2,
+    retries: 1,
+    timeout: 30000,
+    callingModule: "Plugin:my_plugin"
+  }
+});</pre>
+
+    <p>
+        Treat an invalid or incomplete alias as a direct configuration error. For long work, use <code>tools.jobs.withJob()</code>; for short foreground work, <code>tools.status.withTask()</code> can provide useful progress feedback.
+    </p>
+
+    <pre data-lang="javascript">await tools.status.withTask("Analyzing scene mood...", async () => {
+  return tools.llm.json({ model, messages });
+});</pre>
+
+    <h3>Shared VN Background Cache</h3>
+    <p>
+        Post-turn LLM hooks can inherit the canonical VN background model and reuse the finalized scene prefix. Mark the hook with <code>useSharedVnLlm: true</code>, normally use priority 50 with parallel mode, and place only plugin-specific instructions and state in the suffix.
+    </p>
+    <pre data-lang="javascript">HOOK_VN_BACKGROUND_TASKS: {
+  priority: 50,
+  mode: "parallel",
+  useSharedVnLlm: true,
+  run: async (context, tools) =&gt; {
+    return await tools.llm.vnBackground.json({
+      msg: "My Post-Turn Extraction",
+      suffix: buildPluginSpecificPrompt(context)
+    });
+  }
+}</pre>
+    <p>
+        Add <code>allowVnBackgroundModel: true</code> to the plugin's LLM setting to expose the inheritance choice. The Summary normally leads; the first actual shared call is the fallback leader. One warm-up follower starts after the configured delay, and the remaining followers start after a second delay interval. This avoids a cache stampede without waiting for leader completion. Later priorities may use the same helper when they depend on earlier work. Selecting the shared model without using <code>tools.llm.vnBackground</code> inherits only the route, not the shared prefix.
+    </p>
+
+    <h2>8. State, Files, And Databases</h2>
+
+    <p>
+        Fablekin has several kinds of storage. Choose the smallest one that fits the lifetime of your data.
+    </p>
+
+    <table>
+        <tr>
+            <th>Need</th>
+            <th>Use</th>
+            <th>Lifetime</th>
+        </tr>
+        <tr>
+            <td>Temporary per-turn flags.</td>
+            <td><code>tools.pluginState.runtime()</code></td>
+            <td>Runtime only, not persisted as turn output.</td>
+        </tr>
+        <tr>
+            <td>Turn output annotations.</td>
+            <td><code>tools.pluginState.turn()</code> or <code>context.output</code></td>
+            <td>Current turn context.</td>
+        </tr>
+        <tr>
+            <td>Chat/turn-bound files.</td>
+            <td><code>tools.project.getChatPluginStorage()</code></td>
+            <td>Isolated by chat, turn key, and plugin id.</td>
+        </tr>
+        <tr>
+            <td>Project files.</td>
+            <td><code>tools.project.readFile</code>, <code>tools.project.glob</code></td>
+            <td>Project-root scoped.</td>
+        </tr>
+        <tr>
+            <td>Structured timeline facts.</td>
+            <td><code>tools.facts</code></td>
+            <td>Turn/interlude aware facts table.</td>
+        </tr>
+        <tr>
+            <td>Raw SQL.</td>
+            <td><code>tools.db.chat</code> or <code>tools.db.project</code></td>
+            <td>Powerful, but you own timeline safety.</td>
+        </tr>
+        <tr>
+            <td>Semantic retrieval.</td>
+            <td><code>tools.vector</code> or <code>tools.memory</code></td>
+            <td>Plugin-isolated vector stores or engine memory search.</td>
+        </tr>
+    </table>
+
+    <pre data-lang="javascript">const storage = tools.project.getChatPluginStorage();
+tools.logger.log("Writing plugin assets under", storage.relativePath);</pre>
+
+    <p>
+        For facts and database queries, avoid reading future turns after rewinds. Prefer helper APIs such as <code>tools.turns</code> and <code>tools.facts</code> when possible.
+    </p>
+
+    <h2>9. Cross-Plugin Calls</h2>
+
+    <p>
+        Exports let plugins expose backend functions to each other. Keep exported functions small, documented, and stable.
+    </p>
+
+    <pre data-lang="javascript">module.exports = {
+  id: "inventory_core",
+  exports: {
+    async getInventory(context, tools, characterName) {
+      return tools.pluginState.turn({ inventories: {} }).inventories[characterName] || [];
+    }
+  }
+};</pre>
+
+    <pre data-lang="javascript">const inventory = await tools.plugins.tryCall(
+  "inventory_core",
+  "getInventory",
+  ["Dehya"],
+  { fallback: [] }
+);</pre>
+
+    <h2>10. Plugin Views</h2>
+
+    <p>
+        Use plugin views for dashboards, editors, inspectors, configuration-heavy tools, and anything that should live outside the VN playback surface.
+    </p>
+
+    <pre data-lang="javascript">module.exports = {
+  id: "scene_dashboard",
+  views: [
+    {
+      id: "dashboard",
+      label: "Scene Dashboard",
+      entry: "ui/index.html"
+    }
+  ]
+};</pre>
+
+    <p>
+        Load <code>socket.io</code> and <code>plugin_bridge.js</code> from your HTML. Then use <code>window.bridge</code>.
+    </p>
+
+    <pre data-lang="html">&lt;script src="../../vendor/js/socket.io.min.js"&gt;&lt;/script&gt;
+&lt;script src="../../views/libs/plugin_bridge.js"&gt;&lt;/script&gt;
+&lt;script src="app.js"&gt;&lt;/script&gt;</pre>
+
+    <pre data-lang="javascript">const info = bridge.getViewInfo();
+const response = await bridge.request("scene_dashboard:get-state", {
+  turnNumber: 12
+});</pre>
+
+    <h3>Backend socket listeners</h3>
+
+    <p>
+        Frontend <code>bridge.request("event", payload)</code> waits for an <code>event-response</code> socket event. Your backend listener should emit that response.
+    </p>
+
+    <pre data-lang="javascript">module.exports = {
+  id: "scene_dashboard",
+  socketListeners: {
+    "scene_dashboard:get-state": async (data, tools) => {
+      try {
+        const turn = data?.turnNumber
+          ? await tools.turns.get(data.turnNumber)
+          : tools.turns.getCurrent();
+
+        tools.socket.emit("scene_dashboard:get-state-response", {
+          success: true,
+          turn
+        });
+      } catch (error) {
+        tools.socket.emit("scene_dashboard:get-state-response", {
+          success: false,
+          error: error.message
+        });
+      }
+    }
+  }
+};</pre>
+
+    <h2>11. Persistent VN Viewer Injection</h2>
+
+    <p>
+        Use <code>HOOK_FRONTEND_INJECTION</code> when you need code to live in the VN viewer for the whole page session: HUDs, visual effects, background listeners, custom overlays, or continuous Pixi effects.
+    </p>
+
+    <pre data-lang="javascript">const fs = require("fs/promises");
+const path = require("path");
+
+module.exports = {
+  id: "my_hud",
+  hooks: {
+    HOOK_FRONTEND_INJECTION: {
+      priority: 20,
+      run: async (context, tools) => {
+        const [html, css, js] = await Promise.all([
+          fs.readFile(path.join(__dirname, "ui.html"), "utf8"),
+          fs.readFile(path.join(__dirname, "ui.css"), "utf8"),
+          fs.readFile(path.join(__dirname, "ui.js"), "utf8")
+        ]);
+
+        return { id: "my_hud", html, css, js };
+      }
+    }
+  }
+};</pre>
+
+    <p>
+        Permanent injected JS receives a <code>context</code> object, not the intercept bridge. That context includes <code>socket</code>, <code>state</code>, <code>elements</code>, <code>PIXI</code>, Pixi handles, and path resolvers.
+    </p>
+
+    <pre data-lang="javascript">// ui.js, executed in the VN viewer.
+const { socket, PIXI, pixiApp, resolvePluginPath } = context;
+
+VN.pixiPlugins.register("my_hud_runtime", (runtime) => {
+  runtime.onSocket("execute-frontend-hook", (data) => {
+    if (data.hookName !== "HOOK_VN_GUI_READY") return;
+    socket.emit("my_hud:refresh", { turnNumber: data.turnNumber });
+  });
+
+  runtime.onDispose(() => {
+    console.log("my_hud cleaned up");
+  });
+});</pre>
+
+    <h2>12. GUI Intercepts</h2>
+
+    <p>
+        GUI intercepts are checkpoint middleware for VN playback and input flow. Use them when a plugin needs to pause, alter, or augment the player experience at a specific VN moment.
+    </p>
+
+    <p>
+        There are two renderer types:
+    </p>
+
+    <ul>
+        <li><code>renderer: "html"</code> mounts DOM HTML/CSS/JS into the VN player.</li>
+        <li><code>renderer: "pixi"</code> enters a PixiJS canvas takeover path for interactive gameplay.</li>
+    </ul>
+
+    <p>
+        Register intercept descriptors from backend hooks with <code>tools.gui</code>. Provide UI payloads from <code>exports.guiIntercepts</code>.
+    </p>
+
+    <pre data-lang="javascript">module.exports = {
+  id: "camp_choice",
+  hooks: {
+    HOOK_GUI_GATEKEEPER: {
+      priority: 10,
+      run: async (context, tools) => {
+        tools.gui.registerRuntimeIntercept({
+          interceptId: "choose_watch",
+          checkpoint: "before_user_input_show",
+          blocking: true,
+          renderer: "html",
+          replayPolicy: "once_per_turn"
+        });
+      }
+    }
+  },
+  exports: {
+    guiIntercepts: {
+      async choose_watch(context, tools, descriptor, request) {
+        return {
+          html: '&lt;button id="take-watch"&gt;Take first watch&lt;/button&gt;',
+          css: '#take-watch { padding: 12px 16px; }',
+          js: `
+            const button = document.getElementById("take-watch");
+            button.onclick = () => {
+              bridge.intercept.resolve({
+                userInputOverride: "I volunteer to take first watch."
+              });
+            };
+          `
+        };
+      }
+    }
+  }
+};</pre>
+
+    <h3>Intercept bridge basics</h3>
+
+    <p>
+        Intercept JS is executed client-side with <code>(bridge, socket, context)</code>. Use the bridge as your main API.
+    </p>
+
+    <pre data-lang="javascript">// Resolve the current intercept.
+bridge.intercept.resolve({ confirmed: true });
+
+// Read or write player input.
+const currentText = bridge.input.getText();
+bridge.input.setText(currentText + "\nI check the supplies.");
+
+// Run-scoped cleanup.
+const timer = bridge.lifecycle.setTimeout(() => {
+  bridge.log.warn("Player waited too long.");
+}, 5000);
+
+bridge.lifecycle.onDispose(() => {
+  bridge.lifecycle.clearTimeout(timer);
+});
+
+// Backend request.
+const result = await bridge.socket.request("camp_choice:save", {
+  choice: "watch"
+});</pre>
+
+    <h2>13. DOM Intercepts</h2>
+
+    <p>
+        DOM intercepts are best for menus, forms, confirm/cancel gates, companion panels, inventory selection, and lightweight custom UX. Build inside the host element you receive and clean up through <code>bridge.lifecycle</code>.
+    </p>
+
+    <pre data-lang="javascript">js: `
+  const root = bridge.surface.getRoot();
+  const lock = bridge.player.ui.lock({
+    controls: "disabled",
+    busy: "Choosing..."
+  });
+
+  bridge.lifecycle.onDispose(() => lock.release());
+
+  root.querySelector("[data-continue]").addEventListener("click", () => {
+    bridge.intercept.resolve({ ok: true });
+  });
+`</pre>
+
+    <p>
+        Avoid raw <code>window.addEventListener</code>, <code>setTimeout</code>, and raw socket listeners inside intercepts unless you also clean them up. Prefer <code>bridge.lifecycle.onWindow</code>, tracked timers, and <code>bridge.socket.on</code>.
+    </p>
+
+    <h2>14. PixiJS Intercepts And Gameplay</h2>
+
+    <p>
+        Pixi intercepts are for canvas-first custom UX: mini-games, tactical overlays, custom animation scenes, interactive maps, rhythm inputs, puzzle boards, or full takeover sequences.
+    </p>
+
+    <pre data-lang="javascript">tools.gui.registerRuntimeIntercept({
+  interceptId: "pixi_duel",
+  checkpoint: "before_first_dialogue",
+  blocking: true,
+  renderer: "pixi",
+  timeoutMs: 120000
+});</pre>
+
+    <pre data-lang="javascript">exports: {
+  guiIntercepts: {
+    async pixi_duel(context, tools) {
+      return {
+        renderer: "pixi",
+        js: `
+          const { PIXI } = context;
+          const layer = bridge.takeover.getLayer();
+          const size = bridge.pixi.getLogicalSize();
+
+          const bg = new PIXI.Graphics();
+          bg.rect(0, 0, size.width, size.height);
+          bg.fill({ color: 0x101820, alpha: 0.96 });
+          bridge.pixi.add(bg, { destroyOnDispose: true });
+
+          bg.eventMode = "static";
+          bg.cursor = "pointer";
+          bg.on("pointerdown", () => {
+            bridge.takeover.finish({ result: "clicked" });
+          });
+        `
+      };
+    }
+  }
+}</pre>
+
+    <p>
+        In Pixi takeover paths, always finish with <code>bridge.takeover.finish(...)</code> or <code>bridge.takeover.abort(...)</code>. Register tickers/listeners through the bridge or <code>VN.pixiPlugins</code> runtime and dispose them before finishing.
+    </p>
+
+    <h2>15. Assets</h2>
+
+    <p>
+        Backend code should use <code>tools.assets</code> and <code>tools.project</code> for filesystem-safe work. Intercept frontend code should use <code>bridge.assets</code> for URLs and loaders.
+    </p>
+
+    <pre data-lang="javascript">// In intercept JS.
+const url = bridge.assets.url("assets/panel.png", { scope: "plugin" });
+const data = await bridge.assets.loadJson("project://data/camp_state.json");
+const texture = await bridge.assets.loadTexture("assets/token.png", { scope: "plugin" });</pre>
+
+    <p>
+        Prefer <code>plugin://</code>, <code>project://</code>, or explicit <code>{ scope }</code> options over hand-built relative paths.
+    </p>
+
+    <h2>16. Persisted vs Runtime Intercepts</h2>
+
+    <p>
+        This choice controls whether an intercept is part of turn history.
+    </p>
+
+    <table>
+        <tr>
+            <th>Lane</th>
+            <th>Register with</th>
+            <th>Use for</th>
+        </tr>
+        <tr>
+            <td>Persisted</td>
+            <td><code>tools.gui.registerPersistentIntercept</code></td>
+            <td>Narrative-critical choices and rewind-consistent replay.</td>
+        </tr>
+        <tr>
+            <td>Runtime</td>
+            <td><code>tools.gui.registerRuntimeIntercept</code></td>
+            <td>Live-only overlays, tactical panels, one-off effects, temporary UX.</td>
+        </tr>
+    </table>
+
+    <p>
+        When in doubt, ask whether a player replaying historical turns should see the same intercept. If yes, use persisted. If no, use runtime.
+    </p>
+
+    <h2>17. Custom File Viewers</h2>
+
+    <p>
+        Plugins can add custom Content Manager modes and provide custom viewers for those files.
+    </p>
+
+    <pre data-lang="javascript">function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&amp;", "&amp;amp;")
+    .replaceAll("&lt;", "&amp;lt;")
+    .replaceAll("&gt;", "&amp;gt;")
+    .replaceAll('"', "&amp;quot;")
+    .replaceAll("'", "&amp;#039;");
+}
+
+hooks: {
+  HOOK_PROJECT_LOADED: {
+    run: async (context, tools) => {
+      tools.project.registerFileMode("world-map", {
+        label: "World Map",
+        description: "A structured map file owned by this plugin.",
+        viewer: true,
+        schema: {
+          title: { type: "text", label: "Map Title" }
+        }
+      });
+    }
+  }
+},
+exports: {
+  async provideFileView(context, tools, { modeId, filePath }) {
+    if (modeId !== "world-map") return null;
+
+    try {
+      const map = JSON.parse(await tools.project.readFile(filePath));
+      return {
+        type: "html",
+        content: "&lt;h2&gt;" + escapeHtml(map.title || "Untitled Map") + "&lt;/h2&gt;"
+      };
+    } catch (error) {
+      tools.logger.warn(`Could not render map file: ${error.message}`);
+      return { type: "text", content: "This map file is missing or malformed." };
+    }
+  }
+}</pre>
+
+    <h2>18. Safety And Good Citizenship</h2>
+
+    <ul>
+        <li>Use <code>tools.project</code> and <code>tools.assets</code> instead of raw filesystem paths when possible.</li>
+        <li>Use parameterized SQL for <code>tools.db</code> calls.</li>
+        <li>Keep hook work as small as possible on the critical generation path.</li>
+        <li>Move slow optional work to <code>HOOK_VN_BACKGROUND_TASKS</code> or <code>tools.jobs</code>.</li>
+        <li>Use <code>tools.logger</code> instead of unscoped console logging in backend code.</li>
+        <li>Use <code>bridge.lifecycle</code> for intercept timers/listeners.</li>
+        <li>Use <code>VN.pixiPlugins</code> for long-lived VN Pixi injections.</li>
+        <li>Namespace socket events with your plugin id: <code>my_plugin:event-name</code>.</li>
+        <li>Return stable response shapes: <code>{ success: true, ... }</code> or <code>{ success: false, error }</code>.</li>
+    </ul>
+
+    <h2>19. Growth Path</h2>
+
+    <table>
+        <tr>
+            <th>Plugin level</th>
+            <th>What you build</th>
+            <th>Main APIs</th>
+        </tr>
+        <tr>
+            <td>Level 1</td>
+            <td>Logging, small state reads, settings, prompt hints.</td>
+            <td><code>hooks</code>, <code>tools.settings</code>, <code>tools.prompt</code>, <code>tools.logger</code></td>
+        </tr>
+        <tr>
+            <td>Level 2</td>
+            <td>Turn analysis, facts, memories, generated metadata.</td>
+            <td><code>tools.llm</code>, <code>tools.facts</code>, <code>tools.turns</code>, <code>tools.pluginState</code></td>
+        </tr>
+        <tr>
+            <td>Level 3</td>
+            <td>Plugin dashboard or editor.</td>
+            <td><code>views</code>, <code>window.bridge</code>, <code>socketListeners</code></td>
+        </tr>
+        <tr>
+            <td>Level 4</td>
+            <td>Persistent VN HUD or VFX plugin.</td>
+            <td><code>HOOK_FRONTEND_INJECTION</code>, <code>window.VN</code>, <code>VN.pixiPlugins</code></td>
+        </tr>
+        <tr>
+            <td>Level 5</td>
+            <td>DOM intercepts, choices, custom panels.</td>
+            <td><code>tools.gui</code>, <code>exports.guiIntercepts</code>, intercept <code>bridge.*</code></td>
+        </tr>
+        <tr>
+            <td>Level 6</td>
+            <td>Interactive Pixi gameplay and canvas takeover.</td>
+            <td><code>renderer: "pixi"</code>, <code>bridge.takeover</code>, <code>bridge.pixi</code>, <code>bridge.lifecycle</code></td>
+        </tr>
+    </table>
+
+    <h2>20. Where To Go Next</h2>
+
+    <ul>
+        <li>Use the <a href="examples.md">Plugin Example Catalog</a> to choose a disabled example by difficulty and API.</li>
+        <li>Use <a href="../plugins/api_groups.md">Plugin API Groups</a> for the quick API group reference.</li>
+        <li>Use the <a href="../plugin_sdk_tooling/index.html">Plugin SDK</a> for the backend <code>tools.*</code> and GUI tooling reference.</li>
+        <li>Use the <a href="../gui_intercept_sdk/index.html">GUI Intercept SDK</a> for the full descriptor and bridge reference.</li>
+        <li>Use the <a href="../vn/visual_sdk.md">Visual SDK</a> for the raw <code>window.VN</code> viewer API.</li>
+        <li>Read <a href="../plugin_db_best_practices/index.html">Plugin Database Best Practices</a> before writing timeline-sensitive SQL.</li>
+    </ul>
+</body>
+</html>

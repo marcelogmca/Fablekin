@@ -1,0 +1,13 @@
+# GRAND PLAN WORKSHOP CALL 1: PLAN AUDIT AND DRAFT
+
+Look at the story so far and the current Grand Story Planner ledger. Decide what needs to change because it is stale, impossible, contradicted, generic, or no longer the direction the story should pursue. Then brainstorm what remains alive and where the story might head soon and later.
+
+Use exactly these top-level headings, in this order:
+
+# Plan Changes Needed
+# Remaining Live Threads
+# Short-Term Possibilities
+# Long-Term Possibilities
+# Comprehensive Draft Direction
+
+Keep it analytical and practical. Do not write scene prose. Do not produce ledger operations.

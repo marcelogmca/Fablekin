@@ -1,0 +1,74 @@
+{
+    "Balanced Adventure": {
+        "action": 6,
+        "romance": 4,
+        "slice_of_life": 5,
+        "comedy": 5,
+        "mystery": 6,
+        "drama": 6,
+        "tragedy": 2
+    },
+    "Action Comedy (Shonen)": {
+        "action": 8.5,
+        "romance": 3,
+        "slice_of_life": 4,
+        "comedy": 8,
+        "mystery": 4,
+        "drama": 5,
+        "tragedy": 1
+    },
+    "Grimdark Survival": {
+        "action": 7.5,
+        "romance": 2,
+        "slice_of_life": 1.5,
+        "comedy": 1,
+        "mystery": 7,
+        "drama": 9,
+        "tragedy": 8
+    },
+    "Noir Investigation": {
+        "action": 4,
+        "romance": 4,
+        "slice_of_life": 2,
+        "comedy": 2,
+        "mystery": 9,
+        "drama": 8,
+        "tragedy": 4
+    },
+    "Cozy Mystery": {
+        "action": 2,
+        "romance": 3,
+        "slice_of_life": 7,
+        "comedy": 6,
+        "mystery": 8,
+        "drama": 3,
+        "tragedy": 0
+    },
+    "Emotional Rollercoaster": {
+        "action": 2,
+        "romance": 8.5,
+        "slice_of_life": 4,
+        "comedy": 4,
+        "mystery": 5,
+        "drama": 9.5,
+        "tragedy": 5
+    },
+    "Romantic Slice of Life": {
+        "action": 1,
+        "romance": 8,
+        "slice_of_life": 9,
+        "comedy": 5,
+        "mystery": 2,
+        "drama": 3,
+        "tragedy": 0
+    },
+    "Test": {
+        "action": 3.3,
+        "romance": 8,
+        "slice_of_life": 3.5,
+        "comedy": 3.6,
+        "mystery": 4,
+        "drama": 1.6,
+        "tragedy": 0.9
+    }
+}

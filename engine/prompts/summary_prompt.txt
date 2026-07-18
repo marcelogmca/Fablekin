@@ -1,0 +1,6 @@
+Analyze the following text and write a concise summary of 150 to 300 words. Your summary must focus strictly on elements with long-term narrative impact. Prioritize the following:
+Core Plot Advancement: The single most important event or decision.
+Significant Relationship Shifts: Key moments of conflict, alliance, or emotional change.
+Important Discoveries: The acquisition of new items or critical information.
+Weave these points into a dense, cohesive narrative. If a direct quote is important to capture a character's emotional growth, include it.
+Output only the summary itself, with no titles or introductory phrases. Do not include any system messages or comments in the output.

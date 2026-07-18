@@ -1,0 +1,1239 @@
+{
+  "infrastructure": {
+    "theme": "default.css",
+    "enable_dev_cache": true,
+    "enable_runtime_persistence": false,
+    "debug": true,
+    "sanitize_responses": {
+      "enabled": true
+    },
+    "include_cache_usage": false,
+    "prompt_caching": {
+      "vn_pipeline": {
+        "enabled": true,
+        "follower_delay_ms": 5000
+      },
+      "vn_background": {
+        "enabled": true,
+        "follower_delay_ms": 5000
+      }
+    },
+    "logging": {
+      "retention_enabled": true,
+      "retention_days": 30
+    },
+    "providers": {
+      "openrouter": {
+        "url": "https://openrouter.ai/api/v1"
+      },
+      "openai": {},
+      "anthropic": {},
+      "deepseek": {
+        "url": "https://api.deepseek.com/v1/chat/completions"
+      },
+      "gemini": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models"
+      },
+      "ollama": {
+        "model": "nomic-embed-text",
+        "provider": "nano_gpt",
+        "base_url": "http://127.0.0.1:11434"
+      },
+      "nano_gpt": {
+        "url": "https://nano-gpt.com/api/v1"
+      }
+    },
+    "narrative_history": {
+      "full_chapters": 4,
+      "summary_chapters": 8,
+      "synopsis_chapters": -1,
+      "auto_slot_rag_old_chapters": true,
+      "max_chunks_auto_slot_rag_old_chapters": 20,
+      "memory_lod": {
+        "enabled": true,
+        "full_chapters": 2,
+        "summary_chapters": 4,
+        "enable_arc_compression": true,
+        "arc_compress_old_chapter_min_threshold": 3,
+        "arc_compress_older_chapters_than": 10,
+        "arc_rollover_grace_chapters": 5,
+        "arc_tile_chapters": 25
+      },
+      "random_slot_rag_chunks": 5
+    },
+    "static_lore": {
+      "top_k": 5
+    },
+    "model_costs": {
+      "openrouter": {
+        "deepseek/deepseek-chat-v3.1": {
+          "input": 0.2,
+          "output": 0.8,
+          "unit": "USD per 1M tokens",
+          "context": 163840
+        },
+        "zai-org/glm-5.1:thinking": {
+          "input": 0.75,
+          "output": 2.6,
+          "unit": "USD per 1M tokens",
+          "context": 202752
+        },
+        "z-ai/glm-4.7": {
+          "input": 0.43,
+          "output": 1.75,
+          "unit": "USD per 1M tokens",
+          "context": 202752
+        },
+        "deepseek/deepseek-v3.1-terminus": {
+          "input": 0.23,
+          "output": 0.9,
+          "unit": "USD per 1M tokens",
+          "context": 163840
+        },
+        "deepseek/deepseek-v3.2": {
+          "input": 0.27,
+          "output": 0.41,
+          "unit": "USD per 1M tokens",
+          "context": 163840
+        },
+        "x-ai/grok-4.1-fast": {
+          "input": 0.2,
+          "output": 0.4,
+          "unit": "USD per 1M tokens",
+          "context": 2000000
+        },
+        "qwen/qwen3-235b-a22b-thinking-2507": {
+          "input": 0.078,
+          "output": 0.312,
+          "unit": "USD per 1M tokens",
+          "context": 262144
+        },
+        "openai/gpt-oss-120b": {
+          "input": 0.072,
+          "output": 0.28,
+          "unit": "USD per 1M tokens",
+          "context": 131000
+        },
+        "deepseek/deepseek-chat-v3-0324": {
+          "input": 0.18,
+          "output": 0.72,
+          "unit": "USD per 1M tokens",
+          "context": 163840
+        },
+        "deepseek/deepseek-r1": {
+          "input": 0.18,
+          "output": 0.72,
+          "unit": "USD per 1M tokens",
+          "context": 163840
+        },
+        "meta-llama/llama-3.3-70b-instruct": {
+          "input": 0.038,
+          "output": 0.12,
+          "unit": "USD per 1M tokens",
+          "context": 131072
+        },
+        "mistralai/mistral-nemo": {
+          "input": 0.008,
+          "output": 0.05,
+          "unit": "USD per 1M tokens",
+          "context": 32000
+        },
+        "openai/gpt-oss-20b": {
+          "input": 0.02,
+          "output": 0.1,
+          "unit": "USD per 1M tokens",
+          "context": 131000
+        }
+      },
+      "nano_gpt": {
+        "deepseek/deepseek-v4-pro:thinking": {
+          "input": 0.435,
+          "output": 0.87,
+          "cache_read": 0.04,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "zai-org/glm-4.7:thinking": {
+          "input": 0.2,
+          "output": 0.8,
+          "unit": "USD per 1M tokens",
+          "context": 200000,
+          "max_output": 65500
+        },
+        "deepseek/deepseek-v4-flash:thinking": {
+          "input": 0.14,
+          "output": 0.28,
+          "cache_read": 0.03,
+          "unit": "USD per 1M tokens",
+          "context": 1000000,
+          "max_output": 384000
+        },
+        "deepseek/deepseek-v4-flash": {
+          "input": 0.14,
+          "output": 0.28,
+          "cache_read": 0.03,
+          "unit": "USD per 1M tokens",
+          "context": 1000000,
+          "max_output": 384000
+        },
+        "openai/gpt-oss-20b": {
+          "input": 0.04,
+          "output": 0.15,
+          "unit": "USD per 1M tokens",
+          "context": 128000,
+          "max_output": 16400
+        },
+        "glm-z1-air": {
+          "input": 0.07,
+          "output": 0.07,
+          "unit": "USD per 1M tokens",
+          "context": 32000,
+          "max_output": 16400
+        },
+        "sarvam-30b": {
+          "input": 0.03,
+          "output": 0.11,
+          "unit": "USD per 1M tokens",
+          "context": 65500,
+          "max_output": 4100
+        }
+      },
+      "openai": {},
+      "anthropic": {},
+      "deepseek": {},
+      "gemini": {
+        "gemini-3-flash-preview": {
+          "input": 0,
+          "output": 0,
+          "unit": "USD per 1M tokens",
+          "context": 2000000
+        }
+      }
+    },
+    "socket_host": "127.0.0.1",
+    "socket_port": 61818,
+    "socket_url": "http://127.0.0.1:61818",
+    "llm_routing": {
+      "aliases": {
+        "lowendmodel": {
+          "provider": "nano_gpt",
+          "model": "deepseek/deepseek-v4-flash",
+          "subprovider": "Deepseek"
+        },
+        "mediumendmodel": {
+          "provider": "nano_gpt",
+          "model": "deepseek/deepseek-v4-flash",
+          "subprovider": "Deepseek"
+        },
+        "highendmodel": {
+          "provider": "nano_gpt",
+          "model": "deepseek/deepseek-v4-flash:thinking",
+          "subprovider": "Deepseek"
+        },
+        "veryhighendmodel": {
+          "provider": "nano_gpt",
+          "model": "deepseek/deepseek-v4-pro:thinking",
+          "subprovider": "Deepseek"
+        }
+      }
+    }
+  },
+  "narrative_agents": {
+    "vn_background_tasks": {
+      "description": "Canonical provider and model used by cache-sharing post-turn plugin tasks.",
+      "metrics": {
+        "narrative_impact": "None",
+        "immersion": "None",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "model": "highendmodel"
+    },
+    "writer": {
+      "description": "The primary storyteller. Responsible for prose generation, scene flow, and maintaining narrative voice through the 'Main' model tier.",
+      "disabled_behavior": "This module is critical and cannot be disabled.",
+      "metrics": {
+        "narrative_impact": "Critical",
+        "immersion": "High",
+        "cost": "High",
+        "latency": "High"
+      },
+      "wizard": {
+        "include": true,
+        "order": 10,
+        "group": "Narrative",
+        "label": "Writer",
+        "recommended_enabled": true,
+        "author_note": "This is the engine's voice. Spend your best model budget here first.",
+        "enabled_note": "The Writer creates the prose, scene flow, and immediate narrative response.",
+        "disabled_note": "The Writer cannot be disabled.",
+        "settings_note": "Tune provider and model routing in Settings once your first project is running.",
+        "toggleable": false
+      },
+      "model": "veryhighendmodel",
+      "retries": 4,
+      "timeout": 360000,
+      "enable_chain_of_thought": false
+    },
+    "summarizer": {
+      "description": "Historical memory specialist. Compresses past scenes into concise summaries and keeps character sheets updated to maintain long-term consistency.",
+      "disabled_behavior": "Long-term memory updates are paused. Past turns will not be condensed, and character profile updates will be deferred.",
+      "metrics": {
+        "narrative_impact": "High",
+        "immersion": "None",
+        "cost": "Low",
+        "latency": "Medium"
+      },
+      "wizard": {
+        "include": true,
+        "order": 30,
+        "group": "Memory",
+        "label": "Summarizer",
+        "recommended_enabled": true,
+        "author_note": "Keep this on for long campaigns. It is one of the quiet systems that makes Fablekin feel less forgetful.",
+        "enabled_note": "Past scenes are condensed into summaries and synopses for future context.",
+        "disabled_note": "The story still runs, but long-term memory artifacts stop being refreshed.",
+        "settings_note": "Use cheaper aliases here once your main Writer and Director are stable.",
+        "toggleable": true
+      },
+      "summary_model": "mediumendmodel",
+      "synopsis_model": "mediumendmodel",
+      "arc_compression_model": "mediumendmodel",
+      "timeout": 360000,
+      "retries": 4
+    },
+    "director": {
+      "description": "High-level scene orchestrator. Analyzes the current context to provide specific narrative directives and guidance to the Writer before generation begins.",
+      "disabled_behavior": "The engine will skip strategic scene review. The Writer will generate content directly from the history and active memory blocks without additional guidance.",
+      "metrics": {
+        "narrative_impact": "High",
+        "immersion": "None",
+        "cost": "High",
+        "latency": "High"
+      },
+      "wizard": {
+        "include": true,
+        "order": 20,
+        "group": "Narrative",
+        "label": "Director",
+        "recommended_enabled": true,
+        "author_note": "Recommended. The Director is what makes the Writer feel like it has a plan instead of only reacting.",
+        "enabled_note": "Each turn receives strategic guidance before prose generation.",
+        "disabled_note": "The Writer works directly from memory and lore without a planning pass.",
+        "settings_note": "Use a fast high-end model if latency becomes annoying.",
+        "toggleable": true
+      },
+      "model": "highendmodel",
+      "chapters_to_review": 1,
+      "enabled": true,
+      "direct_plugins_enabled": false,
+      "enable_scene_boundary_strategy": true,
+      "retries": 0,
+      "timeout": 120000,
+      "analysis_timeout": 120000,
+      "ledger_timeout": 60000
+    },
+    "asset_selector": {
+      "description": "Visual and auditory curator. Evaluates the scene content to select appropriate backgrounds, sprites, and music (OST) tracks from your asset database.",
+      "disabled_behavior": "Automated asset curation is bypassed. The scene will maintain its current state or use hardcoded defaults for music and backgrounds.",
+      "metrics": {
+        "narrative_impact": "None",
+        "immersion": "High",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 60,
+        "group": "Visual Novel",
+        "label": "Asset Selector",
+        "recommended_enabled": true,
+        "author_note": "Keep this on if you have backgrounds and music. It is a cheap way to make scenes feel staged.",
+        "enabled_note": "The engine chooses backgrounds and OST tracks based on the scene.",
+        "disabled_note": "Automated background and music selection are skipped.",
+        "settings_note": "Fine-tune OST and background behavior in the Engine Management settings.",
+        "toggleable": true
+      },
+      "enable_ost": true,
+      "enable_background": true,
+      "background_model": "mediumendmodel",
+      "ost_model": "mediumendmodel",
+      "background_params": {
+        "max_tokens": 500,
+        "temperature": 0.3,
+        "retries": 3,
+        "timeout": 120000
+      },
+      "ost_params": {
+        "max_tokens": 1000,
+        "temperature": 0.3,
+        "retries": 2,
+        "timeout": 120000
+      }
+    },
+    "emotion_classifier": {
+      "description": "Micro-expression specialist. Analyzes dialogue lines to determine the most fitting character moods for sprite selection and gaze direction.",
+      "disabled_behavior": "Mood classification is bypassed. All characters will default to a 'neutral' emotional state for sprite selection and TTS generation.",
+      "metrics": {
+        "narrative_impact": "None",
+        "immersion": "High",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 70,
+        "group": "Visual Novel",
+        "label": "Emotion Classifier",
+        "recommended_enabled": true,
+        "author_note": "Recommended for VN-style play. Sprite moods are a big part of the scene feeling alive.",
+        "enabled_note": "Dialogue lines receive emotion labels for sprite and TTS routing.",
+        "disabled_note": "Characters fall back to neutral presentation more often.",
+        "settings_note": "If this gets expensive, move it to a cheaper fast model before turning it off.",
+        "toggleable": true
+      },
+      "enabled": true,
+      "model": "highendmodel",
+      "llm_params": {
+        "max_tokens": 5000,
+        "temperature": 0.3
+      },
+      "retries": 3,
+      "timeout": 120000,
+      "moods": [
+        "neutral",
+        "happy",
+        "sad",
+        "angry",
+        "annoyed",
+        "surprised",
+        "fearful",
+        "caring",
+        "injured"
+      ]
+    },
+    "dialogue_processor": {
+      "description": "Syntactic refinement engine. Processes raw LLM output to clean dialogue tags, format text, and prepare content for the VN viewer interface if the Writer does not already do so.",
+      "disabled_behavior": "Syntactic cleanup is disabled. Raw LLM output is used directly, which might include unformatted dialogue tags or thinking blocks.",
+      "metrics": {
+        "narrative_impact": "Low",
+        "immersion": "High",
+        "cost": "Medium",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 50,
+        "group": "Narrative",
+        "label": "Dialogue Processor",
+        "recommended_enabled": true,
+        "author_note": "Useful safety net. It keeps raw model output from leaking awkward formatting into the VN layer.",
+        "enabled_note": "Generated text is cleaned and prepared for the viewer pipeline.",
+        "disabled_note": "Raw Writer output is used more directly.",
+        "settings_note": "Keep it fast; this should not be one of the expensive calls.",
+        "toggleable": true
+      },
+      "model": "highendmodel",
+      "llm_params": {
+        "max_tokens": 10000,
+        "temperature": 0.3
+      },
+      "enabled": true,
+      "retries": 4,
+      "timeout": 120000
+    },
+    "memory_retriever": {
+      "description": "Cognitive RAG specialist. Generates intelligent search queries to retrieve relevant lore chunks and historical facts from the vector database.",
+      "disabled_behavior": "Automated RAG lookups are disabled. The engine will rely only on the immediate context window without searching the lore database.",
+      "metrics": {
+        "narrative_impact": "High",
+        "immersion": "None",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 40,
+        "group": "Memory",
+        "label": "Memory Retriever",
+        "recommended_enabled": true,
+        "author_note": "Recommended once Ollama is reachable. This is the difference between context window memory and project memory.",
+        "enabled_note": "The engine searches lore and old story chunks for relevant details.",
+        "disabled_note": "Automatic RAG lookups are skipped.",
+        "settings_note": "If retrieval feels noisy, tune Memory Management rather than disabling this first.",
+        "toggleable": true
+      },
+      "model": "highendmodel",
+      "retries": 2,
+      "timeout": 60000,
+      "llm_params": {
+        "temperature": 0.1,
+        "max_tokens": 500
+      },
+      "verbose": false
+    },
+    "gaze_director": {
+      "description": "Cinematography assistant. Determines where characters should be looking during dialogue based on the active speaker and scene dynamics. Only active if there are directional sprites.",
+      "disabled_behavior": "Gaze direction analysis is skipped. Characters will maintain their current rotation or default to 'front' facing during all dialogue.",
+      "metrics": {
+        "narrative_impact": "None",
+        "immersion": "Medium",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 80,
+        "group": "Visual Novel",
+        "label": "Gaze Director",
+        "recommended_enabled": true,
+        "author_note": "Nice when your sprites support direction. Harmless but less important if your assets are mostly front-facing.",
+        "enabled_note": "Characters can look toward speakers or scene targets.",
+        "disabled_note": "Characters keep default or existing facing directions.",
+        "settings_note": "Only matters when directional sprite assets exist.",
+        "toggleable": true
+      },
+      "enabled": true,
+      "model": "highendmodel",
+      "retries": 3,
+      "timeout": 120000
+    },
+    "sprite_variant_orchestrator": {
+      "description": "Visual continuity specialist. Analyzes scene context to select the most appropriate character sprite variants (costumes, forms, etc.) based on the narrative situation. Only active if there are variant sprites.",
+      "disabled_behavior": "Variant selection is disabled. Characters will always use their 'default' sprite configuration regardless of the narrative context.",
+      "metrics": {
+        "narrative_impact": "None",
+        "immersion": "High",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 90,
+        "group": "Visual Novel",
+        "label": "Sprite Variant Orchestrator",
+        "recommended_enabled": true,
+        "author_note": "Keep this on if characters have outfits, forms, or scene-specific variants.",
+        "enabled_note": "The engine chooses appropriate sprite variants based on context.",
+        "disabled_note": "Characters stay on default variants unless another system changes them.",
+        "settings_note": "This is most valuable after your sprite library grows.",
+        "toggleable": true
+      },
+      "enabled": true,
+      "model": "highendmodel",
+      "retries": 3,
+      "timeout": 120000
+    },
+    "scene_phase_classifier": {
+      "description": "Post-writer gameplay handoff classifier. Evaluates the generated chapter and decides whether a registered gameplay capability should take over the unresolved scene boundary.",
+      "disabled_behavior": "Gameplay handoff confirmation is skipped. Scene phase remains NORMAL unless other modules set it explicitly.",
+      "metrics": {
+        "narrative_impact": "High",
+        "immersion": "High",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 100,
+        "group": "Gameplay",
+        "label": "Scene Phase Classifier",
+        "recommended_enabled": true,
+        "author_note": "Keep this on if you use gameplay or interlude plugins. It helps decide when the story should hand off.",
+        "enabled_note": "Generated chapters can trigger registered gameplay or interlude capabilities.",
+        "disabled_note": "Scene phase remains normal unless another module sets it explicitly.",
+        "settings_note": "Tune confidence only after seeing real handoff behavior.",
+        "toggleable": true
+      },
+      "enabled": true,
+      "model": "highendmodel",
+      "retries": 2,
+      "timeout": 90000,
+      "min_confidence": 0.62,
+      "require_director_handoff_window": true,
+      "llm_params": {
+        "temperature": 0.1,
+        "max_tokens": 500
+      }
+    },
+    "gender_classifier": {
+      "description": "Utility auditor. Identifies character gender for linguistic agreement and specialized asset routing (e.g., TTS voice gender).",
+      "disabled_behavior": "Gender detection is skipped. The system will use default linguistic agreements and generic voice routing for unknown characters.",
+      "metrics": {
+        "narrative_impact": "Medium",
+        "immersion": "Low",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 110,
+        "group": "Characters",
+        "label": "Gender Classifier",
+        "recommended_enabled": true,
+        "author_note": "Small helper. It mostly improves generic sprite and voice routing for unknown characters.",
+        "enabled_note": "Unknown characters can receive gender-aware fallback routing.",
+        "disabled_note": "Unknown characters use neutral/default routing unless facts already exist.",
+        "settings_note": "This should usually stay on because it is cheap.",
+        "toggleable": true
+      },
+      "model": "lowendmodel",
+      "enabled": true,
+      "retries": 2,
+      "timeout": 120000
+    }
+  },
+  "visual_novel": {
+    "settings": {
+      "audio": {
+        "ost_volume": 0.47,
+        "tts_volume": 0.61,
+        "bgm_sfx_volume": 0.15,
+        "sfx_volume": 0.23,
+        "mute_audio_during_generation": true,
+        "play_sound_on_ready": true,
+        "disable_ost_during_loading": true
+      },
+      "visuals": {
+        "sprite_offset": 203,
+        "dialogue_width": 100,
+        "dialogue_height": 220,
+        "toolbar_vertical_offset": 126,
+        "panel_transparency": 0.25,
+        "panel_blur": 10,
+        "font_size_multiplier": 1,
+        "sprite_size_multiplier": 1,
+        "sprite_horizontal_padding": 0,
+        "max_sprite_slots": 5,
+        "foreground_background_blur_strength": 5,
+        "write_speed": 25,
+        "sprite_morph_method": "motion_blend",
+        "show_chapter_intro": true,
+        "hide_main_sprites": false,
+        "spatial_stage_auto_sidecar_debug": false
+      },
+      "interface": {
+        "text_alignment": "center",
+        "auto_play_delay": 1450,
+        "show_controls": true,
+        "show_music_player": false,
+        "show_ost_popup": true,
+        "show_dialogue_index_indicator": true,
+        "plugin_manager_view_mode": "showcase",
+        "blink_taskbar_on_ready": true,
+        "settings_popout_transparency": 1,
+        "modal_overlay_opacity": 0,
+        "experimental_plugins_expanded": true,
+        "plugin_search_query": "",
+        "plugin_status_filter": "all",
+        "plugin_category_filter": "all",
+        "world_location_hud_open": true
+      },
+      "performance": {
+        "max_fps": 60,
+        "sprite_texture_direct_bitmap_loader": true,
+        "sprite_texture_cache_limit": 0,
+        "sprite_texture_unload_delay_ms": 1500,
+        "sprite_texture_vn_lookahead": true,
+        "sprite_texture_sequence_preload": false,
+        "sprite_shadows": {
+          "alpha_threshold": 24,
+          "point_spacing": 3,
+          "max_source_size": 640,
+          "contact_search_band": 0.05,
+          "contact_relief_band": 0.05,
+          "contact_prominence": 10,
+          "contact_feather_columns": 12,
+          "contact_fade_height": 0.32,
+          "max_correction": 170
+        }
+      },
+      "debug": {
+        "director_mode": false,
+        "feedback_mode": false,
+        "debug_viewport": false,
+        "show_system_console": true
+      },
+      "macros": [
+        {
+          "id": "def-help",
+          "name": "Help",
+          "command": "/help"
+        },
+        {
+          "id": "def-tree",
+          "name": "Turn Tree",
+          "command": "/turncontext tree"
+        },
+        {
+          "id": "def-plugins",
+          "name": "Plugins List",
+          "command": "/plugins list"
+        },
+        {
+          "id": "def-hooks",
+          "name": "Hook Registry",
+          "command": "/plugins hooks"
+        }
+      ],
+      "commandMacros": [
+        {
+          "id": "def-help",
+          "name": "Help",
+          "command": "/help"
+        },
+        {
+          "id": "def-tree",
+          "name": "Turn Tree",
+          "command": "/turncontext tree"
+        },
+        {
+          "id": "def-plugins",
+          "name": "Plugins List",
+          "command": "/plugins list"
+        },
+        {
+          "id": "def-hooks",
+          "name": "Hook Registry",
+          "command": "/plugins hooks"
+        },
+        {
+          "id": "1776727948503",
+          "name": "Fulltext",
+          "command": "/turncontext show output.fulltext"
+        },
+        {
+          "id": "1776727965159",
+          "name": "User Input",
+          "command": "/turncontext show input.userprompt"
+        },
+        {
+          "id": "1781780603761",
+          "name": "Location route",
+          "command": "/location route 672 -900 680 -640 --routes 3 --rebuild"
+        },
+        {
+          "id": "1781785258319",
+          "name": "Location test",
+          "command": "/location route Voll Vorig --routes 3 --rebuild"
+        }
+      ],
+      "hud_panel_visibility_by_project": {
+        "DehyaCandace": {
+          "world_location_tracker": true,
+          "quest_tracker": true,
+          "character_sheets": false,
+          "relationships": false,
+          "world_clock": true,
+          "world_environment": true,
+          "world_status": true,
+          "inventory": true
+        }
+      }
+    }
+  },
+  "plugins": {
+    "relationship_tracker": {
+      "enable_rolling_ledger": true,
+      "ledger_consolidation_interval": 3,
+      "ledger_consolidation_model_def": {
+        "inherit": "vn_background"
+      },
+      "pacing_multiplier": 1.5,
+      "generator_model_def": {
+        "model": "highendmodel"
+      },
+      "extractor_model_def": {
+        "inherit": "vn_background"
+      }
+    },
+    "personality_tracker": {
+      "initial_model_def": {
+        "model": "veryhighendmodel"
+      },
+      "change_model_def": {
+        "inherit": "vn_background"
+      },
+      "retries": 1,
+      "timeout": 120000,
+      "significance_threshold": 25,
+      "enable_rolling_ledger": true,
+      "ledger_consolidation_interval": 3,
+      "ledger_consolidation_model_def": {
+        "inherit": "vn_background"
+      }
+    },
+    "gm_dc_gameplay": {
+      "model": "highendmodel",
+      "retries": 2,
+      "timeout": 60000
+    },
+    "grand_story_planner": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "planner_strategy_mode": "single_call",
+      "classifier_model_def": {
+        "model": "highendmodel"
+      },
+      "classifier_retries": 1,
+      "classifier_timeout": 90000,
+      "retries": 3,
+      "timeout": 360000,
+      "update_interval": 6,
+      "story_research_max_calls": 6,
+      "media_research_max_calls": 5,
+      "writers_room_rounds": 1,
+      "force_update": false,
+      "planner_context_depth": 10,
+      "planner_context_turn_chars": 520,
+      "planner_context_max_chars": 7000,
+      "architect_integration": true,
+      "architect_reference_limit": 4,
+      "director_plan_injection_mode": "focused_brief",
+      "director_brief_item_limit": 6,
+      "director_brief_max_chars": 3800,
+      "writer_editorial_max_chars": 2800
+    },
+    "tts_core": {
+      "tts_narrator_activated": false,
+      "tts_api_endpoint": "http://127.0.0.1:8000/generate",
+      "name_max_words": 3,
+      "enable_verb_detection": true,
+      "custom_moods": "neutral, happy, sad, angry, surprised, fearful, caring"
+    },
+    "agentic_lore_researcher": {
+      "enable_lore": true,
+      "lore_effort": "medium",
+      "enable_kg": true,
+      "kg_effort": "medium",
+      "enable_history": true,
+      "history_effort": "medium",
+      "scout_model_def": {
+        "model": "mediumendmodel"
+      },
+      "auditor_model_def": {
+        "model": "lowendmodel"
+      },
+      "synth_model_def": {
+        "model": "mediumendmodel"
+      }
+    },
+    "world_location_tracker": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "relevant_location_limit": 15,
+      "story_mentioned_location_recent_chapters": 6,
+      "story_mentioned_location_limit": 8,
+      "hud_minimap_shape": "Circle",
+      "distance_unit": "kilometres",
+      "auto_navigation_planning_enabled": true,
+      "simple_route_max_map_span_percent": 5,
+      "pathfinding_max_wild_stretch_km": 100,
+      "travel_animation_enabled": true,
+      "travel_min_distance_km": 25,
+      "travel_max_party_sprites": 5,
+      "travel_arrival_hold_ms": 1200
+    },
+    "world_state_tracker": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "dawn_start": 5,
+      "day_start": 9,
+      "dusk_start": 18,
+      "night_start": 21
+    },
+    "character_sheets": {
+      "track_major_personality": false,
+      "track_major_relationships": "Core Anchored",
+      "model_def": {
+        "inherit": "vn_background"
+      },
+      "retries": 4,
+      "timeout": 360000,
+      "min_characters": 250,
+      "update_frequency": 5,
+      "capsule_detail_level": "Medium",
+      "light_capsule_limit": 6,
+      "enable_capsule_auditor": true,
+      "auditor_frequency": 6,
+      "auditor_model": {
+        "model": "highendmodel"
+      }
+    },
+    "gender_tracker": {
+      "model_def": {
+        "model": "lowendmodel"
+      },
+      "retries": 3,
+      "timeout": 15000,
+      "temperature": 0.1,
+      "max_tokens": 50
+    },
+    "knowledge_graph": {
+      "entity_extractor": {
+        "model": "highendmodel",
+        "llm_params": {
+          "temperature": 0,
+          "max_tokens": 512
+        },
+        "enabled": true,
+        "retries": 2,
+        "timeout": 60000
+      },
+      "extractor": {
+        "model": "highendmodel",
+        "llm_params": {
+          "temperature": 0.2,
+          "max_tokens": 2048
+        },
+        "enabled": true,
+        "retries": 3,
+        "timeout": 120000
+      },
+      "librarian_model_def": {
+        "model": "mediumendmodel"
+      },
+      "energy_budget": 100,
+      "anchored_threshold": 3,
+      "recency_threshold": 10
+    },
+    "player_summarizer": {
+      "model_def": {
+        "model": "veryhighendmodel"
+      },
+      "retries": 4,
+      "timeout": 360000,
+      "temperature": 0.7
+    },
+    "character_classifier": {
+      "model_def": {
+        "inherit": "vn_background"
+      },
+      "retries": 3,
+      "timeout": 20000,
+      "temperature": 0.1,
+      "low_confidence_threshold": 30,
+      "enable_periodic_cleanup": true,
+      "cleanup_frequency": 5,
+      "cleanup_candidate_limit": 10,
+      "cleanup_min_confidence": 0.75,
+      "cleanup_min_turns_between_reaudit": 3
+    },
+    "cg_generator": {
+      "enableTurnCgGeneration": false,
+      "runOnInterludes": true,
+      "cgCount": 1,
+      "imageProvider": "nanogpt",
+      "imageResolution": "4K",
+      "expensiveModel": "gpt-image-2",
+      "mediumModel": "nano-banana-2-fast",
+      "budgetModel": "rev-animated",
+      "preferredModelTier": "expensive",
+      "expensiveModelPricePerImage": 0.066,
+      "mediumModelPricePerImage": 0.045,
+      "budgetModelPricePerImage": 0.005,
+      "nanoGptSize": "",
+      "nanoGptTimeoutMs": 240000,
+      "nanoGptAttemptsPerSize": 2,
+      "comfyUiBaseUrl": "http://127.0.0.1:8188",
+      "comfyUiWorkflowFile": "",
+      "comfyUiPromptNodeId": "6",
+      "comfyUiNegativePromptNodeId": "7",
+      "comfyUiNegativePrompt": "",
+      "comfyUiSeedNodeId": "3",
+      "comfyUiOutputNodeId": "",
+      "comfyUiUploadInputs": true,
+      "comfyUiInputImageNodeIds": "",
+      "comfyUiUploadSubfolder": "",
+      "modelDef": {
+        "model": "highendmodel"
+      },
+      "minDurationPercentage": 20,
+      "maxDurationPercentage": 30,
+      "smartContinuity": false,
+      "imageInstructions": ""
+    },
+    "efficiency_manager": {
+      "model": "mediumendmodel",
+      "retries": 2,
+      "timeout": 30000,
+      "llm_params": {
+        "temperature": 0.1,
+        "max_tokens": 200
+      },
+      "failsafe_threshold": 5
+    },
+    "narrative_pacing": {
+      "min_turns_threshold": 2,
+      "scoring_model": {
+        "model": "mediumendmodel"
+      }
+    },
+    "sprite_shading": {
+      "enable_blurred_edge": false,
+      "blurred_edge_blur": 5,
+      "blurred_edge_opacity": 1,
+      "enable_ambient_lighting": true,
+      "ambient_lighting_opacity": 0.2,
+      "ambient_lighting_saturation": 200,
+      "enable_shadow_shading": true,
+      "shadow_shading_opacity": 0.25,
+      "shadow_shading_contrast": 1000,
+      "shadow_offset_x": 30,
+      "shadow_offset_y": 30,
+      "enable_outline": false,
+      "outline_thickness": 1,
+      "outline_color": "#000000",
+      "outline_color_matching": true,
+      "enable_debug_pips": false,
+      "enable_breathing": true,
+      "breathing_intensity": 0.003,
+      "breathing_speed": 6,
+      "breathing_randomness": 40
+    },
+    "vn_pixijs_vfx": {
+      "force_rain": false,
+      "force_thunder": false,
+      "force_clouds": false,
+      "force_fog": false,
+      "force_desert_dust": false,
+      "force_snow": false,
+      "force_embers": false,
+      "force_magic_dust": false,
+      "force_leaves": false,
+      "force_shake": false,
+      "force_wobble": false,
+      "force_vignette": false,
+      "force_bloom": false,
+      "force_crt": false,
+      "force_ascii": false,
+      "force_cross_hatch": false,
+      "force_godray": false,
+      "force_grayscale": false,
+      "force_motion_blur": false,
+      "force_old_film": false,
+      "force_pixelate": false,
+      "force_shockwave": false,
+      "force_blood": false,
+      "force_glitch": false,
+      "force_fade_to_black": false
+    },
+    "vn_cinematographer": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "skip_reasoning": false,
+      "standalone_camera_llm": true,
+      "enable_camera_commands": true,
+      "enable_composition_commands": true,
+      "enable_animation_commands": true,
+      "enable_ost_commands": true,
+      "enable_cast_commands": true,
+      "enable_emote_commands": true,
+      "enable_title_commands": true,
+      "enable_vfx_commands": true,
+      "enable_sfx_commands": true,
+      "auto_wobble_on_zoom": true,
+      "comp_auto_zoom_cooldown_lines": 3,
+      "auto_end_harsh_effects": true,
+      "harsh_effect_limit": 5
+    },
+    "lore_book": {
+      "max_tokens": 2000,
+      "max_recursive_depth": 2,
+      "default_scan_depth": 3
+    },
+    "toolkit_demo": {
+      "demo_abortion": true,
+      "log_token_counts": true
+    },
+    "vn_hud": {},
+    "vn_alive_bg": {
+      "enable_depth_bloom": false,
+      "enable_parallax": false,
+      "enable_color_bleed": false,
+      "enable_flicker": false,
+      "bloom_threshold": "0.8",
+      "bloom_intensity": "0.6",
+      "parallax_strength": "0.016",
+      "parallax_motion_scale": "0.2",
+      "parallax_idle_motion": "0.2",
+      "parallax_follow_speed": "8.5",
+      "parallax_invert_depth": false,
+      "parallax_depth_cutoff": "0.35",
+      "parallax_depth_feather": "0.08",
+      "gi_intensity": "0.05",
+      "gi_radius": "6",
+      "flicker_strength": "0.05",
+      "warmth_bias": "0.5",
+      "enable_persistent_depth_cache": true,
+      "force_enable": false,
+      "show_parallax_sample_debug": false
+    },
+    "craft_guide": {
+      "model_def": {
+        "model": "mediumendmodel"
+      },
+      "max_cooldown": 5,
+      "context_depth": 3,
+      "enable_quality_mode": false
+    },
+    "narrative_architect": {
+      "model_def": {
+        "inherit": "vn_background"
+      },
+      "max_cooldown": 5,
+      "context_depth": 3,
+      "enable_quality_mode": false
+    },
+    "character_echoes": {
+      "echo_frequency": 1,
+      "questions_per_session": 3,
+      "inter_character_delay": 5000,
+      "include_player": false,
+      "model_def": {
+        "model": "highendmodel"
+      }
+    },
+    "camp_rest_test": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "enabled": true,
+      "force_offer_every_turn": true,
+      "use_llm_for_choices": true,
+      "run_director_for_interludes": true
+    },
+    "camp_rest": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "enabled": true,
+      "force_offer_every_turn": false,
+      "use_llm_for_choices": true,
+      "run_director_for_interludes": false
+    },
+    "camp_rest_interludes": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "enabled": true,
+      "force_offer_every_turn": false,
+      "use_llm_for_choices": true,
+      "run_director_for_interludes": true,
+      "overlay_panels_layout": {
+        "version": 2,
+        "left": {
+          "unit": "relative",
+          "xRatio": 0,
+          "yRatio": 0.086867,
+          "widthRatio": 0.15585,
+          "heightRatio": 0.733195
+        },
+        "right": {
+          "unit": "relative",
+          "xRatio": 0.686929,
+          "yRatio": 0.151003,
+          "widthRatio": 0.180987,
+          "heightRatio": 0.370644
+        }
+      }
+    },
+    "character_recall": {
+      "max_total_results": 24,
+      "per_character_limit": 3,
+      "min_memory_length": 14
+    },
+    "top_down_shooter_gameplay_interludes": {
+      "enabled": true,
+      "force_offer_every_turn": false,
+      "use_character_sprites_for_player": true
+    },
+    "memory_recall": {
+      "max_total_results": 48,
+      "per_character_limit": 8,
+      "world_recall_limit": 4,
+      "location_recall_limit": 4,
+      "personality_per_character_limit": 3,
+      "relationship_per_character_limit": 8,
+      "active_character_limit": 12,
+      "min_memory_length": 14
+    },
+    "post_writer_consistency_checker": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "retries": 1,
+      "timeout": 90000,
+      "fuzzy_threshold": 0.92,
+      "fuzzy_margin": 0.04,
+      "max_patches": 8
+    },
+    "arc_cinematics": {
+      "enabled": true,
+      "force_intro": false,
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "poem_line_count": 16,
+      "max_source_turns": 12,
+      "prefer_cg": true,
+      "enable_shaders": true,
+      "cg_model_tier": "premium",
+      "cg_prompt_mode": "llm_instruction_with_references",
+      "maximum_duration_seconds": 60
+    },
+    "world_simulator": {
+      "model_def": {
+        "inherit": "vn_background"
+      },
+      "update_interval": 3,
+      "character_update_limit": 3,
+      "location_event_limit": 3,
+      "prompt_event_limit": 6,
+      "history_depth": 6,
+      "request_timeout_ms": 120000,
+      "retries": 1,
+      "force_update": true
+    },
+    "adventure_book": {
+      "model_def": {
+        "model": "highendmodel"
+      },
+      "enabled": true,
+      "force_offer_every_turn": false,
+      "debug_mode": false,
+      "max_steps": 5,
+      "show_exact_odds": true,
+      "prefer_cg": true,
+      "cg_model_tier": "budget",
+      "cg_prompt_mode": "diffusion_positive",
+      "cg_visual_style": "sepia"
+    },
+    "quest_tracker": {
+      "model_def": {
+        "inherit": "vn_background"
+      },
+      "history_preset": "balanced",
+      "max_active_goals": 3,
+      "enabled_in_hud": true
+    },
+    "story_arc_tracker": {
+      "enabled": true,
+      "model_def": {
+        "inherit": "vn_background"
+      },
+      "trigger_mode": "moderate",
+      "minimum_turns_between_intros": 6,
+      "preferred_arc_turns": 12,
+      "maximum_turns_without_arc": 18,
+      "awkward_grace_turns": 2,
+      "history_turns": 10,
+      "force_next_arc": false,
+      "dry_run": false
+    }
+  }
+}

@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/pixi_sprite_manager.js
+    hash: 9B9A37EBE7E4BA96D495395F0D1E8B8D
+  - path: engine/views/vn_viewer/js/pixi_title_manager.js
+    hash: 556F910423C60680BA6B1D9684937B96
+  - path: engine/views/vn_viewer/js/pixi_game_over.js
+    hash: C4615AA8C7BA1FB653339462CE29AF28
+  - path: engine/views/vn_viewer/js/animated_webp_loader.js
+    hash: 3F3DC71D1C37281FCF5D3E374151528E

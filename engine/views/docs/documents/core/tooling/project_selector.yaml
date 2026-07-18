@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/project_selector/renderer_project_selector.js
+    hash: DFBE869E7B68E2D3C694675D161BB6F7
+  - path: engine/views/project_selector/project_selector.html
+    hash: AE728FA518C64580480E39F05088F292

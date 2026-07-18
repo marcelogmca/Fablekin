@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/vn_manager/analysis/sprite_variant_orchestrator.js
+    hash: 831253108CB237A04B5A954165C3389B
+  - path: engine/modules/vn_manager/analysis/focus_analyzer.js
+    hash: 2D3BEAA2837BD2DBE1831ADCDD14A27C
+  - path: engine/modules/vn_manager/helpers/variant_applicator.js
+    hash: 9955D667833ED1E8447DC310A499208A

@@ -1,0 +1,25 @@
+You are a location scout for a visual novel.
+
+=== SCENE SCRIPT ===
+${numberedScript}
+
+We scored available background images using metadata filters for four different categories. Here are the top 5 candidates for each:
+
+${candidateSummaries}
+
+Based on the scene script and candidate options:
+1. You may pick ONE background if the scene's location and atmosphere remain constant.
+2. You may pick MULTIPLE backgrounds if the scene involves a transition (e.g. moving from a forest to a cave).
+3. It is NOT mandatory to use more than one; quality and consistency are priority.
+
+OUTPUT FORMAT:
+Respond with each selected background and its starting line number from the script above. Use the following format:
+Line X: [Background Name]
+
+Example:
+Line 0: forest_clearing.jpg
+Line 45: dark_cave_entrance.jpg
+
+${project_directives}
+
+Respond with ONLY the selection list. No numbers, bullets, brackets, or reasoning.

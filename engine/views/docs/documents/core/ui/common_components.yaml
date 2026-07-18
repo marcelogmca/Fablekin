@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/views/scripts/modals.js
+    hash: A9EE4D0820770DD712FD0D7EB8014BEC
+  - path: engine/views/scripts/tooltips.js
+    hash: B72BDAD8FC5C7546E89BFD9BEC79F551
+  - path: engine/views/libs/premium_select.js
+    hash: E629A1EFC283744D73EC21278FB0C652

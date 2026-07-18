@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>KG Viewer — Dark Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" id="theme-link" href="../../../themes/active/global.css">
+    <style>
+      /* Dark base */
+      :root {
+        --bg: #0b0f14;
+        --panel: #0f1720;
+        --muted: #45505a;
+        --text: #e6eef6;
+        --accent: #ff9a33; /* orange accent */
+        --node-default: #6aa6c8;
+        --edge-default: #262a2f;
+      }
+      html, body, #container { height: 100%; margin: 0; }
+      body {
+        background: linear-gradient(180deg, var(--bg), #081018 80%);
+        color: var(--text);
+        font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* main sigma container */
+      #container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+
+      /* topbar (optional) */
+      #topbar {
+        position: absolute;
+        left: 16px;
+        top: 12px;
+        z-index: 30;
+        background: rgba(255,255,255,0.02);
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        backdrop-filter: blur(6px);
+        color: var(--text);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+        font-size: 13px;
+      }
+
+      /* tooltip (white bg, black text) */
+      .kg-tooltip {
+        position: absolute;
+        pointer-events: none;
+        z-index: 50;
+        background: #fff;
+        color: #000;
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        font-size: 13px;
+        line-height: 1.2;
+        display: none; /* shown on hover */
+        min-width: 120px;
+        max-width: 320px;
+      }
+
+      /* small label inside tooltip */
+      .kg-tooltip .title {
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .kg-tooltip .meta {
+        color: #333;
+        font-weight: 500;
+      }
+
+      /* legend or controls */
+      #legend {
+        position: absolute;
+        right: 14px;
+        top: 12px;
+        z-index: 30;
+        background: rgba(255,255,255,0.02);
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        color: var(--text);
+        font-size: 12px;
+      }
+    </style>
+
+    <!-- keep non-module globals (socket.io client, etc.) loaded normally if you use them -->
+    <script src="../../../vendor/js/socket.io.min.js"></script>
+    <script src="../../../views/libs/socket_bootstrap.js"></script>
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <div id="topbar">Knowledge Graph Viewer — dark mode</div>
+    <div id="legend">Hover nodes to highlight neighborhood</div>
+
+    <!-- tooltip element (used by renderer_kg.js) -->
+    <div id="kg-tooltip" class="kg-tooltip" role="dialog" aria-hidden="true"></div>
+
+    <!-- renderer - use ESM imports so we avoid CJS/UMD mismatch problems -->
+    <script type="module" src="./renderer_kg.js"></script>
+  </body>
+</html>

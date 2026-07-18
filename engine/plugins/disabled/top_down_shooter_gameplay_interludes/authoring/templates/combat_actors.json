@@ -1,0 +1,512 @@
+{
+  "enemyArchetypes": {
+    "scout": {
+      "hp": 10,
+      "radius": 20,
+      "speed": 1.45,
+      "behavior": "chase_player",
+      "archetype": "scout",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 900,
+      "attackMode": "fixed_interval",
+      "summonedEnemyType": "scout_actor",
+      "summonedEverySeconds": 6,
+      "healEverySeconds": 4,
+      "healAmount": 2,
+      "shieldEverySeconds": 6,
+      "shieldAmount": 3
+    },
+    "sentry": {
+      "hp": 18,
+      "radius": 24,
+      "speed": 0.85,
+      "behavior": "stationary_turret",
+      "archetype": "sentry",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 760,
+      "attackMode": "fixed_interval"
+    },
+    "charger": {
+      "hp": 26,
+      "radius": 26,
+      "speed": 1.75,
+      "behavior": "charge_telegraphed",
+      "archetype": "charger",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 1250,
+      "attackMode": "sequence"
+    },
+    "support": {
+      "hp": 22,
+      "radius": 22,
+      "speed": 0.95,
+      "behavior": "shielder",
+      "archetype": "support",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 1300,
+      "attackMode": "weighted_deck",
+      "summonedEnemyType": "scout_actor",
+      "summonedEverySeconds": 7,
+      "healEverySeconds": 3.5,
+      "healAmount": 2.5,
+      "shieldEverySeconds": 5,
+      "shieldAmount": 4
+    },
+    "boss": {
+      "hp": 220,
+      "radius": 44,
+      "speed": 0.9,
+      "behavior": "boss_anchor",
+      "archetype": "boss",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 650,
+      "attackMode": "weighted_deck",
+      "boss": true,
+      "shieldRatio": 0.25
+    }
+  },
+  "enemyTypes": {
+    "scout": {
+      "hp": 10,
+      "radius": 20,
+      "speed": 1.45,
+      "behavior": "chase_player",
+      "archetype": "scout",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 900,
+      "attackMode": "fixed_interval"
+    },
+    "scout_actor": {
+      "hp": 10,
+      "radius": 20,
+      "speed": 1.45,
+      "behavior": "chase_player",
+      "archetype": "scout",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 900,
+      "attackMode": "fixed_interval",
+      "attacks": [
+        {
+          "id": "scout_pepper",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 0.95,
+          "initialDelaySeconds": 0.2,
+          "weight": 1,
+          "once": false,
+          "trigger": null,
+          "range": 520,
+          "source": null,
+          "aim": {
+            "type": "toward_player"
+          }
+        }
+      ],
+      "boss": false,
+      "bossId": "",
+      "displayName": "",
+      "bossSubtitle": "",
+      "bossPhases": [],
+      "shield": null,
+      "weakPoints": [],
+      "parts": [],
+      "damageLocked": false,
+      "phaseThresholds": [],
+      "modifiers": [],
+      "patrolPoints": [],
+      "movePoints": [],
+      "guardZone": null,
+      "escortTargetId": null,
+      "protectBoss": false,
+      "summonedEnemyType": "scout_actor",
+      "summonedEverySeconds": 6,
+      "healEverySeconds": 4,
+      "healAmount": 2,
+      "shieldEverySeconds": 6,
+      "shieldAmount": 3,
+      "regenPerSecond": 0,
+      "shieldRatio": 0,
+      "explodeOnDeath": false,
+      "onDeathSpawn": null,
+      "attackCadenceMultiplier": 1,
+      "attackBurstBonus": 0,
+      "pickupDrops": []
+    },
+    "patrol_actor": {
+      "archetype": "scout",
+      "hp": 14,
+      "radius": 21,
+      "speed": 1.25,
+      "behavior": "patrol_points",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 980,
+      "attackMode": "cooldown_when_in_range",
+      "attacks": [
+        {
+          "id": "patrol_warning",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 1.4,
+          "initialDelaySeconds": 0,
+          "weight": 1,
+          "once": false,
+          "trigger": {
+            "type": "player_in_range",
+            "range": 620
+          },
+          "range": 620,
+          "source": {
+            "type": "self"
+          },
+          "aim": {
+            "type": "toward_player"
+          }
+        }
+      ],
+      "patrolPoints": [
+        {
+          "x": -420,
+          "y": -180
+        },
+        {
+          "x": 0,
+          "y": -300
+        },
+        {
+          "x": 420,
+          "y": -180
+        }
+      ],
+      "movePoints": [
+        {
+          "x": -240,
+          "y": 160
+        },
+        {
+          "x": 240,
+          "y": 160
+        }
+      ],
+      "guardZone": {
+        "x": 0,
+        "y": -220,
+        "radius": 520
+      },
+      "escortTargetId": null,
+      "protectBoss": false
+    },
+    "elite_splitter_actor": {
+      "archetype": "charger",
+      "hp": 28,
+      "radius": 26,
+      "speed": 1.65,
+      "behavior": "dash_through_player",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 1150,
+      "attackMode": "sequence",
+      "attacks": [
+        {
+          "id": "dash_shot",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 1.15,
+          "initialDelaySeconds": 0.15,
+          "weight": 1,
+          "once": false,
+          "trigger": {
+            "type": "phase_elapsed",
+            "seconds": 0.5
+          },
+          "range": 480,
+          "source": null,
+          "aim": {
+            "type": "toward_player"
+          }
+        },
+        {
+          "id": "panic_once",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 3,
+          "initialDelaySeconds": 0,
+          "weight": 1,
+          "once": true,
+          "trigger": {
+            "type": "hp_below",
+            "ratio": 0.45
+          },
+          "range": 540,
+          "source": null,
+          "aim": {
+            "type": "random"
+          }
+        }
+      ],
+      "modifiers": [
+        "elite_fast",
+        "elite_armored",
+        "elite_splitter",
+        "elite_explosive",
+        "elite_regenerating",
+        "elite_shielded",
+        "elite_bullet_hell"
+      ],
+      "regenPerSecond": 0.6,
+      "shieldRatio": 0.35,
+      "explodeOnDeath": true,
+      "onDeathSpawn": {
+        "enemyType": "splitter_child",
+        "count": 2
+      },
+      "attackCadenceMultiplier": 0.7,
+      "attackBurstBonus": 1,
+      "pickupDrops": [
+        {
+          "pickup": "heal_orb",
+          "chance": 0.25
+        }
+      ]
+    },
+    "splitter_child": {
+      "archetype": "scout",
+      "hp": 6,
+      "radius": 16,
+      "speed": 1.7,
+      "behavior": "avoid_player",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 1200,
+      "attackMode": "fixed_interval"
+    },
+    "summoner_actor": {
+      "archetype": "support",
+      "hp": 24,
+      "radius": 24,
+      "speed": 0.82,
+      "behavior": "summoner",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 1250,
+      "attackMode": "weighted_deck",
+      "attacks": [
+        {
+          "id": "summoner_cover",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 1.25,
+          "initialDelaySeconds": 0.4,
+          "weight": 2,
+          "once": false,
+          "trigger": null,
+          "range": 560,
+          "source": null,
+          "aim": {
+            "type": "toward_player"
+          }
+        },
+        {
+          "id": "summoner_emergency",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 2.8,
+          "initialDelaySeconds": 0,
+          "weight": 1,
+          "once": true,
+          "trigger": {
+            "type": "hp_below",
+            "ratio": 0.35
+          },
+          "range": 640,
+          "source": null,
+          "aim": {
+            "type": "away_from_player"
+          }
+        }
+      ],
+      "summonedEnemyType": "scout_actor",
+      "summonedEverySeconds": 5,
+      "healEverySeconds": 4,
+      "healAmount": 2,
+      "shieldEverySeconds": 5,
+      "shieldAmount": 3
+    },
+    "shield_warden_boss": {
+      "archetype": "boss",
+      "hp": 260,
+      "radius": 46,
+      "speed": 0.9,
+      "behavior": "boss_anchor",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 620,
+      "attackMode": "weighted_deck",
+      "attacks": [
+        {
+          "id": "warden_fan",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 1.15,
+          "initialDelaySeconds": 0.4,
+          "weight": 2,
+          "once": false,
+          "trigger": null,
+          "range": 900,
+          "source": null,
+          "aim": {
+            "type": "toward_player"
+          }
+        },
+        {
+          "id": "warden_ring",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 2.25,
+          "initialDelaySeconds": 1.2,
+          "weight": 1,
+          "once": false,
+          "trigger": null,
+          "range": 900,
+          "source": null,
+          "aim": {
+            "type": "fixed_angle",
+            "angle": 0
+          }
+        },
+        {
+          "id": "warden_lance",
+          "pattern": "enemy_spiral_pressure",
+          "everySeconds": 1.75,
+          "initialDelaySeconds": 0.8,
+          "weight": 2,
+          "once": false,
+          "trigger": {
+            "type": "player_in_range",
+            "range": 760
+          },
+          "range": 760,
+          "source": null,
+          "aim": {
+            "type": "toward_player"
+          }
+        }
+      ],
+      "boss": true,
+      "bossId": "shield_warden",
+      "displayName": "Shield Warden",
+      "bossSubtitle": "Break the shield cycle",
+      "bossPhases": [
+        {
+          "id": "phase_guard",
+          "untilHpRatio": 0.7,
+          "untilElapsedSeconds": null,
+          "attackDeckMode": "weighted_deck",
+          "attackDeck": [
+            "warden_fan",
+            "warden_ring"
+          ],
+          "noRepeatWindow": 1,
+          "onEnter": [
+            {
+              "type": "show_banner",
+              "text": "Shield Warden enters guard stance"
+            }
+          ]
+        },
+        {
+          "id": "phase_pressure",
+          "untilHpRatio": 0.35,
+          "untilElapsedSeconds": null,
+          "attackDeckMode": "sequence",
+          "attackDeck": [
+            "warden_lance",
+            "warden_fan",
+            "warden_ring"
+          ],
+          "noRepeatWindow": 1,
+          "onEnter": [
+            {
+              "type": "show_banner",
+              "text": "Shield Warden changes rhythm"
+            },
+            {
+              "type": "spawn_enemy",
+              "enemyType": "scout_actor",
+              "count": 2,
+              "formation": "left_right"
+            }
+          ]
+        },
+        {
+          "id": "phase_final",
+          "untilHpRatio": 0.01,
+          "untilElapsedSeconds": null,
+          "attackDeckMode": "phase_loop",
+          "attackDeck": [
+            "warden_lance",
+            "warden_ring",
+            "warden_fan"
+          ],
+          "noRepeatWindow": 2,
+          "onEnter": [
+            {
+              "type": "show_banner",
+              "text": "Shield Warden overloads"
+            }
+          ]
+        }
+      ],
+      "shield": {
+        "max": 60,
+        "regenPerSecond": 3,
+        "breakStunSeconds": 1.2
+      },
+      "weakPoints": [
+        {
+          "id": "core",
+          "angle": 0,
+          "radius": 16,
+          "damageMultiplier": 1.25
+        }
+      ],
+      "parts": [
+        {
+          "id": "left_guard",
+          "hp": 35,
+          "angle": 2.6,
+          "radius": 12
+        },
+        {
+          "id": "right_guard",
+          "hp": 35,
+          "angle": -2.6,
+          "radius": 12
+        }
+      ],
+      "damageLocked": false,
+      "phaseThresholds": [
+        0.7,
+        0.35
+      ],
+      "modifiers": [
+        "elite_shielded",
+        "elite_bullet_hell"
+      ],
+      "patrolPoints": [],
+      "movePoints": [],
+      "guardZone": {
+        "x": 0,
+        "y": -120,
+        "radius": 520
+      },
+      "escortTargetId": null,
+      "protectBoss": false,
+      "summonedEnemyType": "scout_actor",
+      "summonedEverySeconds": 9,
+      "healEverySeconds": 5,
+      "healAmount": 2,
+      "shieldEverySeconds": 6,
+      "shieldAmount": 4,
+      "regenPerSecond": 0,
+      "shieldRatio": 0.32,
+      "explodeOnDeath": false,
+      "onDeathSpawn": null,
+      "attackCadenceMultiplier": 0.85,
+      "attackBurstBonus": 1,
+      "pickupDrops": [
+        {
+          "pickup": "cooldown_reset",
+          "chance": 1
+        }
+      ]
+    }
+  }
+}

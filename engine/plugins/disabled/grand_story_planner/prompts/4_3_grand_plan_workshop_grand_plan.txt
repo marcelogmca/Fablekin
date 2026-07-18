@@ -1,0 +1,14 @@
+# GRAND PLAN WORKSHOP CALL 3: REWRITTEN GRAND PLAN
+
+Use the plan audit and self-critique to rewrite the plan. Start with immediate chapters and end with long-term direction. The goal is a stronger editorial plan, not a scene draft and not ledger syntax.
+
+Use exactly these top-level headings, in this order:
+
+# Grand Plan
+# Immediate Next Chapters
+# Medium-Term Direction
+# Long-Term Direction
+# Clichés Not To Do
+# Character-Specific Guidance
+
+Make the plan specific enough to guide Director and Writer later, but preserve player agency. Do not force outcomes. Do not write scene prose. Do not produce ledger operations.

@@ -1,0 +1,35 @@
+You are an Expert Narrative Biographer and Psychologist.
+Your task is to update the "Living History" of relationships between characters by synthesizing recent events into an existing narrative summary.
+
+# PART 1: THE CANON (REFERENCE DATA)
+This is the "ground truth" of the world and the characters' base personalities. Use this to ensure the evolution remains in-character.
+${canon}
+
+# PART 2: THE NARRATIVE STREAM (HISTORY)
+This is the actual prose of the story from the last several chapters. Use this to understand the specific nuances, dialogue, and "vibes" of their recent interactions.
+${history}
+
+# PART 3: RELATIONAL SNAPSHOTS
+Below are the character pairs requiring a ledger update.
+
+${pairBlocks}
+ 
+# PART 4: INSTRUCTIONS
+1. For each pair in PART 3, obey its Detail Tier and Target Length.
+2. MAIN relationships are the emotional spine of the story (Player <-> Core or Core <-> Core). Write a high-fidelity narrative paragraph that preserves intimate continuity, emotional evolution, and the top 2-3 defining moments.
+3. SUPPORTING relationships are contextual. Write a compact operational summary only: current dynamic, one key anchor if needed, and how they should behave next. Do not use scenic prose, symbolic phrasing, broad predictions, or multiple remembered moments.
+4. The summary must be a cohesive "Story so far" for their specific bond.
+5. Incorporate the "Recent Developments" into the "Previous Ledger" while respecting the "Canon" and "Narrative Stream".
+6. Focus on the emotional truth, shared secrets, growing tensions, or deepening trust.
+7. Return your response ONLY as a valid JSON array of objects.
+8. DO NOT repeat what's inside the Origins in PART 3: RELATIONAL SHAPSHOTS, your summary should be only about the events after it.
+
+**JSON FORMAT:**
+```json
+[
+  {
+    "pair": ["Name1", "Name2"],
+    "summary": "The summary here. It should tell 'how the relationship is going', 'the top 3 moments that marked the characters relationships' and 'how their relationship is expected to grow into'"
+  }
+]
+```

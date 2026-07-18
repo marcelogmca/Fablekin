@@ -1,0 +1,567 @@
+.tds-overlay-shell {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main, #fff);
+    font-family: var(--font-ui, var(--font-main, sans-serif));
+    z-index: 2;
+    background:
+        radial-gradient(120% 120% at 15% 12%, rgba(var(--bg-gradient-start-rgb, 26, 31, 45), 0.9) 0%, rgba(var(--bg-base-rgb, 18, 18, 18), 0.95) 52%, rgba(var(--color-black-rgb, 0, 0, 0), 0.96) 100%),
+        var(--bg-app-background, var(--bg-gradient, linear-gradient(135deg, #1a1f2d, #0d1117)));
+    backdrop-filter: var(--glass-blur, blur(12px)) saturate(130%);
+    -webkit-backdrop-filter: var(--glass-blur, blur(12px)) saturate(130%);
+}
+
+.tds-shooter-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at center, rgba(var(--color-primary-rgb, 241, 196, 15), 0.08) 0%, rgba(var(--bg-gradient-start-rgb, 26, 31, 45), 0.74) 66%, rgba(var(--bg-base-rgb, 18, 18, 18), 0.92) 100%),
+        repeating-linear-gradient(45deg, rgba(var(--color-white-rgb, 255, 255, 255), var(--opacity-faint, 0.06)) 0 2px, transparent 2px 48px);
+    opacity: 0;
+    transition: opacity var(--transition-main, 180ms ease);
+}
+
+.tds-gameplay-active .tds-shooter-layer {
+    opacity: 0;
+}
+
+.tds-shooter-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+}
+
+.tds-combat-shell {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl, 28px);
+    pointer-events: auto;
+    transition: opacity var(--transition-main, 180ms ease), transform var(--transition-main, 180ms ease);
+}
+
+.tds-combat-panel {
+    width: min(980px, 100%);
+    padding: var(--space-xl, 28px);
+    border-radius: var(--card-radius, var(--radius-lg, 16px));
+    border: var(--border-accent, 1px solid var(--accent-dark, #c0a060));
+    background: var(--glass-bg, rgba(10, 16, 28, 0.72));
+    backdrop-filter: var(--glass-blur-heavy, blur(18px)) var(--glass-saturation, saturate(160%));
+    -webkit-backdrop-filter: var(--glass-blur-heavy, blur(18px)) var(--glass-saturation, saturate(160%));
+    box-shadow: var(--shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.5)), inset 0 0 20px rgba(var(--color-white-rgb, 255, 255, 255), var(--opacity-faint, 0.06));
+}
+
+.tds-combat-chip {
+    display: inline-block;
+    font-size: var(--font-xs, 0.75rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-primary, #f1c40f);
+    border: 1px solid rgba(var(--color-primary-rgb, 241, 196, 15), var(--opacity-med, 0.2));
+    border-radius: var(--radius-round, 999px);
+    padding: var(--space-2xs, 4px) var(--space-md, 14px);
+    font-family: var(--font-title, var(--font-main, sans-serif));
+}
+
+.tds-combat-title {
+    margin: var(--space-md, 16px) 0 var(--space-sm, 10px);
+    font-size: var(--font-xxl, 2rem);
+    font-family: var(--font-title, var(--font-main, sans-serif));
+    color: var(--color-primary, #f1c40f);
+    text-shadow: var(--glow-primary, 0 0 10px rgba(var(--color-primary-rgb, 241, 196, 15), var(--opacity-med, 0.2)));
+    line-height: 1.15;
+}
+
+.tds-combat-subtitle {
+    margin: 0;
+    font-size: var(--font-lg, 1.25rem);
+    line-height: 1.35;
+    color: var(--text-muted, #a4b0be);
+    max-width: 48ch;
+}
+
+.tds-combat-controls {
+    margin-top: var(--space-lg, 20px);
+    display: flex;
+    gap: var(--space-sm, 10px);
+    flex-wrap: wrap;
+}
+
+.tds-combat-controls-secondary {
+    margin-top: var(--space-xs, 8px);
+}
+
+.tds-combat-btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md, 10px);
+    background: var(--color-primary, #f1c40f);
+    color: var(--text-inverse, #121212);
+    font-weight: 600;
+    font-family: var(--font-ui, var(--font-main, sans-serif));
+    font-size: var(--font-md, 1rem);
+    letter-spacing: 0.01em;
+    padding: var(--space-sm, 10px) var(--space-lg, 20px);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.2));
+    transition: var(--transition-fast, all 0.2s ease);
+}
+
+.tds-combat-btn.secondary {
+    background: var(--bg-surface-2, #2a2a35);
+    color: var(--text-main, #f5f6fa);
+    border-color: rgba(var(--color-white-rgb, 255, 255, 255), var(--opacity-ghost, 0.12));
+    box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.tds-combat-btn:hover {
+    background: var(--color-primary-hover, #f39c12);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.5));
+}
+
+.tds-combat-btn.secondary:hover {
+    background: var(--bg-surface-hover, #3a3a45);
+}
+
+.tds-combat-btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+    transform: none;
+}
+
+.tds-combat-status {
+    margin: var(--space-md, 14px) 0 0;
+    min-height: 1.2em;
+    font-size: var(--font-sm, 0.875rem);
+    color: var(--text-muted, #a4b0be);
+}
+
+.tds-combat-status.error {
+    color: var(--status-danger, #ff7d7d);
+}
+
+.tds-combat-status.warning {
+    color: var(--status-warning, #f4b860);
+}
+
+.tds-gameplay-controls {
+    position: fixed;
+    right: var(--space-lg, 20px);
+    bottom: var(--space-lg, 20px);
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.tds-combat-gui {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    color: var(--text-main, #f5f6fa);
+    font-family: var(--font-ui, var(--font-main, sans-serif));
+}
+
+.tds-combat-gui-top {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(980px, calc(100% - 90px));
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.tds-combat-gui-mission {
+    border-radius: var(--radius-lg, 16px);
+    border: var(--border-main, 1px solid rgba(255, 255, 255, 0.15));
+    background: var(--glass-bg-med, rgba(26, 31, 45, 0.55));
+    backdrop-filter: var(--glass-blur, blur(12px)) saturate(130%);
+    -webkit-backdrop-filter: var(--glass-blur, blur(12px)) saturate(130%);
+    padding: 10px 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.tds-gui-caption {
+    color: var(--text-muted, #a4b0be);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.tds-combat-gui-mission strong {
+    color: var(--text-main, #f5f6fa);
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.tds-gui-phase {
+    margin-left: auto;
+    color: var(--text-accent, var(--color-primary, #f1c40f));
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.tds-combat-gui-boss {
+    border-radius: 999px;
+    background: var(--glass-bg-med, rgba(26, 31, 45, 0.55));
+    border: var(--border-main, 1px solid rgba(255, 255, 255, 0.15));
+    padding: 8px 14px 10px;
+}
+
+.tds-combat-gui-banner {
+    border-radius: 999px;
+    border: var(--border-main, 1px solid rgba(255, 255, 255, 0.16));
+    background: rgba(var(--status-info-rgb, 52, 152, 219), 0.24);
+    color: var(--text-main, #f5f6fa);
+    padding: 8px 14px;
+    font-size: 0.84rem;
+    letter-spacing: 0.02em;
+}
+
+.tds-combat-gui-banner.is-hidden {
+    display: none;
+}
+
+.tds-combat-gui-boss.is-hidden {
+    opacity: 0;
+}
+
+.tds-combat-gui-boss-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.tds-combat-gui-boss-head span {
+    color: var(--text-muted, #a4b0be);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.tds-combat-gui-boss-head strong {
+    color: var(--text-main, #f5f6fa);
+    font-size: 0.93rem;
+    font-weight: 700;
+}
+
+.tds-combat-gui-boss-head em {
+    color: var(--text-accent, var(--color-primary, #f1c40f));
+    font-size: 0.72rem;
+    font-style: normal;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.tds-combat-gui-boss-subtitle {
+    color: var(--text-muted, #a4b0be);
+    font-size: 0.78rem;
+    margin-bottom: 6px;
+}
+
+.tds-combat-gui-boss-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(var(--color-white-rgb, 255, 255, 255), var(--opacity-ghost, 0.12));
+    overflow: hidden;
+}
+
+.tds-combat-gui-boss-bar span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(var(--status-danger-rgb, 184, 59, 94), 0.82) 0%, rgba(var(--status-danger-rgb, 184, 59, 94), 1) 100%);
+    box-shadow: 0 0 16px rgba(var(--status-danger-rgb, 184, 59, 94), 0.48);
+}
+
+.tds-combat-gui-boss-shield {
+    margin-top: 5px;
+    height: 6px;
+}
+
+.tds-combat-gui-boss-shield span {
+    background: linear-gradient(90deg, rgba(var(--status-info-rgb, 52, 152, 219), 0.75) 0%, rgba(var(--status-info-rgb, 52, 152, 219), 1) 100%);
+    box-shadow: 0 0 14px rgba(var(--status-info-rgb, 52, 152, 219), 0.45);
+}
+
+.tds-combat-gui-boss-phases {
+    margin-top: 7px;
+    display: flex;
+    gap: 4px;
+}
+
+.tds-combat-gui-boss-phases span {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(var(--color-white-rgb, 255, 255, 255), 0.25);
+}
+
+.tds-combat-gui-boss-phases span.is-active {
+    background: var(--text-accent, var(--color-primary, #f1c40f));
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb, 241, 196, 15), 0.55);
+}
+
+.tds-combat-gui-boss-attack {
+    margin-top: 6px;
+    color: var(--text-main, #f5f6fa);
+    font-size: 0.78rem;
+}
+
+.tds-combat-gui-side {
+    position: absolute;
+    top: 190px;
+    border-radius: var(--radius-md, 8px);
+    background: var(--glass-bg-thin, rgba(26, 31, 45, 0.45));
+    border: var(--border-main, 1px solid rgba(255, 255, 255, 0.15));
+    backdrop-filter: var(--glass-blur, blur(12px)) saturate(120%);
+    -webkit-backdrop-filter: var(--glass-blur, blur(12px)) saturate(120%);
+    padding: 12px 14px;
+}
+
+.tds-combat-gui-side-left {
+    left: 16px;
+    width: 280px;
+}
+
+.tds-combat-gui-side-left p {
+    margin: 0;
+    color: var(--text-main, #f5f6fa);
+    font-size: 0.94rem;
+    line-height: 1.34;
+}
+
+.tds-combat-gui-divider {
+    height: 1px;
+    margin: 10px 0;
+    background: var(--divider-color, rgba(255, 255, 255, 0.15));
+}
+
+.tds-combat-gui-side-left strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-accent, var(--color-primary, #f1c40f));
+    font-size: 1.22rem;
+    font-weight: 700;
+}
+
+.tds-combat-gui-side-right {
+    right: 18px;
+    width: 150px;
+    text-align: right;
+}
+
+.tds-combat-gui-side-right .tds-gui-hit-count {
+    display: block;
+    margin-top: 4px;
+    font-size: 3.2rem;
+    font-weight: 500;
+    color: var(--text-main, #f5f6fa);
+    font-family: var(--font-title, var(--font-main, sans-serif));
+}
+
+.tds-combat-gui-timer {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.tds-combat-gui-timer-value {
+    display: block;
+    color: var(--text-accent, var(--color-primary, #f1c40f));
+    font-size: 1.06rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.tds-combat-gui-bottom-left {
+    position: absolute;
+    left: 18px;
+    bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tds-combat-gui-portrait {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--color-primary-rgb, 241, 196, 15), 0.8);
+    background: radial-gradient(circle at 35% 30%, rgba(var(--color-primary-rgb, 241, 196, 15), 0.45) 0%, rgba(var(--status-warning-rgb, 230, 126, 34), 0.42) 35%, rgba(var(--bg-gradient-start-rgb, 26, 31, 45), 0.9) 100%);
+    color: var(--text-main, #f5f6fa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.55rem;
+    box-shadow: 0 0 20px rgba(255, 201, 111, 0.36);
+}
+
+.tds-combat-gui-vitals {
+    min-width: 280px;
+    border-radius: var(--radius-md, 8px);
+    border: var(--border-main, 1px solid rgba(255, 255, 255, 0.15));
+    background: var(--glass-bg-thin, rgba(26, 31, 45, 0.45));
+    padding: 10px 12px;
+}
+
+.tds-combat-gui-bar {
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(var(--color-white-rgb, 255, 255, 255), var(--opacity-ghost, 0.12));
+    overflow: hidden;
+}
+
+.tds-combat-gui-bar + .tds-combat-gui-bar {
+    margin-top: 7px;
+}
+
+.tds-combat-gui-bar span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: inherit;
+    transition: width 120ms linear;
+}
+
+.tds-combat-gui-bar.tds-hp span {
+    background: linear-gradient(90deg, rgba(var(--status-warning-rgb, 230, 126, 34), 0.92) 0%, rgba(var(--status-danger-rgb, 184, 59, 94), 0.95) 100%);
+}
+
+.tds-combat-gui-bar.tds-stamina span {
+    background: linear-gradient(90deg, rgba(var(--status-success-rgb, 46, 204, 113), 0.88) 0%, rgba(var(--status-info-rgb, 52, 152, 219), 0.9) 100%);
+}
+
+.tds-combat-gui-hp-text {
+    margin-top: 7px;
+    color: var(--text-main, #f5f6fa);
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.tds-combat-gui-bottom-right {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    pointer-events: auto;
+}
+
+.tds-ability {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    border: var(--border-main, 1px solid rgba(255, 255, 255, 0.15));
+    background: var(--glass-bg-med, rgba(26, 31, 45, 0.55));
+    color: var(--text-main, #f5f6fa);
+    font-size: 0.98rem;
+    font-weight: 700;
+    backdrop-filter: var(--glass-blur, blur(12px));
+    -webkit-backdrop-filter: var(--glass-blur, blur(12px));
+    box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.tds-ability.cooldown {
+    opacity: 0.56;
+}
+
+.tds-gameplay-active .tds-combat-shell {
+    display: none;
+}
+
+.tds-overlay-shell.tds-gameplay-active {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+@media (max-width: 860px) {
+    .tds-combat-shell { padding: var(--space-md, 14px); }
+    .tds-combat-panel {
+        padding: var(--space-md, 14px);
+    }
+    .tds-combat-title {
+        font-size: var(--font-xl, 1.45rem);
+    }
+    .tds-combat-subtitle {
+        font-size: var(--font-md, 1rem);
+    }
+
+    .tds-combat-gui-top {
+        width: calc(100% - 24px);
+        top: 8px;
+    }
+
+    .tds-combat-gui-side-left {
+        width: 210px;
+        top: 124px;
+        left: 8px;
+    }
+
+    .tds-combat-gui-side-right {
+        width: 92px;
+        top: 126px;
+        right: 8px;
+    }
+
+    .tds-combat-gui-side-right .tds-gui-hit-count {
+        font-size: 2rem;
+    }
+
+    .tds-combat-gui-bottom-left {
+        left: 8px;
+        bottom: 10px;
+        gap: 8px;
+    }
+
+    .tds-combat-gui-portrait {
+        width: 52px;
+        height: 52px;
+        font-size: 1.1rem;
+    }
+
+    .tds-combat-gui-vitals {
+        min-width: 180px;
+        padding: 8px 9px;
+    }
+
+    .tds-combat-gui-hp-text {
+        font-size: 0.95rem;
+    }
+
+    .tds-combat-gui-bottom-right {
+        right: 8px;
+        bottom: 10px;
+        gap: 7px;
+    }
+
+    .tds-ability {
+        width: 45px;
+        height: 45px;
+        font-size: 0.82rem;
+    }
+}

@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/views/content_manager/modules/socket_handlers.js
+    hash: 38584511F5AE02B367910F1FFB521C98
+  - path: engine/views/content_manager/modules/drag_drop.js
+    hash: 69131854895C534EFDF814AC9D348B2F
+  - path: engine/views/content_manager/modules/utils.js
+    hash: 4096356FB13D35549DD7F147A3EF0786
+  - path: engine/views/content_manager/content_manager.html
+    hash: 29557B5F30B27A59E694F5740E790CEE

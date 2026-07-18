@@ -1,0 +1,352 @@
+{
+  "budgets": {
+    "maxEnemiesAlive": 32,
+    "maxEnemyBulletsAlive": 600,
+    "maxPlayerBulletsAlive": 180,
+    "maxEmittersAlive": 48,
+    "maxHazardsAlive": 120,
+    "maxPickupsAlive": 32,
+    "maxTelegraphsAlive": 120,
+    "maxActionsPerSecond": 180,
+    "maxEncounterSeconds": 210
+  },
+  "arena": {
+    "mapSize": 1700,
+    "gridSpacing": 96,
+    "shape": "diamond",
+    "bounds": "soft",
+    "backgroundPreset": "crimson_grid",
+    "modifiers": [
+      {
+        "id": "opening_shrink",
+        "type": "shrink_arena",
+        "scale": 0.9,
+        "durationSeconds": 28
+      },
+      {
+        "id": "late_expand",
+        "type": "expand_arena",
+        "scale": 1.15,
+        "durationSeconds": 18
+      },
+      {
+        "id": "safe_wedge_rotation",
+        "type": "rotating_safe_wedge",
+        "rotationSpeedDegreesPerSecond": 38,
+        "halfAngleDegrees": 42,
+        "radius": 900,
+        "baseAngleDegrees": 0,
+        "durationSeconds": 16
+      },
+      {
+        "id": "crosswind",
+        "type": "periodic_wind",
+        "strength": 120,
+        "periodSeconds": 2.6,
+        "durationSeconds": 18
+      },
+      {
+        "id": "slick_floor",
+        "type": "low_friction_floor",
+        "friction": 0.72,
+        "durationSeconds": 12
+      },
+      {
+        "id": "mud_patches",
+        "type": "mud_slow_patches",
+        "durationSeconds": 14
+      },
+      {
+        "id": "hot_edges",
+        "type": "damage_edge",
+        "damagePerSecond": 3,
+        "durationSeconds": 20
+      },
+      {
+        "id": "wrap_bullets",
+        "type": "bullet_wrap",
+        "durationSeconds": 10
+      },
+      {
+        "id": "spawn_gate_cycle",
+        "type": "enemy_spawn_gates",
+        "cycleSeconds": 3.2,
+        "openSeconds": 1.25,
+        "durationSeconds": 24
+      },
+      {
+        "id": "visibility_drop",
+        "type": "darkened_visibility",
+        "intensity": 0.24,
+        "durationSeconds": 12
+      },
+      {
+        "id": "zoom_pressure",
+        "type": "camera_zoom_phase",
+        "zoom": 1.08,
+        "durationSeconds": 10
+      }
+    ]
+  },
+  "player": {
+    "hp": 7
+  },
+  "playerKit": {
+    "id": "balanced_dashcaster_v1",
+    "maxHp": 7,
+    "moveSpeed": 4.8,
+    "autoAttack": {
+      "intervalMs": 170,
+      "projectileSpeed": 9.5
+    },
+    "dash": {
+      "variant": "burst_dash",
+      "cooldownMs": 1050,
+      "durationMs": 180,
+      "iframeMs": 240,
+      "speedMultiplier": 3.2
+    },
+    "abilities": [
+      {
+        "id": "flare_burst",
+        "key": "q",
+        "cooldownSeconds": 6,
+        "charges": 1,
+        "castActions": [
+          {
+            "type": "spawn_pattern",
+            "pattern": {
+              "type": "radial",
+              "count": 12,
+              "speed": 4.4,
+              "projectileType": "player_default_bullet"
+            }
+          }
+        ],
+        "passiveTags": [
+          "burst_damage"
+        ]
+      },
+      {
+        "id": "aegis_window",
+        "key": "e",
+        "cooldownSeconds": 9,
+        "charges": 1,
+        "castActions": [
+          {
+            "type": "aegis_window",
+            "durationSeconds": 1.5
+          },
+          {
+            "type": "clear_enemy_bullets",
+            "radius": 180
+          }
+        ],
+        "passiveTags": [
+          "defensive"
+        ]
+      },
+      {
+        "id": "phase_reload",
+        "key": "r",
+        "cooldownSeconds": 18,
+        "charges": 1,
+        "castActions": [
+          {
+            "type": "set_player_dash_variant",
+            "variant": "phased_dash"
+          }
+        ],
+        "passiveTags": [
+          "mobility"
+        ]
+      }
+    ]
+  },
+  "colors": {
+    "grid": 2506858,
+    "player": 3797759,
+    "enemyBullet": 16727949
+  },
+  "renderPresets": {
+    "playerBullets": {
+      "default": {
+        "preset": "needle",
+        "color": 6682111,
+        "alpha": 0.95,
+        "glow": true,
+        "scale": 1.05,
+        "rotationMode": "velocity"
+      },
+      "player_default": {
+        "preset": "needle",
+        "color": 3797759,
+        "alpha": 1,
+        "glow": true,
+        "scale": 1.1,
+        "rotationMode": "velocity"
+      }
+    },
+    "enemyBullets": {
+      "default": {
+        "preset": "orb",
+        "color": 16727949,
+        "alpha": 0.9,
+        "glow": true,
+        "scale": 1.05,
+        "rotationMode": "fixed"
+      },
+      "enemy_default": {
+        "preset": "diamond",
+        "color": 16727949,
+        "alpha": 0.92,
+        "glow": true,
+        "scale": 1,
+        "rotationMode": "spin"
+      }
+    },
+    "hazards": {
+      "default": {
+        "fillColor": 16726632,
+        "strokeColor": 16758988,
+        "fillAlpha": 0.14,
+        "strokeAlpha": 0.78,
+        "lineWidth": 2.4
+      },
+      "damage_circle": {
+        "fillColor": 16718440,
+        "strokeColor": 16758988,
+        "fillAlpha": 0.18,
+        "strokeAlpha": 0.9,
+        "lineWidth": 2.8
+      }
+    },
+    "telegraphs": {
+      "danger": {
+        "color": 16733391,
+        "lineWidth": 3.2,
+        "strokeAlpha": 0.92,
+        "baseAlpha": 0.28
+      },
+      "boss": {
+        "color": 16755522,
+        "lineWidth": 4,
+        "strokeAlpha": 0.96,
+        "baseAlpha": 0.35
+      }
+    },
+    "pickups": {
+      "heal_orb": {
+        "color": 7536554,
+        "fillAlpha": 0.45,
+        "strokeAlpha": 0.95
+      },
+      "cooldown_reset": {
+        "color": 7987199,
+        "fillAlpha": 0.45,
+        "strokeAlpha": 0.95
+      },
+      "shield_orb": {
+        "color": 12439551,
+        "fillAlpha": 0.42,
+        "strokeAlpha": 0.95
+      },
+      "charge_orb": {
+        "color": 16757570,
+        "fillAlpha": 0.42,
+        "strokeAlpha": 0.95
+      }
+    },
+    "enemyArchetypes": {
+      "default": {
+        "fillColor": 16735638,
+        "ringColor": 16753856,
+        "alpha": 1
+      },
+      "scout": {
+        "fillColor": 16735638,
+        "ringColor": 16753856,
+        "alpha": 1
+      },
+      "sentry": {
+        "fillColor": 16743027,
+        "ringColor": 16757673,
+        "alpha": 1
+      }
+    },
+    "bosses": {
+      "default": {
+        "fillColor": 16755279,
+        "ringColor": 16764810,
+        "alpha": 1
+      },
+      "boss_default": {
+        "fillColor": 16755279,
+        "ringColor": 16764810,
+        "alpha": 1
+      }
+    },
+    "objectiveObjects": {
+      "default": {
+        "fillColor": 6466047,
+        "strokeColor": 11917055,
+        "fillAlpha": 0.2,
+        "strokeAlpha": 0.88
+      }
+    }
+  },
+  "music": {
+    "intensityTiers": {
+      "base": "battle_random",
+      "low": {
+        "track": "battle_random",
+        "duckFactor": 0.88
+      },
+      "high": {
+        "track": "battle_random",
+        "duckFactor": 0.68
+      },
+      "boss": {
+        "track": "battle_random",
+        "duckFactor": 0.62
+      }
+    },
+    "intensityRules": [
+      {
+        "id": "high_pressure",
+        "priority": 20,
+        "cooldownSeconds": 3,
+        "setIntensity": "high",
+        "track": "battle_random",
+        "duckFactor": 0.68,
+        "when": {
+          "type": "enemy_count_at_least",
+          "count": 5
+        }
+      },
+      {
+        "id": "recover_low",
+        "priority": 5,
+        "cooldownSeconds": 3,
+        "setIntensity": "low",
+        "when": {
+          "type": "enemy_count_below",
+          "count": 3
+        }
+      },
+      {
+        "id": "boss_pressure",
+        "priority": 30,
+        "cooldownSeconds": 2,
+        "setIntensity": "boss",
+        "when": {
+          "type": "boss_alive"
+        }
+      }
+    ]
+  },
+  "runtimeSettings": {
+    "showDamageNumbers": true,
+    "enableMicroHitStop": true
+  }
+}

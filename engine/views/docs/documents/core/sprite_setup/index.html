@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sprite Setup Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0f0f0f;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #b83b5e;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        h2 {
+            color: #b83b5e;
+            margin-top: 35px;
+            border-left: 4px solid #b83b5e;
+            padding-left: 15px;
+        }
+
+        code {
+            background: #1e1e1e;
+            color: #ffeb3b;
+            padding: 2px 5px;
+            border-radius: 3px;
+            border: 1px solid #333;
+            font-family: 'Consolas', monospace;
+        }
+
+        pre {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            overflow-x: auto;
+        }
+
+        .note {
+            background: rgba(184, 59, 94, 0.1);
+            border-left: 5px solid #b83b5e;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ccc;
+        }
+
+        .tip {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 5px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ccc;
+        }
+
+        ul,
+        ol {
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .example-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .example-list li::before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li::before {
+            content: "☐ ";
+            color: #b83b5e;
+            font-weight: bold;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #333;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sprite Setup Guide</h1>
+    <p>How to organize your character images for the Dynamic Narrative Engine.</p>
+
+    <h2>Basics</h2>
+    <p>Place your character sprite images in your project's <code>sprites</code> folder. The engine automatically
+        detects and uses them based on their filenames.</p>
+    <p><strong>Supported formats:</strong> <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>
+        (PNG and WEBP are recommended because of transparency support, webp is specially recommended because of its
+        compression).</p>
+
+    <hr>
+
+    <h2>Naming Convention</h2>
+    <p>Format: <code>CharacterName_Emotion.extension</code></p>
+    <p>Examples:</p>
+    <ul class="example-list">
+        <li><code>stella_happy.png</code></li>
+        <li><code>Gin_sad.webp</code></li>
+        <li><code>Tivo_neutral.png</code></li>
+        <li><code>Anya_thinking.jpg</code></li>
+    </ul>
+    <p>The engine automatically extracts emotion names from your sprite filenames and uses them when the LLM classifies
+        dialogue emotions.</p>
+
+    <hr>
+
+    <h2>Special Suffixes</h2>
+    <p>These suffixes have special meanings and are <strong>NOT</strong> treated as emotions:</p>
+    <ul>
+        <li><code>_reference</code> &rarr; <strong>IGNORED</strong> by the VN engine. Used to store reference sheets for
+            your convenience, or as input for image generation plugins. These files will never be displayed in scenes.
+        </li>
+        <li><code>_blink</code> &rarr; Animation layer. The eyes are closed/closed frame for blinking.</li>
+        <li><code>_talk</code> &rarr; Animation layer. Mouth is open/visible for talking animation.</li>
+        <li><code>_talk_blink</code> &rarr; Animation layer. Both talking and blinking at the same time.</li>
+        <li><code>_icon</code> &rarr; Character portrait/icon. Used in UI elements (character select, relationship
+            viewer, etc.).</li>
+    </ul>
+
+    <hr>
+
+    <h2>Rotation Suffixes</h2>
+    <p>These suffixes define the character's orientation. The <strong>Gaze Director</strong> uses these to make
+        characters look at each other or at the player while talking.</p>
+    <ul>
+        <li><code>_front</code> &rarr; Character looking at the camera/player. (Default)</li>
+        <li><code>_left</code> &rarr; Character rotated to their left (looking towards the right of the screen).</li>
+        <li><code>_right</code> &rarr; Character rotated to their right (looking towards the left of the screen).</li>
+        <li><code>_back</code> &rarr; Character looking away from the camera.</li>
+    </ul>
+    <div class="note">
+        <strong>NOTE:</strong> If a specific rotation is requested but not found, the engine will automatically fall
+        back
+        to the <code>_front</code> version or the base emotion sprite.
+    </div>
+
+    <hr>
+
+    <h2>Advanced Naming Convention</h2>
+    <p>For high-fidelity setups, you can combine emotions, rotations, and animation layers.</p>
+    <p><strong>Format:</strong> <code>CharacterName_Emotion_Rotation_Animation.extension</code></p>
+
+    <h3>Example of a complete character setup:</h3>
+    <pre>
+stella_neutral_front.webp           ← Base (Neutral, Front)
+stella_neutral_front_blink.webp     ← Animation layer (Neutral, Front)
+stella_neutral_front_talk.webp      ← Animation layer (Neutral, Front)
+stella_neutral_front_talk_blink.webp← Combined layer (Neutral, Front)
+
+stella_neutral_left.webp            ← Rotation variant
+stella_neutral_left_blink.webp      ← Animation variant for rotation
+stella_neutral_left_talk.webp       ← Animation variant for rotation
+
+stella_happy_front.webp             ← Emotion + Rotation
+stella_happy_front_blink.webp       ← Emotion + Rotation + Animation
+    </pre>
+
+    <div class="tip">
+        <strong>TIP:</strong> You only need animation layers if you want those animations. The base sprite alone works
+        perfectly fine!
+    </div>
+
+    <hr>
+
+    <h2>Emotion Detection</h2>
+    <p>The engine scans all sprite files and extracts available emotions automatically. If you have these files:</p>
+    <ul>
+        <li><code>stella_happy.png</code></li>
+        <li><code>stella_sad.png</code></li>
+        <li><code>stella_angry.png</code></li>
+        <li><code>stella_thinking.png</code></li>
+    </ul>
+    <p>The LLM will be told it can use: <code>neutral</code>, <code>happy</code>, <code>sad</code>, <code>angry</code>,
+        <code>thinking</code>.
+    </p>
+    <p><code>neutral</code> is always available by default (you don't need to create a neutral sprite, but it's highly
+        recommended).</p>
+
+    <hr>
+
+    <h2>Fallback System</h2>
+    <p>If a character doesn't have a specific emotion sprite, the engine tries multiple strategies in order:</p>
+    <ol>
+        <li><strong>Exact match:</strong> <code>stella_happy.png</code></li>
+        <li><strong>First name:</strong> <code>stella_happy.png</code> (if character name is "stella johnson")</li>
+        <li><strong>Fuzzy match:</strong> Finds closest filename match</li>
+        <li><strong>Emotion only:</strong> Matches any sprite with the emotion</li>
+        <li><strong>Neutral:</strong> Falls back to <code>stella_neutral.png</code></li>
+        <li><strong>Gender-based:</strong> <code>generic_npc_male.png</code> or <code>generic_npc_female.png</code></li>
+        <li><strong>Generic:</strong> <code>generic_npc.png</code></li>
+    </ol>
+
+    <hr>
+
+    <h2>Generic NPC Sprites</h2>
+    <p>For characters without specific sprites, you can provide generic fallbacks:</p>
+    <ul>
+        <li><code>generic_npc.png</code> &rarr; Universal fallback</li>
+        <li><code>generic_npc_male.png</code> &rarr; Male characters (guessed by name)</li>
+        <li><code>generic_npc_female.png</code> &rarr; Female characters (guessed by name)</li>
+    </ul>
+    <p>The engine uses a gender guessing system to match the appropriate generic sprite.</p>
+
+    <hr>
+
+    <h2>Character Icons</h2>
+    <p>Format: <code>CharacterName_icon.extension</code></p>
+    <p>Used in UI elements like:</p>
+    <ul>
+        <li>Character selection dialogs</li>
+        <li>Relationship viewer</li>
+        <li>HUD displays</li>
+    </ul>
+    <p>These are small portrait images typically square or circular.</p>
+
+    <hr>
+
+    <h2>Common Emotions</h2>
+    <p>Here are some common emotions to use (but you can use any words you want):</p>
+    <pre>
+neutral       - Default/normal expression
+happy         - Joyful, smiling
+sad           - Sad, upset
+angry         - Angry, annoyed
+thinking      - Pondering, contemplative
+talking       - Speaking (mid-sentence)
+handinhip     - Hand on hip (casual)
+surprised     - Shocked
+confused      - Unsure
+worried       - Concerned
+blushing      - Embarrassed
+determined    - Focused, serious
+smiling       - Gentle smile
+laughing      - Amused
+serious       - Stoic, intense
+    </pre>
+    <div class="tip">
+        <strong>TIP:</strong> Use lowercase filenames. Emotion matching is case-insensitive.
+    </div>
+
+    <hr>
+
+    <h2>Japanese Honorifics</h2>
+    <p>The engine automatically strips common Japanese honorifics from character names before checking for sprites:</p>
+    <p><code>-san, -chan, -kun, -sama, -sensei, -senpai, -dono, -shi, -tan, -nii, -nee, -ba, -ji, -bō, -chin, -cchi, -pē, -rin, -pon, -pyon, -maru, -hime, -ouji, -hakase, -shachou</code>
+    </p>
+    <p>So <code>stella-sama</code> will match as <code>stella_happy.png</code> emotion.</p>
+
+    <hr>
+
+    <h2>Sprite Positioning</h2>
+    <p>The engine automatically positions sprites on screen (left, center, right).</p>
+    <ul>
+        <li>New sprites fill in this order: <strong>center &rarr; left &rarr; right</strong></li>
+        <li>When full, "coolest" (least used recently) sprite is replaced first</li>
+        <li>Characters automatically exit after long gaps or when done speaking</li>
+    </ul>
+    <p>No manual positioning needed!</p>
+    <p>(By default, up to 3 characters can be on stream at once, but this can be changed)</p>
+
+    <hr>
+
+    <h2>Organization Tips</h2>
+    <ol>
+        <li><strong>One folder per project:</strong> <code>projects/YourProject/sprites/</code></li>
+        <li><strong>Group by character:</strong> (optional but helpful)
+            <pre>
+sprites/
+  ├── stella_neutral.png
+  ├── stella_happy.png
+  └── stella_reference.png
+            </pre>
+        </li>
+        <li>Keep reference sheets with <code>_reference</code> suffix so they're ignored but still available. This is
+            important for the CG Generator plugin.</li>
+        <li><strong>Use consistent naming:</strong> Always use the same character name prefix for all sprites of that
+            character.</li>
+        <li><strong>Start with "neutral"</strong> - it's the most common emotion and a good fallback.</li>
+    </ol>
+
+    <hr>
+
+    <h2>Quick Start Checklist</h2>
+    <ul class="checklist">
+        <li>Create base sprites: <code>CharacterName_neutral.png</code> (at minimum)</li>
+        <li>Add emotions you want: <code>CharacterName_happy.png</code>, etc.</li>
+        <li>(optional) Add rotation variants: <code>CharacterName_left.png</code>, <code>CharacterName_right.png</code>,
+            <code>CharacterName_back.png</code>, <code>CharacterName_front.png</code>
+        </li>
+        <li>(Optional) Add animations: <code>_blink</code>, <code>_talk</code>, <code>_talk_blink</code> versions</li>
+        <li>(Optional) Add icon: <code>CharacterName_icon.png</code></li>
+        <li>(Optional) Keep reference sheet: <code>CharacterName_reference.png</code></li>
+    </ul>
+
+    <hr>
+
+    <p>For more information, check the engine documentation or ask in the community.</p>
+    <p>Happy sprite making! 🎨</p>
+</body>
+
+</html>

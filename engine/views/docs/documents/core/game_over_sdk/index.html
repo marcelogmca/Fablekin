@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Over SDK Reference</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; line-height: 1.6; color: #e0e0e0; background-color: #0f0f0f; max-width: 900px; margin: 0 auto; }
+        h1 { color: #f44336; }
+        h2 { color: #f44336; margin-top: 40px; }
+        .table-container { overflow-x: auto; margin: 20px 0; border: 1px solid #333; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; background: #1a1a1a; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; }
+        th { background: #252525; color: #aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        code { color: #ffeb3b; background: rgba(255, 235, 59, 0.05); padding: 2px 4px; border-radius: 4px; }
+        pre { background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; color: #e0e0e0; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: #333; color: #ccc; }
+        .tag.red { background: rgba(244, 67, 54, 0.1); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.2); }
+        .tag.gold { background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.2); }
+    </style>
+</head>
+<body>
+    <h1>Game Over SDK Reference</h1>
+    <p>The Game Over system allows plugins to trigger terminal narrative states that lock user input while preserving the <strong>Undo</strong> functionality. It supports both turn-level termination and specific line-level death triggers.</p>
+
+    <h2>1. Backend Triggering</h2>
+    <p>To end the game at the end of a turn, modify the <code>turnContext.output</code> object in a backend hook (like <code>HOOK_POST_VN_GENERATION</code>).</p>
+    <pre><code>
+hooks: {
+    'HOOK_POST_VN_GENERATION': {
+        run: async (turnContext) => {
+            if (playerDied) {
+                turnContext.output.isGameOver = true;
+                turnContext.output.gameOverConfig = {
+                    text: "YOU DIED",
+                    subtext: "Your journey ends here.",
+                    style: { 
+                        fill: "#ff4444",
+                        fontSize: 140
+                    }
+                };
+            }
+        }
+    }
+}
+    </code></pre>
+
+    <h2>2. Line-Level Death (UCP Command)</h2>
+    <p>You can trigger a Game Over at a specific dialogue line using the <code>gameover</code> command. This takes priority over turn-level flags.</p>
+    <pre><code>gameover[:Title Text[:Subtext Description]]</code></pre>
+    <p><strong>Example:</strong> <code>gameover:WAVELENGTH COLLAPSE:Reality has been overwritten.</code></p>
+
+    <h2>3. Frontend Hooks</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Hook Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>HOOK_GAME_OVER_SCREEN</code></td>
+                    <td><span class="tag gold">Frontend</span></td>
+                    <td>Fired when the Game Over overlay appears. Use this to inject custom HTML or trigger SFX.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>4. Styling Customization</h2>
+    <p>When the engine is in a Game Over state, the <code>.game-over-active</code> class is applied to the <code>#user-input-container</code> and <code>#dialogue-container</code>. You can target these in your plugin's CSS to customize the failure appearance.</p>
+    <p>Additionally, the <strong>Undo</strong> button (<code>#undo-message</code>) remains visible and accessible during this state, utilizing global semantic variables like <code>--status-danger-rgb</code> for consistent visuals.</p>
+</body>
+</html>

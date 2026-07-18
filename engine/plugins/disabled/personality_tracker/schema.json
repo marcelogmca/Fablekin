@@ -1,0 +1,296 @@
+{
+    "config": {
+        "naming_convention": "CORE PERSONALITY VECTORS",
+        "version": "1.1.0"
+    },
+    "traits": [
+        {
+            "id": "openness",
+            "predicate": "openness",
+            "label": "Openness",
+            "instructions": "Measures a character's openness to new experiences, imagination, and curiosity.",
+            "ranges": [
+                {
+                    "min": 76,
+                    "max": 100,
+                    "description": "A visionary spirit defined by an insatiable hunger for novel experiences and the unknown."
+                },
+                {
+                    "min": 51,
+                    "max": 75,
+                    "description": "Possesses a deeply curious mind that thrives on abstract concepts and artistic innovation."
+                },
+                {
+                    "min": 26,
+                    "max": 50,
+                    "description": "Enjoys a life of variety, welcoming change with a flexible and open attitude."
+                },
+                {
+                    "min": 1,
+                    "max": 25,
+                    "description": "Generally receptive to new ideas, though they prefer to dip a toe in before diving."
+                },
+                {
+                    "min": -25,
+                    "max": -1,
+                    "description": "Approaches the unknown with caution, preferring familiar methods where possible."
+                },
+                {
+                    "min": -50,
+                    "max": -26,
+                    "description": "Prefers the conventional and traditional, prioritizing the 'tried and true' over innovation."
+                },
+                {
+                    "min": -75,
+                    "max": -51,
+                    "description": "Finds comfort strictly in the known, actively resisting changes to their established routine."
+                },
+                {
+                    "min": -100,
+                    "max": -76,
+                    "description": "Rigidly dogmatic, viewing new ideas with intense skepticism and immediate rejection."
+                }
+            ]
+        },
+        {
+            "id": "conscientiousness",
+            "predicate": "conscientiousness",
+            "label": "Conscientiousness",
+            "instructions": "Measures a character's organization, discipline, and sense of duty.",
+            "ranges": [
+                {
+                    "min": 76,
+                    "max": 100,
+                    "description": "Driven by an iron-clad sense of duty, their discipline and organization are legendary."
+                },
+                {
+                    "min": 51,
+                    "max": 75,
+                    "description": "A methodical architect of their own life, unfailingly reliable and committed to their goals."
+                },
+                {
+                    "min": 26,
+                    "max": 50,
+                    "description": "Structure is their ally; they are organized, responsible, and consistently follow through."
+                },
+                {
+                    "min": 1,
+                    "max": 25,
+                    "description": "Maintains a balanced life, generally organized but capable of handling minor disruptions."
+                },
+                {
+                    "min": -25,
+                    "max": -1,
+                    "description": "Takes a flexible approach to duties, prioritizing the moment over the schedule."
+                },
+                {
+                    "min": -50,
+                    "max": -26,
+                    "description": "Prefers a spontaneous existence, often viewing plans as restrictive rather than helpful."
+                },
+                {
+                    "min": -75,
+                    "max": -51,
+                    "description": "Struggles significantly with focus, often sidelined by carelessness and a lack of planning."
+                },
+                {
+                    "min": -100,
+                    "max": -76,
+                    "description": "Chaotic and impulsive, they often leave a trail of unfinished promises and disorder."
+                }
+            ]
+        },
+        {
+            "id": "extraversion",
+            "predicate": "extraversion",
+            "label": "Extraversion",
+            "instructions": "Measures a character's sociability, energy in crowds, and assertiveness.",
+            "ranges": [
+                {
+                    "min": 76,
+                    "max": 100,
+                    "description": "A force of nature in social settings, they command the room and feed off the energy of the crowd."
+                },
+                {
+                    "min": 51,
+                    "max": 75,
+                    "description": "Thriving on interaction, they are an outgoing soul who seeks connection at every turn."
+                },
+                {
+                    "min": 26,
+                    "max": 50,
+                    "description": "Energetic and talkative, they are rarely found on the sidelines of a gathering."
+                },
+                {
+                    "min": 1,
+                    "max": 25,
+                    "description": "Socially capable and present, though they value a balance between mixing and solitude."
+                },
+                {
+                    "min": -25,
+                    "max": -1,
+                    "description": "Slightly guarded, preferring the intimacy of small groups over the noise of a crowd."
+                },
+                {
+                    "min": -50,
+                    "max": -26,
+                    "description": "Introspective and quiet, they actively avoid the spotlight in favor of the background."
+                },
+                {
+                    "min": -75,
+                    "max": -51,
+                    "description": "A reserved observer who keeps their walls high, strongly preferring their own company."
+                },
+                {
+                    "min": -100,
+                    "max": -76,
+                    "description": "Profoundly solitary, finding social interaction to be an exhausting drain on their limited battery."
+                }
+            ]
+        },
+        {
+            "id": "agreeableness",
+            "predicate": "agreeableness",
+            "label": "Agreeableness",
+            "instructions": "Measures a character's compassion, cooperativeness, and trust.",
+            "ranges": [
+                {
+                    "min": 76,
+                    "max": 100,
+                    "description": "The definition of altruism, they possess a radical empathy that always prioritizes others' needs."
+                },
+                {
+                    "min": 51,
+                    "max": 75,
+                    "description": "A peacemaker at heart, they seek harmony and consensus in every relationship."
+                },
+                {
+                    "min": 26,
+                    "max": 50,
+                    "description": "Kindness is their default state; they are helpful, trusting, and morally upstanding."
+                },
+                {
+                    "min": 1,
+                    "max": 25,
+                    "description": "Friendly and considerate, they generally assume the best in people."
+                },
+                {
+                    "min": -25,
+                    "max": -1,
+                    "description": "Skeptical by nature, they are not easily swayed by sob stories or social pressure."
+                },
+                {
+                    "min": -50,
+                    "max": -26,
+                    "description": "Unafraid of conflict, they can be stubborn and challenging when their views are opposed."
+                },
+                {
+                    "min": -75,
+                    "max": -51,
+                    "description": "Viewing the world through a lens of suspicion, they are competitive and slow to trust."
+                },
+                {
+                    "min": -100,
+                    "max": -76,
+                    "description": "Machiavellian and antagonistic, they view interactions as battles to be won via manipulation."
+                }
+            ]
+        },
+        {
+            "id": "neuroticism",
+            "predicate": "neuroticism",
+            "label": "Neuroticism",
+            "instructions": "Measures a character's emotional stability and tendency toward anxiety.",
+            "ranges": [
+                {
+                    "min": 76,
+                    "max": 100,
+                    "description": "Plagued by a volatile emotional landscape, they are exceptionally prone to crippling stress and anxiety."
+                },
+                {
+                    "min": 51,
+                    "max": 75,
+                    "description": "Highly sensitive to their environment, often wrestling with waves of worry and melancholy."
+                },
+                {
+                    "min": 26,
+                    "max": 50,
+                    "description": "Emotionally reactive, they can become moody or flustered when the pressure mounts."
+                },
+                {
+                    "min": 1,
+                    "max": 25,
+                    "description": "Generally stable, though they experience the normal peaks and valleys of human emotion."
+                },
+                {
+                    "min": -25,
+                    "max": -1,
+                    "description": "Even-keeled and relaxed, it takes a significant event to truly upset them."
+                },
+                {
+                    "min": -50,
+                    "max": -26,
+                    "description": "Composed and collected, they maintain a stoic control over their internal state."
+                },
+                {
+                    "min": -75,
+                    "max": -51,
+                    "description": "Possesses a teflon-like resilience to stress, rarely feeling the bite of anxiety."
+                },
+                {
+                    "min": -100,
+                    "max": -76,
+                    "description": "An unshakeable rock, remaining profoundly calm and secure even when the world burns."
+                }
+            ]
+        },
+        {
+            "id": "esteem",
+            "predicate": "esteem",
+            "label": "Esteem",
+            "instructions": "Measures a character's self-worth, confidence, and internal validation.",
+            "ranges": [
+                {
+                    "min": 76,
+                    "max": 100,
+                    "description": "Radiating an aura of unshakable confidence, they command respect effortlessly."
+                },
+                {
+                    "min": 51,
+                    "max": 75,
+                    "description": "Possessing high self-worth, they take pride in their accomplishments and standing."
+                },
+                {
+                    "min": 26,
+                    "max": 50,
+                    "description": "Confident and capable, they know their value and expect respect from peers."
+                },
+                {
+                    "min": 1,
+                    "max": 25,
+                    "description": "Maintains a healthy level of self-respect without venturing into arrogance."
+                },
+                {
+                    "min": -25,
+                    "max": -1,
+                    "description": "Sensitive to criticism, their confidence is easily shaken by failure."
+                },
+                {
+                    "min": -50,
+                    "max": -26,
+                    "description": "Filled with doubt, they second-guess their abilities and fear judgment."
+                },
+                {
+                    "min": -75,
+                    "max": -51,
+                    "description": "Plagued by an inferiority complex, they constantly seek validation to fill the void."
+                },
+                {
+                    "min": -100,
+                    "max": -76,
+                    "description": "Crippled by self-loathing, they view themselves as fundamentally broken or worthless."
+                }
+            ]
+        }
+    ]
+}

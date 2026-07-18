@@ -1,0 +1,12 @@
+# PHASE 2: RESEARCH EXCELLENT MEDIA
+
+Study accomplished anime and television as a practical quality benchmark for this specific story. You have at most {{max_calls}} exploratory calls before a separate no-tools finalization call.
+
+First use the Phase 1 diagnosis below to identify the exact craft problems. {{architect_guidance}}
+
+Choose references for relevance to the diagnosed weakness, not merely fame or genre similarity. Prefer specific episodes when the evidence or your recollection supports that specificity; do not invent episode details when uncertain. Examine pacing, escalation, scene construction, character pressure, reversals, emotional causality, and overall writing style. Explain what our story can deliberately imitate or transform and why our story currently falls short.
+
+Extract transferable dramatic machinery rather than vague lessons such as "raise the stakes." Surface mechanisms may inspire adaptation, but do not copy names, dialogue, lore, or complete scene sequences. When you have enough evidence, return a draft reference conclusion; a separate finalization call will convert it into the phase dossier. Do not place ledger commands inside any conclusion.
+
+PHASE 1 STORY DOSSIER:
+{{story_dossier}}

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUI Intercept SDK</title>
+    <style>
+        :root {
+            --bg: #0b1117;
+            --panel: #111c27;
+            --panel-2: #162738;
+            --border: #2f4860;
+            --text: #eaf4ff;
+            --muted: #9bb4cc;
+            --accent: #7fc7ff;
+            --accent-2: #91f0d0;
+            --warn: #ffd47f;
+            --danger: #ff9b9b;
+            --mono: "Consolas", "Courier New", monospace;
+            --sans: "Segoe UI", "Trebuchet MS", sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: var(--sans);
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% -10%, rgba(127, 199, 255, 0.14), transparent 42%),
+                radial-gradient(circle at 120% 15%, rgba(145, 240, 208, 0.09), transparent 45%),
+                var(--bg);
+        }
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 20px 18px 80px;
+        }
+
+        .hero {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: linear-gradient(150deg, rgba(127, 199, 255, 0.15), rgba(145, 240, 208, 0.05));
+            padding: 20px 22px;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            letter-spacing: 0.3px;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 980px;
+        }
+
+        .toc {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .toc a {
+            display: block;
+            text-decoration: none;
+            color: var(--muted);
+            border: 1px solid rgba(127, 199, 255, 0.25);
+            background: rgba(14, 24, 35, 0.64);
+            padding: 9px 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 140ms ease;
+        }
+
+        .toc a:hover {
+            color: var(--text);
+            border-color: rgba(127, 199, 255, 0.5);
+            background: rgba(20, 34, 48, 0.84);
+        }
+
+        section {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(16, 28, 40, 0.94), rgba(11, 20, 30, 0.94));
+            padding: 18px 20px;
+            margin-top: 14px;
+        }
+
+        section h2 {
+            margin: 0 0 8px;
+            font-size: 23px;
+            letter-spacing: 0.2px;
+        }
+
+        section h3 {
+            margin: 16px 0 8px;
+            font-size: 17px;
+            color: var(--accent);
+        }
+
+        p {
+            margin: 0 0 10px;
+            color: var(--muted);
+            line-height: 1.56;
+        }
+
+        ul, ol {
+            margin: 8px 0 10px;
+            padding-left: 20px;
+            color: var(--muted);
+        }
+
+        li { margin: 6px 0; }
+
+        code {
+            font-family: var(--mono);
+            background: rgba(127, 199, 255, 0.13);
+            border: 1px solid rgba(127, 199, 255, 0.26);
+            color: #cfeeff;
+            padding: 1px 5px;
+            border-radius: 6px;
+        }
+
+        pre {
+            margin: 8px 0 10px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(127, 199, 255, 0.36);
+            background: #09131d;
+            color: #d8ebff;
+            overflow-x: auto;
+            font-family: var(--mono);
+            font-size: 12px;
+            line-height: 1.42;
+        }
+
+        .note, .warn, .danger {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+        }
+
+        .note {
+            background: rgba(127, 199, 255, 0.1);
+            border-color: rgba(127, 199, 255, 0.35);
+            color: #d5ebff;
+        }
+
+        .warn {
+            background: rgba(255, 212, 127, 0.1);
+            border-color: rgba(255, 212, 127, 0.34);
+            color: #ffe9c1;
+        }
+
+        .danger {
+            background: rgba(255, 155, 155, 0.1);
+            border-color: rgba(255, 155, 155, 0.35);
+            color: #ffd7d7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            border: 1px solid rgba(127, 199, 255, 0.26);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border-bottom: 1px solid rgba(127, 199, 255, 0.17);
+            padding: 9px 10px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 13px;
+        }
+
+        th {
+            background: rgba(127, 199, 255, 0.08);
+            color: #d8ecff;
+            font-weight: 700;
+        }
+
+        .pill {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 11px;
+            border: 1px solid rgba(127, 199, 255, 0.32);
+            background: rgba(127, 199, 255, 0.1);
+            color: #cde9ff;
+        }
+
+        .mono {
+            font-family: var(--mono);
+        }
+
+        @media (max-width: 860px) {
+            .page { padding: 14px 10px 56px; }
+            .hero h1 { font-size: 24px; }
+            section h2 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="hero">
+            <h1>GUI Intercept SDK</h1>
+            <p>
+                This is the full plugin-author guide for VN GUI intercepts: registration, payload builders,
+                chain execution, replay behavior, bridge API, and persistence lanes.
+                The goal is to let you build deterministic, rewind-safe, composable UI gameplay layers.
+            </p>
+            <div class="toc">
+                <a href="#mental-model">1. Mental Model</a>
+                <a href="#quick-start">2. Quick Start</a>
+                <a href="#registration-api">3. Registration API</a>
+                <a href="#descriptor-schema">4. Descriptor Schema</a>
+                <a href="#checkpoint-timing">5. Checkpoints and Timing</a>
+                <a href="#chain-engine">6. Chain Engine</a>
+                <a href="#replay-policy">7. Replay Policies</a>
+                <a href="#lanes">8. Persisted vs Runtime Lanes</a>
+                <a href="#payload-builders">9. UI Payload Builders</a>
+                <a href="#bridge-api">10. Intercept Bridge API</a>
+                <a href="#action-contract">11. Action Contract</a>
+                <a href="#runtime-memory">12. Runtime Memory Behavior</a>
+                <a href="#socket-events">13. Socket Events</a>
+                <a href="#patterns">14. Recommended Patterns</a>
+                <a href="#examples">15. End-to-End Examples</a>
+                <a href="#troubleshooting">16. Troubleshooting</a>
+                <a href="#reference">17. Reference Cheatsheet</a>
+            </div>
+        </div>
+
+        <section id="mental-model">
+            <h2>1) Mental Model</h2>
+            <p>
+                A GUI intercept is a plugin-defined middleware step attached to a VN viewer checkpoint.
+                Intercepts are registered as descriptors on turn context, then executed by the viewer orchestrator.
+            </p>
+            <ol>
+                <li>Plugin hook registers one or more intercept descriptors.</li>
+                <li>VN payload sent to viewer includes intercept manifest.</li>
+                <li>Viewer enters checkpoints during navigation/submit flow.</li>
+                <li>Orchestrator runs a sorted chain of matching descriptors.</li>
+                <li>For each descriptor, UI payload is fetched or inlined and executed.</li>
+                <li>UI calls bridge methods to continue, cancel, navigate, or submit.</li>
+            </ol>
+            <div class="note">
+                Intercepts are plugin-owned. Core handles orchestration, state keys, execution order, and transport.
+            </div>
+        </section>
+
+        <section id="quick-start">
+            <h2>2) Quick Start</h2>
+            <h3>Step A: Register a descriptor</h3>
+            <pre>hooks: {
+  HOOK_GUI_GATEKEEPER: {
+    priority: 10,
+    run: async (context, tools) => {
+      tools.gui.registerRuntimeIntercept({
+        interceptId: "sample_gate",
+        checkpoint: "before_first_dialogue",
+        blocking: true,
+        priority: 50
+      });
+    }
+  }
+}</pre>
+
+            <h3>Step B: Export a payload factory</h3>
+            <pre>exports: {
+  guiIntercepts: {
+    async sample_gate(context, tools, descriptor, request) {
+      return {
+        html: "&lt;div&gt;Hello intercept&lt;/div&gt;",
+        css: "div { color: white; }",
+        js: "bridge.intercept.resolve({ confirmed: true });"
+      };
+    }
+  }
+}</pre>
+
+            <h3>Step C: Use bridge in JS</h3>
+            <pre>// Declarative intercept JS receives (bridge, socket, context)
+const btn = document.getElementById("continue-btn");
+if (btn) {
+  btn.onclick = () =&gt; bridge.intercept.resolve({ confirmed: true });
+}</pre>
+        </section>
+
+        <section id="registration-api">
+            <h2>3) Registration API</h2>
+            <p>Available from <code>tools.gui</code>.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Purpose</th>
+                        <th>Lane</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>registerIntercept(descriptor, options)</code></td>
+                        <td>Generic registration helper. Choose lane via options.</td>
+                        <td><code>persisted</code> by default, <code>runtime</code> if <code>options.runtime === true</code> or <code>options.persistence === "runtime"</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>registerPersistentIntercept(descriptor)</code></td>
+                        <td>Explicit persisted lane registration.</td>
+                        <td>Persisted</td>
+                    </tr>
+                    <tr>
+                        <td><code>registerRuntimeIntercept(descriptor)</code></td>
+                        <td>Explicit runtime lane registration.</td>
+                        <td>Runtime</td>
+                    </tr>
+                    <tr>
+                        <td><code>clearIntercepts({ lane })</code></td>
+                        <td>Clears registered descriptors from current context.</td>
+                        <td><code>persisted</code>, <code>runtime</code>, or <code>both</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Normalization defaults applied during registration</h3>
+            <ul>
+                <li><code>pluginId</code> defaults to current plugin id.</li>
+                <li><code>interceptId</code> defaults to <code>descriptor.interceptId</code> or <code>descriptor.id</code> or generated unique id.</li>
+                <li><code>checkpoint</code> defaults to <code>on_dialogue_enter</code>.</li>
+                <li><code>priority</code> defaults to <code>100</code>.</li>
+                <li><code>blocking</code> defaults to <code>true</code>.</li>
+                <li><code>renderer</code> defaults to <code>html</code>.</li>
+                <li><code>replayPolicy</code> defaults to <code>every_enter</code>.</li>
+                <li><code>stateScope</code> defaults to <code>turn</code>.</li>
+                <li><code>persistence</code> is set automatically from lane.</li>
+            </ul>
+        </section>
+
+        <section id="descriptor-schema">
+            <h2>4) Descriptor Schema</h2>
+            <p>Current supported and observed fields.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>pluginId</code></td><td>string</td><td>current plugin</td><td>Owner plugin identity.</td></tr>
+                    <tr><td><code>interceptId</code></td><td>string</td><td>generated</td><td>Stable identifier used in builder lookup and status keys.</td></tr>
+                    <tr><td><code>checkpoint</code></td><td>string</td><td><code>on_dialogue_enter</code></td><td>Trigger point.</td></tr>
+                    <tr><td><code>dialogueIndex</code></td><td>integer or null</td><td>null</td><td>For dialogue-index scoping on <code>on_dialogue_enter</code>.</td></tr>
+                    <tr><td><code>priority</code></td><td>number</td><td>100</td><td>Lower runs first.</td></tr>
+                    <tr><td><code>blocking</code></td><td>boolean</td><td>true</td><td>Blocking intercept halts chain until resolved.</td></tr>
+                    <tr><td><code>renderer</code></td><td>string</td><td><code>html</code></td><td><code>html</code> (overlay/DOM) or <code>pixi</code> (canvas takeover mode).</td></tr>
+                    <tr><td><code>replayPolicy</code></td><td>string</td><td><code>every_enter</code></td><td>Controls reruns on navigation/re-entry.</td></tr>
+                    <tr><td><code>stateScope</code></td><td>string</td><td><code>turn</code></td><td>Accepted but not currently enforced by orchestrator logic.</td></tr>
+                    <tr><td><code>persistence</code></td><td>string</td><td>lane-derived</td><td><code>persisted</code> or <code>runtime</code>.</td></tr>
+                    <tr><td><code>inlineUi</code></td><td>object</td><td>null</td><td>If present, bypasses backend payload request.</td></tr>
+                    <tr><td><code>timeoutMs</code></td><td>number</td><td>120000</td><td>Blocking intercept timeout.</td></tr>
+                    <tr><td><code>durationMs</code></td><td>number</td><td>3500</td><td>Non-blocking host cleanup time.</td></tr>
+                    <tr><td><code>transitionIn</code></td><td>object</td><td>null</td><td>Optional enter transition descriptor (<code>effect</code>, <code>scope</code>, <code>durationMs</code>, ...).</td></tr>
+                    <tr><td><code>transitionOut</code></td><td>object</td><td>null</td><td>Optional exit transition descriptor (<code>effect</code>, <code>scope</code>, <code>durationMs</code>, ...).</td></tr>
+                    <tr><td><code>payload</code></td><td>any object</td><td>none</td><td>Plugin custom data.</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Checkpoint normalization behavior</h3>
+            <ul>
+                <li>If <code>checkpoint</code> is valid, it is used as-is.</li>
+                <li>If invalid and <code>dialogueIndex &lt; 0</code>, checkpoint becomes <code>before_first_dialogue</code>.</li>
+                <li>If invalid and dialogue index is absent/non-negative, checkpoint becomes <code>on_dialogue_enter</code>.</li>
+            </ul>
+        </section>
+
+        <section id="checkpoint-timing">
+            <h2>5) Checkpoints and Timing</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Checkpoint</th>
+                        <th>When it runs</th>
+                        <th>Where in viewer flow</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>before_first_dialogue</code></td>
+                        <td>On scene entry when index is 0.</td>
+                        <td><code>showMessage(0)</code> path.</td>
+                    </tr>
+                    <tr>
+                        <td><code>on_dialogue_enter</code></td>
+                        <td>On every <code>showMessage(index)</code>.</td>
+                        <td>Before scene render logic.</td>
+                    </tr>
+                    <tr>
+                        <td><code>before_user_input_show</code></td>
+                        <td>When entered scene is virtual input line (<code>isVirtual === true</code>).</td>
+                        <td>Scene entry chain.</td>
+                    </tr>
+                    <tr>
+                        <td><code>during_user_input</code></td>
+                        <td>While the user-input surface is active.</td>
+                        <td>Input overlay chain; suitable for line-scoped helpers that should remain visible until submission.</td>
+                    </tr>
+                    <tr>
+                        <td><code>before_submit</code></td>
+                        <td>Before <code>processMessage(...)</code> when user sends input.</td>
+                        <td><code>submitUserInput(...)</code> path.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="warn">
+                <strong>Bypass mode:</strong> submit flows that call <code>submitUserInput({ skipBeforeSubmit: true })</code>
+                will skip the <code>before_submit</code> chain. This is intentionally used by bridge submit helpers to avoid recursion.
+            </div>
+        </section>
+
+        <section id="chain-engine">
+            <h2>6) Chain Engine</h2>
+            <h3>Selection</h3>
+            <ol>
+                <li>Match descriptor checkpoint.</li>
+                <li>For <code>on_dialogue_enter</code>, enforce <code>descriptor.dialogueIndex</code> when provided.</li>
+                <li>Apply replay policy against status state.</li>
+            </ol>
+
+            <h3>Order</h3>
+            <ol>
+                <li>Sort by <code>priority</code> ascending.</li>
+                <li>Tie-break by registration order.</li>
+            </ol>
+
+            <h3>Status keying model</h3>
+            <p>
+                Status entries are keyed by a deterministic composite:
+                <code>turn|checkpoint|index|plugin|intercept</code>.
+            </p>
+
+            <h3>Session-level memory used by policies</h3>
+            <ul>
+                <li><code>statusByKey</code>: visit count, ran, resolved, last result for current key.</li>
+                <li><code>sessionResolved</code>: plugin/intercept resolution memory across turns for <code>once_per_session</code>.</li>
+                <li><code>pluginState</code>: plugin key-value state exposed via bridge.</li>
+            </ul>
+
+            <h3>Resolution marking rules</h3>
+            <p>
+                Descriptor status is marked as resolved when resulting action is
+                <code>continue</code>, <code>navigate</code>, or <code>submit</code>.
+                This matters for <code>until_resolved</code> and <code>once_per_session</code>.
+            </p>
+        </section>
+
+        <section id="replay-policy">
+            <h2>7) Replay Policies</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Policy</th>
+                        <th>Behavior</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>every_enter</code></td><td>Runs every time checkpoint is entered.</td></tr>
+                    <tr><td><code>once_per_turn</code></td><td>Runs only if key has not run yet this turn-key combination.</td></tr>
+                    <tr><td><code>until_resolved</code></td><td>Runs repeatedly until result marks descriptor as resolved.</td></tr>
+                    <tr><td><code>once_per_session</code></td><td>Runs once per viewer session keyed by plugin + intercept id.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="lanes">
+            <h2>8) Persisted vs Runtime Lanes</h2>
+            <h3>Persisted lane</h3>
+            <ul>
+                <li>Stored on <code>turnContext.output.guiIntercepts</code>.</li>
+                <li>Emitted in VN payload and replayable from historical turns.</li>
+                <li>Use for narrative-critical or rewind-consistent intercepts.</li>
+            </ul>
+
+            <h3>Runtime lane</h3>
+            <ul>
+                <li>Stored on <code>turnContext.runtime.guiIntercepts</code>.</li>
+                <li>Emitted for live turn but explicitly denied from runtime snapshot persistence.</li>
+                <li>Use for one-shot tactical/gameplay overlays and temporary effects.</li>
+            </ul>
+
+            <div class="note">
+                Runtime lane is blocked from serialization via runtime deny list, so it will not survive DB restore.
+            </div>
+        </section>
+
+        <section id="payload-builders">
+            <h2>9) UI Payload Builders</h2>
+            <p>
+                If descriptor has no <code>inlineUi</code>, viewer asks backend for payload via
+                <code>request-gui-intercept-ui</code>. Plugin manager resolves a factory in this order:
+            </p>
+            <ol>
+                <li><code>plugin.exports.guiIntercepts[interceptId]</code> then <code>plugin.exports.guiIntercepts.default</code></li>
+                <li><code>plugin.exports.guiIntercept</code></li>
+                <li><code>plugin.exports.buildGuiIntercept</code></li>
+                <li>Top-level plugin object equivalents (<code>guiIntercepts</code>, <code>guiIntercept</code>, <code>buildGuiIntercept</code>)</li>
+            </ol>
+            <p>Factory signature:</p>
+            <pre>async function builder(context, tools, descriptor, request) {
+  return { html, css, js };
+}</pre>
+
+            <h3>Payload contract</h3>
+            <ul>
+                <li><code>html</code>: optional markup string mounted in host container.</li>
+                <li><code>css</code>: optional stylesheet text inserted into a style tag.</li>
+                <li><code>js</code>: optional script body executed via <code>new Function(...)</code>.</li>
+            </ul>
+
+            <h3>Blocking vs non-blocking payload execution</h3>
+            <ul>
+                <li>Blocking: mounted in <code>#plugin-overlay</code>, waits for bridge completion, cleans up on resolve/reject/timeout.</li>
+                <li>Blocking + <code>renderer: "pixi"</code>: enters canvas takeover mode, disables VN controls/input, pauses VN audio, and waits for takeover completion.</li>
+                <li>Non-blocking: mounted in temporary host with auto cleanup after <code>durationMs</code> (default 3500 ms).</li>
+                <li>If non-blocking descriptor has no payload, viewer dispatches <code>window</code> event <code>vn:gui-intercept-nonblocking</code>.</li>
+            </ul>
+
+            <div class="warn">
+                Declarative intercept JS runs with arguments <code>(bridge, socket, context)</code>.
+            </div>
+        </section>
+
+        <section id="bridge-api">
+            <h2>10) Intercept Bridge API</h2>
+            <h3>Bridge object summary</h3>
+            <pre>{
+  meta: { apiVersion, renderer, runId, pluginId, interceptId, checkpoint },
+  resolve(data),
+  resolveProjectPath(relPath, projectName?),
+  resolvePluginPath(pluginId, relPath),
+  lifecycle: { onDispose, onAbort, onPause, onResume, setTimeout, setInterval, requestAnimationFrame, onWindow },
+  assets: { plugin, project, url, loadText, loadJson, loadImage, loadAudio, loadTexture, preload },
+  surface: { type, getRoot, getLayer, getSize, onResize, setPointerMode },
+  player: { getState, getScene, getTurn, getSettings, getActiveCharacters, getBackground, ui: { lock, restore, ... } },
+  pixi: { getApp, getLayer, getLogicalSize, toLogicalPoint, onTick, loadTexture, add, destroy },
+  audio: { getVolume, createManagedAudio, play, loop, stop, duckVN, restoreVN },
+  storage: { get, set, patch, delete, clear, keys, getNamespace },
+  log: { debug, info, warn, error, mark },
+  intercept: { resolve, reject, defer, skip, getContext },
+  nav: { forward, back, goTo },
+  input: { getText, setText, submitAndGenerate, cancelSubmit },
+  takeover: { resolve, finish, abort, skip, isActive, getContext, getLayer, clearLayer },
+  actors: { spawn, update, setShadow, enableShadow, disableShadow, remove, clear, hideNativeSprites },
+  background: { set, restore, end, get },
+  context: { get },
+  state: { get, set, clear },
+  socket: { emit, request, on, once, off }
+}</pre>
+
+            <h3><code>lifecycle.*</code></h3>
+            <ul>
+                <li>Use lifecycle timers and animation frames instead of raw browser timers so they are cancelled when the intercept ends.</li>
+                <li><code>lifecycle.onWindow(event, handler)</code> tracks and removes window listeners automatically.</li>
+                <li><code>lifecycle.onDispose(fn)</code> is the final cleanup hook for DOM handlers, Pixi objects, and third-party resources.</li>
+                <li><code>bridge.socket.on()</code> and <code>bridge.socket.once()</code> also unregister their listeners during disposal.</li>
+            </ul>
+
+            <h3><code>intercept.*</code></h3>
+            <ul>
+                <li><code>intercept.resolve(data)</code>: complete as continue by default, or cancel if <code>data.cancel === true</code>.</li>
+                <li><code>intercept.reject(reason)</code>: complete as cancel.</li>
+                <li><code>intercept.defer(data)</code>: continue while marking the result as deferred.</li>
+                <li><code>intercept.skip(reason)</code>: complete as cancel.</li>
+                <li><code>intercept.getContext()</code>: returns run snapshot (run id, checkpoint, dialogue index, scene index, turn number, descriptor).</li>
+            </ul>
+
+            <h3><code>nav.*</code></h3>
+            <ul>
+                <li><code>nav.forward(steps)</code>: calls viewer forward handler and finalizes with <code>action: "navigate"</code>.</li>
+                <li><code>nav.back(steps)</code>: calls viewer back handler and finalizes with <code>action: "navigate"</code>.</li>
+                <li><code>nav.goTo(index)</code>: jumps to index and finalizes with <code>action: "navigate"</code>.</li>
+            </ul>
+
+            <h3><code>input.*</code></h3>
+            <ul>
+                <li><code>input.getText()</code>: reads user input field.</li>
+                <li><code>input.setText(text)</code>: writes user input field.</li>
+                <li><code>input.submitAndGenerate(options)</code>: triggers send path with <code>skipBeforeSubmit: true</code>, finalizes with <code>action: "submit"</code>.</li>
+                <li><code>input.cancelSubmit(reason)</code>: finalizes with <code>action: "cancel"</code>.</li>
+            </ul>
+
+            <h3><code>state.*</code></h3>
+            <ul>
+                <li><code>state.get(key)</code>, <code>state.set(key, value)</code>, <code>state.clear(key?)</code>.</li>
+                <li>Scope is plugin-local inside viewer intercept runtime memory.</li>
+                <li>Useful for preserving UI state or listener references between re-entries.</li>
+            </ul>
+
+            <h3><code>takeover.*</code> (important for <code>renderer: "pixi"</code>)</h3>
+            <ul>
+                <li><code>takeover.finish(data)</code> / <code>takeover.resolve(data)</code>: end takeover as <code>continue</code>.</li>
+                <li><code>takeover.abort(reason, data)</code> / <code>takeover.skip(reason, data)</code>: end takeover as <code>cancel</code>.</li>
+                <li><code>takeover.isActive()</code>: whether current run still owns the takeover lock.</li>
+                <li><code>takeover.getContext()</code>: current takeover metadata + descriptor/checkpoint context.</li>
+                <li><code>takeover.getLayer()</code>: returns plugin-owned PIXI layer container for rendering.</li>
+                <li><code>takeover.clearLayer()</code>: removes children from the plugin takeover layer.</li>
+            </ul>
+
+            <h3><code>context.pluginRuntime</code> (available for <code>renderer: "pixi"</code>)</h3>
+            <ul>
+                <li><code>context.pluginRuntime</code>: takeover payload reference to the same runtime exposed publicly as <code>VN.pixiPlugins</code>.</li>
+                <li><code>pluginRuntime.register(id, setupFn)</code>: Register a new plugin with tracked ticker hooks and event listeners.</li>
+                <li><code>pluginRuntime.dispose(id)</code>: Dispose a registered plugin (removes all hooks and listeners).</li>
+                <li><code>pluginRuntime.isPaused(id)</code>: Check if a VN plugin is currently paused (during takeover).</li>
+                <li>Mini-game plugins should <code>register()</code> at takeover start and <code>dispose()</code> before calling <code>bridge.takeover.finish()</code>.</li>
+            </ul>
+            <div class="note">
+                VN plugins (VFX, sprite shading, alive backgrounds) are automatically paused when a PIXI takeover begins
+                and resumed when it ends. Mini-game plugins registered via <code>pluginRuntime.register()</code> during a takeover
+                are NOT auto-paused — they were just created. They should self-dispose before finishing.
+            </div>
+        </section>
+
+        <section id="action-contract">
+            <h2>11) Action Contract</h2>
+            <p>Orchestrator recognizes these action outcomes from blocking intercepts.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Meaning</th>
+                        <th>Effect on chain/flow</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>continue</code></td><td>Intercept completed normally.</td><td>Chain continues.</td></tr>
+                    <tr><td><code>navigate</code></td><td>UI requested forward/back/goTo.</td><td>Chain halts, scene render path halts for current call.</td></tr>
+                    <tr><td><code>submit</code></td><td>UI explicitly submitted input.</td><td><code>before_submit</code> caller treats as handled and stops normal submit path.</td></tr>
+                    <tr><td><code>cancel</code></td><td>User canceled/rejected/timed out.</td><td>Chain halts as blocked/canceled.</td></tr>
+                    <tr><td><code>error</code></td><td>Execution failure.</td><td>Chain halts as error.</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Result data overrides</h3>
+            <p>Result <code>data</code> may include override keys:</p>
+            <ul>
+                <li><code>messageOverride</code> or <code>userInputOverride</code></li>
+                <li><code>directorPromptOverride</code> or <code>directorOverride</code></li>
+            </ul>
+            <div class="note">
+                These overrides are especially relevant to <code>before_submit</code> intercepts.
+            </div>
+        </section>
+
+        <section id="runtime-memory">
+            <h2>12) Runtime Memory Behavior</h2>
+            <h3>What resets per turn</h3>
+            <ul>
+                <li><code>descriptors</code></li>
+                <li><code>statusByKey</code></li>
+                <li><code>currentTurnNumber</code></li>
+            </ul>
+
+            <h3>What persists across turns in viewer session</h3>
+            <ul>
+                <li><code>sessionResolved</code> (used by <code>once_per_session</code>)</li>
+                <li><code>pluginState</code> (bridge state store)</li>
+            </ul>
+
+            <h3>Takeover state</h3>
+            <ul>
+                <li><code>interceptRuntime.takeover</code> tracks active PIXI takeover lock metadata for current viewer run.</li>
+                <li>Takeover lock is automatically released on completion, timeout, or intercept cleanup.</li>
+            </ul>
+
+            <div class="note">
+                This is useful for long-lived UI behavior and cross-turn caching inside a single viewer session.
+            </div>
+        </section>
+
+        <section id="socket-events">
+            <h2>13) Socket Events</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Direction</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>request-gui-intercept-ui</code></td>
+                        <td>Viewer -> backend</td>
+                        <td>Request declarative payload for a descriptor run.</td>
+                    </tr>
+                    <tr>
+                        <td><code>request-gui-intercept-ui-response</code></td>
+                        <td>Backend -> viewer</td>
+                        <td>Return payload or error for a run.</td>
+                    </tr>
+                    <tr>
+                        <td><code>vn:gui-intercept-nonblocking</code></td>
+                        <td>Viewer internal event</td>
+                        <td>Dispatched when non-blocking descriptor has no payload object.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Declarative payload request body</h3>
+            <pre>{
+  interceptRunId,
+  pluginId,
+  interceptId,
+  descriptor,
+  checkpoint,
+  checkpointContext
+}</pre>
+
+            <h3>Request timeout values</h3>
+            <ul>
+                <li>Viewer payload fetch wait: <code>90000 ms</code>.</li>
+                <li>Blocking overlay auto-timeout: descriptor <code>timeoutMs</code> or default <code>120000 ms</code>.</li>
+                <li>Blocking PIXI takeover auto-timeout: descriptor <code>timeoutMs</code> or default <code>300000 ms</code>.</li>
+            </ul>
+        </section>
+
+        <section id="patterns">
+            <h2>14) Recommended Patterns</h2>
+            <h3>A) One plugin, many intercepts</h3>
+            <p>Use <code>exports.guiIntercepts</code> map and stable <code>interceptId</code> keys.</p>
+
+            <h3>B) Listener lifecycle safety</h3>
+            <p>Use the lifecycle-aware bridge wrappers. They detach listeners and cancel timers automatically when the run resolves, aborts, times out, or is disposed.</p>
+            <pre>const handler = (payload) =&gt; { /* ... */ };
+bridge.socket.on("my_plugin:event-name", handler);
+
+bridge.lifecycle.setTimeout(() =&gt; {
+  bridge.intercept.skip("timed_out");
+}, 30000);
+
+bridge.lifecycle.onDispose(() =&gt; {
+  // Clean up third-party resources not owned by another bridge helper.
+});</pre>
+
+            <h3>C) Choose lane intentionally</h3>
+            <ul>
+                <li>Use persisted lane for narrative gates that should replay when user revisits turns.</li>
+                <li>Use runtime lane for ephemeral effects and one-off mechanics.</li>
+            </ul>
+
+            <h3>D) Use priorities to compose plugins</h3>
+            <ul>
+                <li>Lower values run first.</li>
+                <li>Reserve ranges by plugin if many plugins share checkpoints.</li>
+            </ul>
+
+            <h3>E) Keep non-blocking intercepts lightweight</h3>
+            <ul>
+                <li>Avoid heavy DOM growth in repeated entry checkpoints.</li>
+                <li>Set explicit <code>durationMs</code> for effect hosts.</li>
+            </ul>
+
+            <h3>F) Use PIXI takeover for full gameplay beats</h3>
+            <ul>
+                <li>Set descriptor <code>renderer: "pixi"</code> + <code>blocking: true</code>.</li>
+                <li>Render only inside <code>bridge.takeover.getLayer()</code>; do not mutate base VN layers directly.</li>
+                <li>Always end with <code>bridge.takeover.finish(...)</code> or <code>bridge.takeover.abort(...)</code>.</li>
+            </ul>
+        </section>
+
+        <section id="examples">
+            <h2>15) End-to-End Examples</h2>
+            <h3>Example 1: Persisted dialogue gate on index 2</h3>
+            <pre>tools.gui.registerPersistentIntercept({
+  interceptId: "inspect_artifact",
+  checkpoint: "on_dialogue_enter",
+  dialogueIndex: 2,
+  blocking: true,
+  replayPolicy: "every_enter",
+  priority: 40
+});</pre>
+
+            <h3>Example 2: Before submit content transform</h3>
+            <pre>// intercept JS
+const text = bridge.input.getText();
+bridge.intercept.resolve({
+  userInputOverride: text + "\n[plugin_tag]",
+  directorPromptOverride: "Keep suspense high."
+});</pre>
+
+            <h3>Example 3: Non-blocking checkpoint effect</h3>
+            <pre>tools.gui.registerRuntimeIntercept({
+  interceptId: "pulse_fx",
+  checkpoint: "on_dialogue_enter",
+  dialogueIndex: 0,
+  blocking: false,
+  durationMs: 1600
+});</pre>
+
+            <h3>Example 4: Descriptor with inline UI (no backend request)</h3>
+            <pre>tools.gui.registerRuntimeIntercept({
+  interceptId: "inline_gate",
+  checkpoint: "before_first_dialogue",
+  blocking: true,
+  inlineUi: {
+    html: "&lt;button id='ok'&gt;Continue&lt;/button&gt;",
+    js: "document.getElementById('ok').onclick = () =&gt; bridge.intercept.resolve({ ok: true });"
+  }
+});</pre>
+
+            <h3>Example 4b: Intercept with enter/exit transitions</h3>
+            <pre>tools.gui.registerRuntimeIntercept({
+  interceptId: "stylized_gate",
+  checkpoint: "before_first_dialogue",
+  blocking: true,
+  transitionIn: { effect: "circle_fade", scope: "intercept", durationMs: 500 },
+  transitionOut: { effect: "fade", scope: "intercept", direction: "out", durationMs: 350 },
+  inlineUi: {
+    html: "&lt;button id='ok'&gt;Continue&lt;/button&gt;",
+    js: "document.getElementById('ok').onclick = () =&gt; bridge.intercept.resolve({ ok: true });"
+  }
+});</pre>
+
+            <h3>Example 5: PIXI takeover with lifecycle runtime</h3>
+            <pre>tools.gui.registerRuntimeIntercept({
+  interceptId: "boss_minigame",
+  checkpoint: "on_dialogue_enter",
+  dialogueIndex: 50,
+  blocking: true,
+  renderer: "pixi",
+  replayPolicy: "until_resolved"
+});
+
+// guiIntercepts.boss_minigame => returns { renderer: "pixi", js: "..." }
+// Inside the JS payload:
+const { pluginRuntime, pixiLayer, PIXI } = context;
+
+// Register a game tick
+pluginRuntime.register('boss_minigame', (runtime) =&gt; {
+    runtime.onPreRender((ticker) =&gt; { /* game loop */ }, 0);
+    runtime.onDispose(() =&gt; { /* cleanup game state */ });
+});
+
+// When the player wins:
+pluginRuntime.dispose('boss_minigame');
+bridge.takeover.finish({ result: "win" });</pre>
+
+            <h3>Example 6: Inline PIXI takeover (no server round-trip)</h3>
+            <pre>tools.gui.registerRuntimeIntercept({
+  interceptId: "quick_cutscene",
+  checkpoint: "on_dialogue_enter",
+  dialogueIndex: 10,
+  blocking: true,
+  renderer: "pixi",
+  replayPolicy: "once",
+  inlineUi: {
+    js: `
+      const { pixiLayer, PIXI } = context;
+      const bg = new PIXI.Graphics();
+      bg.rect(0, 0, 1920, 1080);
+      bg.fill({ color: 0x000000, alpha: 0.9 });
+      pixiLayer.addChild(bg);
+
+      // ... render cutscene content ...
+
+      bg.eventMode = 'static';
+      bg.on('pointerdown', () =&gt; bridge.takeover.finish());
+    `
+  }
+});</pre>
+            <div class="note">
+                <code>inlineUi</code> embeds the JS payload directly in the descriptor, bypassing the server round-trip
+                to <code>guiIntercepts</code>. This is ideal for simple, self-contained takeovers that don't need
+                server-side data or dynamic payload generation. The trade-off is that the JS string lives in
+                the hook registration code, so it's harder to maintain for complex mini-games.
+            </div>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>16) Troubleshooting</h2>
+            <h3>Symptom: plugin calls <code>tools.gui.intercept(...)</code> and fails</h3>
+            <ul>
+                <li>The legacy imperative intercept API has been removed.</li>
+                <li>Migrate to declarative descriptors using <code>tools.gui.registerRuntimeIntercept</code> or <code>registerPersistentIntercept</code>.</li>
+                <li>Implement payload builders under <code>exports.guiIntercepts</code>.</li>
+            </ul>
+
+            <h3>Symptom: intercept never fires</h3>
+            <ul>
+                <li>Descriptor checkpoint mismatch with current flow.</li>
+                <li><code>dialogueIndex</code> mismatch for <code>on_dialogue_enter</code>.</li>
+                <li>Replay policy suppressing re-run.</li>
+            </ul>
+
+            <h3>Symptom: payload request fails</h3>
+            <ul>
+                <li>Plugin id not loaded, or factory export missing.</li>
+                <li>Factory throws; inspect backend logs around payload builder errors.</li>
+                <li>Check route wiring for <code>request-gui-intercept-ui</code>.</li>
+            </ul>
+
+            <h3>Symptom: submit runs twice or loops</h3>
+            <ul>
+                <li>Use <code>bridge.input.submitAndGenerate</code> instead of calling send path indirectly.</li>
+                <li>Do not manually trigger submit and then also resolve with submit semantics.</li>
+            </ul>
+
+            <h3>Symptom: stale socket listeners</h3>
+            <ul>
+                <li>Detach previous listener references via <code>bridge.state</code> before attaching new ones.</li>
+            </ul>
+
+            <h3>Symptom: controls stay locked after a gameplay intercept</h3>
+            <ul>
+                <li>Ensure PIXI takeover paths always end with <code>bridge.takeover.finish(...)</code> or <code>bridge.takeover.abort(...)</code>.</li>
+                <li>Avoid throwing before cleanup wiring is attached in takeover JS.</li>
+                <li>Set a plugin-side safety timeout that ends takeover if gameplay stalls.</li>
+            </ul>
+
+            <h3>Symptom: plugin listeners fire twice after server restart / socket reconnect</h3>
+            <ul>
+                <li><strong>Cause</strong>: <code>inject-permanent-assets</code> re-fires on reconnect, 
+                    and the plugin JS re-executes without cleanup.</li>
+                <li><strong>Fix</strong>: Use <code>VN.pixiPlugins.register()</code> for long-lived PixiJS
+                    frontend code. The runtime auto-disposes the previous instance on re-registration, 
+                    preventing double event listeners and ticker hooks.</li>
+                <li>For intercept payloads, use <code>bridge.lifecycle</code> and <code>bridge.socket</code>. For permanent non-Pixi frontend injection, expose an idempotent plugin-owned disposer before re-registering listeners.</li>
+            </ul>
+
+            <div class="danger">
+                If you use aggressive replay (<code>every_enter</code>) and attach listeners each run without cleanup,
+                event handlers can multiply quickly.
+            </div>
+        </section>
+
+        <section id="reference">
+            <h2>17) Reference Cheatsheet</h2>
+            <h3>Valid checkpoints</h3>
+            <pre>before_first_dialogue | on_dialogue_enter | before_user_input_show | during_user_input | before_submit</pre>
+
+            <h3>Valid replay policies</h3>
+            <pre>every_enter | once_per_turn | until_resolved | once_per_session</pre>
+
+            <h3>Minimal descriptor</h3>
+            <pre>{
+  interceptId: "my_id",
+  checkpoint: "on_dialogue_enter"
+}</pre>
+
+            <h3>Recommended descriptor</h3>
+            <pre>{
+  interceptId: "my_id",
+  checkpoint: "on_dialogue_enter",
+  dialogueIndex: 0,
+  blocking: true,
+  priority: 50,
+  replayPolicy: "every_enter",
+  payload: {}
+}</pre>
+
+            <p>
+                For a living reference implementation, inspect
+                <code>engine/plugins/disabled/example_vn_gui_intercept/index.js</code>,
+                <code>backend.js</code>, and <code>payloads.js</code>.
+            </p>
+        </section>
+    </div>
+</body>
+</html>

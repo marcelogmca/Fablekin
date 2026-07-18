@@ -1,0 +1,60 @@
+Write the opening lyrics for a visual novel arc intro.
+Make it feel like an evocative anime/VN opening: lyrical, specific, rhyming, emotional, and a little iconic.
+Use the story context for texture and continuity, but do not summarize mechanically.
+Do not add new plot facts, prophecies, locations, or character decisions.
+
+The idea is to write an artistic poem that depicts the events in a non literal way.
+
+{{requestHints}}
+
+Return exactly {{lineCount}} short lyrical lines, organized as {{stanzaCount}} stanzas of 4 lines.
+Each stanza should be able to appear as one on-screen text block.
+For each stanza, include a tiny visual plan for the image step: relevantCharacters and environmentVibes.
+environmentVibes should describe background/environment only: location type, atmosphere, time of day, weather, palette, and concrete visual motifs.
+relevantCharacters should be names already present in the story and only those emotionally relevant to that stanza.
+Also include characterBeats per stanza: an array of { name, emotion } for up to 2 emotionally relevant characters to show as intro sprites.
+Choose each characterBeat name from characters already present in the story.
+Choose each characterBeat emotion only from this global available sprite emotion list: {{availableSpriteEmotions}}.
+Available non-neutral sprite emotions: {{nonNeutralSpriteEmotions}}.
+If any non-neutral emotion is available, strongly prefer a fitting non-neutral emotion and avoid repeating neutral across the intro.
+Use neutral only when the stanza genuinely needs a calm/default expression or no listed emotion fits.
+Prefer concrete motifs from the story over generic fantasy phrasing.
+
+Optional additional per-stanza atmospheric VFX:
+{{vfxAvailability}}
+For each stanza, include vfxBeat with { id, intensity, reason }.
+Choose vfxBeat.id only from: {{availableIntroVfxIds}}.
+Use "none" often. The intro should breathe, not become a shader circus.
+Use intensity "subtle" by default, "medium" only when the stanza strongly earns it.
+Do not choose intro-* effects in vfxBeat; intro-only global effects are handled separately.
+
+Return only valid JSON. Do not wrap it in markdown. Do not include commentary.
+
+Expected shape:
+{
+  "title": "Opening title",
+  "subtitle": "Optional short subtitle",
+  "stanzas": [
+    {
+      "lines": ["line 1", "line 2", "line 3", "line 4"],
+      "mood": "brief emotional tone",
+      "relevantCharacters": ["Existing Character Name"],
+      "characterBeats": [
+        { "name": "Existing Character Name", "emotion": "happy" }
+      ],
+      "vfxBeat": {
+        "id": "none",
+        "intensity": "subtle",
+        "reason": "No effect is needed for this quiet stanza."
+      },
+      "environmentVibes": {
+        "locationType": "background or place type",
+        "atmosphere": "emotional environmental mood",
+        "timeOfDay": "optional time of day",
+        "weather": "optional weather",
+        "palette": "color palette",
+        "visualMotifs": ["motif 1", "motif 2"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/vn_api.js
+    hash: 60624C52CB0F6D7E70280F56680641A3
+  - path: engine/modules/vn_manager/sequence_api.js
+    hash: 657CB59207EEB5ABCA86DF490C277530

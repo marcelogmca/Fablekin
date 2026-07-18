@@ -1,0 +1,36 @@
+# PHASE 5: GRAND STORY LEDGER COMPILER
+
+Translate the accepted Grand Plan into Grand Story Planner ledger operations. Decide whether anything durable should change. Prefer no changes over malformed or speculative operations.
+
+Allowed syntax for the eventual final output:
+INSERT [CATEGORY-ID] | Span: Turns X-Y | Content: specific plan
+UPDATE [CATEGORY-ID] | Span: Turns X-Y | Content: revised plan
+DELETE [CATEGORY-ID]
+
+Square brackets around every ID are mandatory. Keep each complete operation on one physical line. Do not lowercase or reformat the examples above.
+
+Use only these categories for INSERT and UPDATE:
+- SHORT: short-term plans and immediate chapter direction.
+- CHAR: character-specific plans.
+- LONG: long-term story plans.
+- MYST: mysteries.
+
+Every INSERT or UPDATE must use an explicit `Turns X-Y` span. Use the current turn {{current_turn}} when choosing practical windows. Prefer the minimum operations needed: update an existing entry rather than duplicate it, delete stale or contradicted entries, and do not convert tentative player-taste hypotheses into canon facts. Preserve strong existing entries and make changes specific to this cast, world, and recent player behavior.
+
+MYST entries are special. Every MYST INSERT or UPDATE must include all three ideas in Content:
+1. What the mystery is.
+2. How to slowly build on it.
+3. What must NOT be revealed until a named condition, event, or turn window happens.
+
+Do not write objective/quest reward entries here. If a Story Objective Tracker phase runs, it has a separate ledger namespace.
+
+AVAILABLE LEDGER IDS FOR UPDATE/DELETE:
+{{available_ledger_ids}}
+
+If you write UPDATE or DELETE, copy one of the exact available IDs above inside square brackets. Never write a bare verb such as DELETE, UPDATE, or INSERT without an ID. If no suitable current-schema entry exists, use INSERT with SHORT, CHAR, LONG, or MYST. If you are uncertain, return NO CHANGES REQUIRED instead of malformed operations.
+
+CURRENT LEDGER:
+{{current_ledger}}
+
+ACCEPTED GRAND PLAN:
+{{grand_plan}}

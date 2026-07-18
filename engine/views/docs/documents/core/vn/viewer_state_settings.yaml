@@ -1,0 +1,11 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/socket_handler.js
+    hash: A077C62D1E212B9E1F95225491E6EDF3
+  - path: engine/views/vn_viewer/js/settings_manager.js
+    hash: 06BBDF113DD6D4B0D13AD11035EB2799
+  - path: engine/views/vn_viewer/js/utils.js
+    hash: 0D95DB5EB277E3C0BC9BAD819CBA8FE8
+  - path: engine/views/settings_manager/settings_manager.html
+    hash: 29D5839004B1E9C1F0254A5F42741D76
+  - path: engine/views/settings_manager/renderer_settings_manager.js
+    hash: 1C7CB2F0BB9A5A1ED0FA080A37DD3FBB

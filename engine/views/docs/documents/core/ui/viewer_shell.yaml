@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/views/vn_viewer/viewer.html
+    hash: F96C7F81357C7A764A49CAC767657C03
+  - path: engine/views/vn_viewer/renderer_vn.js
+    hash: CAA8429868041C8473133AA5AEFB8C48
+  - path: engine/views/vn_viewer/js/modules/ui_manager.js
+    hash: 4C7C992AEE61F0DA7767713C9BE4B9C7

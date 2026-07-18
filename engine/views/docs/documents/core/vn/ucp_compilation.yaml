@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/vn_ucp_compiler.js
+    hash: DDC5C2CB200ECC05ADAA4C15178AD55F
+  - path: engine/views/vn_viewer/js/vn_ucp_dispatcher.js
+    hash: CA2B18E0B30445EEFDE91F75A0D10E1C

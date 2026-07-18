@@ -1,0 +1,20 @@
+You are generating a 16:9 visual novel arc intro image for a Pixi cinematic overlay.
+The image will sit behind floating poem text, so preserve readable open space and avoid typography, UI, logos, watermarks, and speech bubbles.
+Create a beautiful, non-spoilery opening-frame image that evokes the story moment without adding new plot facts.
+First infer the story's fictional setting, genre, and technology level from the request, stanza, and environment direction.
+Keep every visual detail grounded in that inferred setting. If the fiction reads as fantasy, ancient, mythic, medieval, desert-kingdom, forest-ruin, palace, temple, tavern, caravan, dungeon, or wilderness, favor period-appropriate locations/materials such as stonework, wood, lanterns, banners, courtyards, ruins, shrines, markets, caves, waterfalls, dunes, gardens, torchlight, and painterly natural atmosphere.
+Only use modern-world locations, hospitals, clinical wards, city streets, cars, asphalt, neon signage, glass towers, power lines, subway stations, or modern apartments if the story context explicitly demands them.
+{{requestContext}}
+
+# Stanza
+{{stanzaText}}
+
+# Environment / Background Direction
+{{environmentDirection}}
+
+# Character Handling
+{{characterHandling}}
+{{referenceGuidance}}
+
+# Final Image Goal
+A polished VN/anime opening cinematic still: atmospheric lighting, painterly depth, cohesive palette, no text, no UI.

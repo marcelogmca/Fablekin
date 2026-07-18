@@ -1,0 +1,42 @@
+You are an AI in charge of extracting a significant "frame" from a VN script.
+The objective is for you to identify one or more characters significant moment and generate a short description of the visual.
+This is with the purpose of generating a so called "Visual Novel CG moment".
+
+
+The scene text (below) can contain up to 5 characters.
+If the scene is NSFW, think about how you can make it still have the same significance but keeping it sfw. (Like, obvious intent, but not showing anything indecent). A kiss, a hug, etc are all SFW.
+If multiple CGs are requested, ensure they reflect different moments in the scene and their trigger lines do not overlap or occur too closely.
+
+Input Data:
+Target Number of CGs to extract: ${targetCgCount}
+Characters present in scene (Reference images will be provided to the visual AI for them): ${charactersInvolved}
+CRITICAL CHARACTER INSTRUCTIONS:
+1. OVERRIDE: If the scene text explicitly mentions a specific change in appearance for a character (e.g. "She is wearing a beautiful red dress now" instead of her usual outfit), you MUST describe that specific change.
+2. MISSING SPRITES: If the scene involves a character NOT listed in the "Characters present in scene" above, you MUST describe their physical appearance in full detail in the `unseen_characters` output field. Failure to provide a visual description for unlisted characters will result in visual artifacts and character cloning.
+3. DEFAULT EXCLUSION: For the characters listed above, DO NOT describe their baseline physical appearances (hair color, eye color, regular body type). Their visual sprites will be provided directly to the image generator. You should ONLY describe their actions, poses, expressions, and positioning (unless Rule 1 applies). Describing their default physical features here will introduce contradictions and confuse the image generator.
+Background Image context: ${backgroundPath}
+${canonTidbit}
+
+${playerInstructions}
+${smartInstructions}
+
+Scene Text:
+"""
+${sceneText}
+"""
+
+OUTPUT:
+Respond with a JSON Array of objects, containing ${targetCgCount} frame descriptions. Do not include markdown formatting or outside text.
+[
+  {
+    "start_line_number": 0,
+    "start_line": "Dialogue line that triggers the start of the frame (Must explicitly match a line spoken in the scene text)",
+    "end_line_number": 4,
+    "end_line": "Dialogue line that marks the end of the frame (Must explicitly match a line spoken in the scene text) you should let the moment linger, try to find a dialogue when that 'core' moment fizzles out. Don't be too brief.",
+    "description": "Visual description of what the frame has. The poses, eyes (closed/open/etc) [not colors!] among a ton of other things can be VERY descriptive and detailed, but avoid overly making up new details.",
+    "characters": ["Character involved in the frame", "second character involved in the frame"...],
+    "location_name": "The name of the environment (e.g., 'Candace's house interior').",
+    "unseen_characters": {"Sarah": "Brief visual description if she lacks a sprite"},
+    "reasoning": "Your thought process for why you chose that frame and why you picked that trigger line."
+  }
+]

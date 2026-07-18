@@ -1,0 +1,15 @@
+${historyContext}
+Current chapter script:
+${numberedScript}
+${extraDetails}
+
+${project_directives}
+
+Choose the most appropriate background image filename(s) from this list for the Current chapter:
+${filenames}
+
+Instructions:
+1. You can provide more than one background if the locations or atmosphere shift between lines.
+2. For each selection, use the format: Line X: [Filename]
+3. If only one background is needed, just provide: Line 0: [Filename]
+4. Provide the filename and a extremely short reasoning (1 sentence).

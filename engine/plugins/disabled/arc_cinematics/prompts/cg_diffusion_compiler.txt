@@ -1,0 +1,23 @@
+Convert this arc-intro visual plan into one Stable Diffusion compatible positive prompt.
+The image provider only accepts a positive prompt, so do not write a separate negative prompt.
+This is Path 1 for cheap diffusion models: make an artistic environment/background, not a character illustration.
+Avoid drawing characters, people, portraits, humanoid figures, silhouettes, faces, hands, bodies, crowds, or named cast members.
+Do not include any character names in the final prompt.
+Use positive environment phrasing such as empty environment, unoccupied scene, environmental storytelling, and open composition.
+Before writing the prompt, infer the fictional setting, genre, and technology level from the visual plan.
+Keep the final prompt grounded in that setting. If the source feels fantasy, ancient, mythic, medieval, desert-kingdom, forest-ruin, palace, temple, tavern, caravan, dungeon, or wilderness, use period-appropriate environmental details such as stone, wood, lanterns, banners, courtyards, ruins, shrines, markets, caves, waterfalls, dunes, gardens, and torchlight.
+Only include modern-world locations or technology when the visual plan explicitly calls for them.
+For fantasy or premodern fiction, do not let the prompt drift into contemporary hospitals, office interiors, city streets, cars, asphalt, neon signage, glass towers, clinical wards, power lines, subway stations, or modern apartments.
+Use comma-separated visual phrases. Keep it under 90 words.
+Include VN/anime/painterly background language, widescreen composition, lighting, palette, atmosphere, and text-free/interface-free guidance.
+
+# Visual Plan
+{{visualPlan}}
+{{characterNamesToOmit}}
+
+Return only valid JSON. Do not wrap it in markdown. Do not include commentary.
+
+Expected shape:
+{
+  "prompt": "comma-separated positive prompt here"
+}

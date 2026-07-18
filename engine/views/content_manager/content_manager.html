@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Project Content Manager</title>
+    <link rel="stylesheet" id="theme-link" href="../../themes/active/global.css">
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+    <script src="../../vendor/js/marked.min.js"></script>
+    <script src="../scripts/tooltips.js"></script>
+    <script src="../scripts/modals.js"></script>
+</head>
+
+<body class="themed-container">
+    <div class="container">
+        <div class="header-with-actions">
+            <h1>Project Content Manager</h1>
+            <div class="header-toggles">
+                <div class="folder-actions">
+                    <button id="openProjectFolderBtn" class="folder-action-btn" title="Open Project Folder">Project Folder</button>
+                    <button id="openProjectAssetsFolderBtn" class="folder-action-btn" title="Open Project Assets Folder">Assets Folder</button>
+                </div>
+                <div class="advanced-mode-container">
+                    <label class="switch-label">Project Notes</label>
+                    <label class="switch">
+                        <input type="checkbox" id="projectNotesToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="advanced-mode-container">
+                    <label class="switch-label">Advanced Mode</label>
+                    <label class="switch">
+                        <input type="checkbox" id="advancedModeToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="player-profile-section core-area-player">
+            <div class="player-icon-container">
+                <div id="playerIcon" class="player-icon">👤</div>
+            </div>
+            <div class="player-info-container">
+                <div class="player-name-group">
+                    <input type="text" id="playerCharacterNameInput" placeholder="Enter Character Name..."
+                        class="player-name-input">
+                    <button id="savePlayerNameBtn" class="save-name-btn" title="Save Name">💾 Save</button>
+                    <button id="editPlayerBioBtn" class="edit-bio-btn" title="Edit Character Bio">📝 Edit Bio</button>
+                </div>
+                <div class="player-warning-group">
+                    <span class="player-directive-badge"
+                        title="You can use '[USER_CHARACTER]' in your 'Full Content' prompts, and it will be automatically replaced by your character's name.">
+                        Directive: [USER_CHARACTER]
+                        <span class="tooltip-icon-small">?</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div id="plugin-injection-container"></div>
+        <div id="project-notes-panel" class="project-notes-panel">
+            <div class="project-notes-header">
+                <h2>Project Notes</h2>
+                <button id="saveProjectNotesBtn" class="edit-bio-btn">Save Notes</button>
+            </div>
+            <p class="project-notes-subtitle">You can leave general notes, setup tips, story guidance, etc. for this
+                project.</p>
+            <textarea id="projectNotesTextarea" class="project-notes-textarea"
+                placeholder="Write project notes here..."></textarea>
+            <div id="projectNotesStatus" class="project-notes-status"></div>
+        </div>
+        <div class="section-separator"></div> <!-- Separator -->
+        <div id="tree"></div>
+        <div id="project-directives-container" class="advanced-only"></div>
+    </div>
+
+    <!-- Hidden Containers for Modals -->
+    <div id="modal-containers" class="hidden">
+        <div id="file-editor-content">
+            <div id="script-editor-extras" class="hidden">
+                <button id="scriptHelpBtn" class="edit-bio-btn">❓ Scripting Help</button>
+                <button id="scriptGenerateBtn" class="edit-bio-btn">✨ Generate Template</button>
+            </div>
+            <div id="editorContainer">
+                <textarea id="fileEditorTextarea"></textarea>
+                <div id="schemaFormContainer" class="hidden"></div>
+            </div>
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button id="saveTrustReloadBtn" class="modal-btn primary hidden"
+                    style="background-color: #b83b5e;">Save, Trust & Reload</button>
+                <button id="saveFileBtn">Save Changes</button>
+                <button id="cancelEditBtn">Cancel</button>
+            </div>
+        </div>
+
+        <div id="new-file-content">
+            <p>Enter a name for the new file.</p>
+            <input type="text" id="newFileNameInput" placeholder="File name" class="premium-modal-input">
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button id="createFileBtn">Create</button>
+                <button id="cancelCreateFileBtn">Cancel</button>
+            </div>
+        </div>
+
+        <div id="rename-file-content">
+            <p id="renameFileLabel">Enter a new name for the file.</p>
+            <input type="text" id="renameFileNameInput" placeholder="New file name" class="premium-modal-input">
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button id="renameFileBtn">Rename</button>
+                <button id="cancelRenameFileBtn">Cancel</button>
+            </div>
+        </div>
+
+        <div id="plugin-view-content">
+            <div id="pluginViewContainer" class="plugin-view-container themed-container">
+                <!-- Plugin content will be injected here -->
+            </div>
+        </div>
+
+        <div id="player-bio-content">
+            <p class="modal-subtitle">Describe your character's personality, background, and goals. This will be used to
+                guide the narrative and character development.</p>
+            <div id="editorContainer" class="player-bio-editor-container">
+                <textarea id="playerBioTextarea" placeholder="Write your character's story here..."></textarea>
+            </div>
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button id="savePlayerBioBtn" class="view-processed-btn">Save Bio</button>
+                <button id="cancelPlayerBioBtn">Cancel</button>
+            </div>
+        </div>
+
+        <div id="script-help-content">
+            <div class="help-content themed-container"
+                style="max-height: 500px; overflow-y: auto; text-align: left; padding: 20px;">
+                <h3>The Basics</h3>
+                <p>Story Scripts are <code>.md</code> files that contain JavaScript. They are executed as project-level
+                    plugins.</p>
+                <h3>Plugin Structure</h3>
+                <pre style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: var(--radius-sm);">
+module.exports = {
+  id: 'my_unique_script_id',
+  hooks: {
+    'HOOK_NAME': {
+      priority: 10,
+      run: async (context, tools) => {
+        // Your logic here
+      }
+    }
+  }
+};</pre>
+                <h3>Common Hooks</h3>
+                <ul>
+                    <li><strong>HOOK_VN_BLOCKING_TASKS</strong>: Best for modifying VFX, SFX, or state before a turn
+                        renders.</li>
+                    <li><strong>HOOK_TURN_START</strong>: Runs at the absolute beginning of a new turn generation.</li>
+                    <li><strong>HOOK_VN_GUI_READY</strong>: Runs when the viewer UI has finished rendering a turn.</li>
+                </ul>
+                <h3>Security</h3>
+                <p>All scripts are subject to <strong>Trust-On-First-Use (TOFU)</strong>. If you modify a script, users
+                    will be prompted to re-approve it via the SHA-256 hash check.</p>
+            </div>
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button id="closeScriptHelpBtn">Close Help</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../libs/plugin_bridge.js?viewId=content_manager"></script>
+    <script src="renderer_content_manager.js" type="module"></script>
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+You are selecting one practical generated route for each independently proposed destination.
+
+You are NOT choosing which destination the party should prefer. Evaluate every destination group separately and return one selection for every target UID.
+
+### DESTINATION ROUTE GROUPS
+${groups}
+
+### RECENT STORY AND PARTY CONTEXT
+${story_context}
+
+Rules:
+- Return every target_uid exactly once.
+- Select only a route id supplied under that target.
+- Never compare character preferences or declare a winning destination.
+- Never invent geography, stops, equipment, or capabilities.
+- Use only mapped stops and POIs supplied by the selected route.
+- Summarize terrain, crossings, resupply, and meaningful requirements without exposing grid internals.
+- narrative_duration_days should be a genre-appropriate story travel time for this route, not a strict real-world walking simulation. Respect explicit story pacing, route difficulty, transport assumptions, and RPG-style abstraction where long map distances may be compressed into satisfying travel time.
+- duration_label should be the human-facing form of narrative_duration_days, e.g. "about 4-5 days".
+
+Return only JSON:
+{
+  "selections": [{
+    "target_uid": "existing target UID",
+    "selected_route_id": "route id supplied for this target",
+    "summary": "Practical route for this destination",
+    "narrative_duration_days": 4.5,
+    "duration_label": "about 4-5 days",
+    "waypoints": [{ "name": "Supplied mapped stop", "purpose": "Why it matters" }],
+    "suggested_next_waypoint": "Supplied mapped stop or null",
+    "requirements": ["Known route requirement"],
+    "reasoning": "Brief route-only reasoning"
+  }]
+}

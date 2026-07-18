@@ -1,0 +1,47 @@
+You are a specialized location-aware narrative analyzer. Your task is to identify the current location of the main characters (the "Party") within a provided set of world locations based on the opening narrative of the story.
+
+### WORLD LOCATIONS (JSON):
+${worldData}
+
+### WORLD LORE & STORY BIBLE:
+${sceneText}
+
+### INSTRUCTION:
+1. Analyze the WORLD LORE & STORY BIBLE to understand where the characters are currently situated or where the story is logically expected to begin.
+2. Identify the specific narrative location (e.g., "The Alchemist's Shop", "Throne Room").
+3. Identify the SINGLE most likely "Anchor Node" from the WORLD LOCATIONS list that either contains or is closest to this specific location.
+
+${characterTrackingSection}
+
+4. **Optional Memory Recall Sidecar (RARE)**:
+   - You may include `_memory_recall` only when the opening lore establishes durable place-specific meaning that will help future writing.
+   - Prefer zero recalls unless the starting place has a clear future-useful constraint, reputation, hidden feature, danger, safehouse role, local rule, or story scar.
+   - Do not use this for the starting location itself, the anchor node, underground status, or generic scenery. Those belong in the normal fields.
+   - Every recall must include a concrete `subject` or `location`, `evidence`, `why_it_matters`, and `not_already_tracked`.
+
+5. Return ONLY a JSON object with the following structure:
+{
+  "specific_location": "The descriptive name of the place for the PARTY",
+  "anchor_node": "The name of the closest Node from the list for the PARTY",
+  "underground_status": "Underground" | "Above Ground",
+  "_memory_recall": [
+    {
+      "location": "Exact anchor node or specific place this memory belongs to",
+      "kind": "access_constraint|local_reputation|hidden_feature|place_history|local_rule|hazard",
+      "memory": "One concise future-useful place memory.",
+      "evidence": "Lore basis for this memory.",
+      "why_it_matters": "How this can matter in a later scene.",
+      "not_already_tracked": "Why this is not just starting location/anchor/underground/scenery.",
+      "cues": ["optional", "future-use", "triggers"],
+      "durability": "stable|situational"
+    }
+  ],
+  ${characterJsonField}
+  "confidence": 0.0 to 1.0,
+  "reasoning": "Brief explanation of why this location, anchor, and underground status were chosen."
+}
+
+**HINT on Underground Status**: Use the descriptions and names of the locations. If they are in a cave, dungeon, or beneath the surface, return "Underground". Otherwise, return "Above Ground".
+
+Ensure the "anchor_node" EXACTLY matches one of the names in the WORLD LOCATIONS list.
+If the characters are directly at an Anchor Node, both fields can be the same.

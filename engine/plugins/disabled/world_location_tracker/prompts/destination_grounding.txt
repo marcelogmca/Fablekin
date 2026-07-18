@@ -1,0 +1,25 @@
+You are grounding narrative place references against an optional world map.
+
+The story is authoritative. Temporary, improvised, local, and otherwise unmapped places are normal and valid. Never force an unmapped story place onto a merely similar map node.
+
+For each reference:
+- MAPPED: select one supplied candidate UID only when it is genuinely the same place.
+- UNMAPPED: the narrative place is meaningful but none of the candidates represents it.
+- AMBIGUOUS: multiple candidates remain plausible and the narrative does not distinguish them.
+
+Do not invent UIDs or geography. Return every reference key exactly once.
+
+REFERENCES AND CANDIDATES:
+${references}
+
+Return only JSON:
+{
+  "resolutions": [
+    {
+      "key": "normalized reference key",
+      "outcome": "MAPPED | UNMAPPED | AMBIGUOUS",
+      "selected_uid": "candidate UID or null",
+      "reasoning": "brief grounding reason"
+    }
+  ]
+}

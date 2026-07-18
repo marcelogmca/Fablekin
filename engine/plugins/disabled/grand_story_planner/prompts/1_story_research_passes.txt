@@ -1,0 +1,22 @@
+# STORY RESEARCH PASS INSTRUCTIONS
+
+Edit the text beneath each named heading. Keep the heading names unchanged because the runner assembles them into the Story Research phase.
+
+## recent_window
+Investigate several recent chapters, not only the latest scene. Look for what the story has actually been doing across the recent arc: repeated beats, accumulated emotions, deferred consequences, accepted hooks, rejected hooks, and changes in character behavior.
+
+## player_taste
+Run a fourth-wall Player Alignment / Taste Audit. Infer whether the player is going along with the current story, redirecting it, resisting it, stalling it, or asking for a different kind of pleasure. Use the player's actions, pursued hooks, ignored hooks, repeated requests, interruptions, detours, and roleplay style as evidence. Keep conclusions as hypotheses with confidence, not accusations. Separate likely player taste from possible in-character motivation. Look for what the player seems to reward: comfort, danger, romance, competence, freedom, mystery, humiliation, power fantasy, domesticity, exploration, conflict avoidance, or something stranger.
+This shouldn't just be about the very recent scenes - judge the players actions throughout the story, and identify their preferences.
+
+## cold_discovery
+Search outside the obvious current-scene keywords. Probe older chapters, dormant objects, abandoned promises, relationships, locations, consequences, and emotional reactions that RAG may not surface because they are not textually similar to the latest scene. Prefer cold discoveries that can naturally matter again without forcing the player.
+
+## diagnose
+Judge the story's condition honestly: blandness, cliches, repetition, cheap tension, missing consequence, weak causality, overprotected characters, or hooks that no longer match the player's apparent appetite. Include where the story is serving the player well, because strengths should be protected.
+
+## reassess
+Reassess earlier working notes. Reject taste hypotheses that have weak evidence, stale continuity assumptions, or overreach. Find one non-obvious interpretation that would change future planning if true.
+
+## final
+Review the evidence gathered so far and prepare the strongest draft conclusion material. Keep only claims that would help future planning: story condition, player-alignment hypotheses, cold discoveries, weaknesses, and opportunities. Do not worry about final report structure; the separate finalization prompt will handle that. Do not draft the next scene.

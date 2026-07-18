@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/log_viewer/logs.html
+    hash: 7A20F8822BACFF1A4C6C5E676FCEB3DA
+  - path: engine/views/plugin_manager/plugin_manager.html
+    hash: 6F2FC10EFC2437B0180E3936D98D1667

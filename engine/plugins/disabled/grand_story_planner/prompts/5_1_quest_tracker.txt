@@ -1,0 +1,69 @@
+# PHASE 5.1: QUEST TRACKER LEDGER
+
+This optional phase runs only when Quest Tracker is installed. Convert the final Grand Plan into quest-tracker operations only. Do not edit the Grand Story Planner ledger here.
+
+Allowed syntax for the eventual final output:
+INSERT [QUEST-ID] | Deadline: N turns | Stakes: low/medium/high | Brief: short premise | Objective: actionable player-facing goal | AI: hidden constraints and guidance | Fail: consequence if missed | Success: reward if achieved
+UPDATE [QUEST-ID] | Deadline: N turns | Stakes: low/medium/high | Brief: short premise | Objective: actionable player-facing goal | AI: hidden constraints and guidance | Fail: consequence if missed | Success: reward if achieved
+DELETE [QUEST-ID]
+
+Rules:
+- Square brackets around every ID are mandatory.
+- Keep each complete operation on one physical line.
+- Deadline must be at least 3 turns so the player has time to act.
+- Stakes must be exactly one of: low, medium, high.
+- Objective should be player-facing, but AI may contain hidden constraints such as "the player cannot simply declare success."
+- Fail and Success must both create meaningful PLAYER-EXPERIENCED consequences, not vague plot bookkeeping.
+- Write Fail and Success as future-facing instructions the Director/Writer can enforce for the next scenes after resolution. They are not summaries.
+- Every outcome must create a player-experienced delta: because the player succeeded or failed, the story now treats the player character differently in a way they can feel.
+- Treat quests as a portfolio because Grand Planner may run only every several turns. If Quest Tracker reports 0-1 active quests, default to creating 2-4 INSERTs unless the Grand Plan truly has only one actionable pressure.
+- If Quest Tracker reports 2-3 active quests, prefer 1-2 INSERTs only when they add distinct pressure; otherwise UPDATE stale quests.
+- If Quest Tracker reports 4-5 active quests, prefer UPDATE/DELETE cleanup and add at most one excellent quest.
+- If Quest Tracker reports 6+ active quests, avoid new INSERTs unless a major arc demands it.
+- If the Grand Plan contains multiple actionable pressures, prefer a varied set: one main-direction quest, one relationship/emotional opportunity, and one optional side/resource/social obligation when available.
+- When creating multiple quests, stagger deadlines: usually one short quest at 3-5 turns, one medium quest at 6-9 turns, and one longer quest at 10-16 turns. Never create three quests that all expire in the same short window.
+- Only create one quest if there is truly only one live actionable pressure. Do not spam generic quests just to hit a quota.
+- If uncertain, return NO CHANGES REQUIRED.
+
+Outcome quality bar:
+- Treat these as templates. Replace names, relationships, and pressures with the current story's actual cast; never copy example names into unrelated stories.
+- Fail must answer: who or what reacts, what the player visibly loses, how long it lasts or what repairs it, and how it resists cheap handwaving.
+- Success must answer: who or what rewards the player, what visible playable benefit appears that would not happen by default, and whether it unlocks a scene, trust, information, resources, safety, intimacy, authority, NPC initiative, or future leniency.
+- Bad Fail: "The story loses momentum." Good Fail: "A trusted companion is annoyed at the player character for 4 turns; she refuses easy affection, takes charge of travel decisions, and says 'Nope, you do as I say' until he repairs the mood through action."
+- Bad Fail: "The boutique scene loses its window." Good Fail: "The commissioned NPC closes the private fitting opportunity; the player can still collect the item, but no private styling scene or extra compliment is available, and the companion is quietly disappointed for 3 turns."
+- Bad Success: "The return journey is established." Good Success: "Because the player character respected the timing, the companion initiates a private departure beat herself, treats patient approaches warmly for 3 turns, and lets him choose one detail of the road home."
+- Bad Success: "The party leaves with the item." Good Success: "The companion is openly happy the player handled the errand cleanly; she creates one extra private reward scene before departure and gives the player more say in the next travel choice."
+- Fail should make the player feel the mistake: relationship chill, lost trust, NPC taking command, locked scenes, missed windows, extra cost, worse travel conditions, social embarrassment, delayed intimacy, or a temporary refusal to indulge the player's attempted shortcut.
+- Success should reward the player with something playable: NPC initiative, romantic warmth, trust, a shortcut, an unlocked scene, better conditions, saved resources, useful information, or a more generous future choice.
+- Agency penalties are allowed and often interesting. Keep them bounded and in-character: "for 3 turns," "until the player makes a sincere repair action," or "during the next travel segment."
+- If a player later tries to handwave a failed consequence away ("I kiss her and she forgives me"), the Fail text should give Director/Writer enough authority to resist: "She pulls back; she is not over it yet."
+- Low stakes can sting for a few turns but should be reversible. Medium stakes can lock or sour a meaningful opportunity. High stakes can durably alter trust, access, safety, or the arc.
+- Avoid consequences that only tell the writer the plot changed. Translate every consequence into a concrete pressure the player will notice.
+- Reject continuity-only successes. If Success merely says the scene proceeds, the arc continues, the mood improves, the party leaves, or the story feels lighter, rewrite it into a concrete reward or affordance the player would not otherwise get.
+- Avoid weak bookkeeping phrases unless they are attached to a visible player impact: "momentum," "natural window," "attention shifts," "forward motion," "arc continues," "scene proceeds," "plot advances."
+- Prefer specific proper nouns from the current story over "the party" when a character relationship or NPC obligation is involved.
+
+Useful consequence patterns:
+- Relationship penalty: "A duty-bound companion becomes cool and formal with the player character for 3 turns; she answers affection with duty language until he proves he listened."
+- Command loss: "A confident companion stops asking and leads the next route herself; player attempts to redirect are treated as suggestions, not commands, until the travel beat is complete."
+- Missed opportunity: "The artisan completes the commission, but the private fitting window is gone; no extra styling scene or social opening is available."
+- Resource/time cost: "The inn charges another night and the party loses flexibility for the next market/travel choice."
+- Reputation cost: "The local contact treats the player as unreliable for 4 turns; prices rise, favors require proof first, and charm alone does not reset it."
+- Safety cost: "The delayed route becomes more dangerous; the next travel segment starts with worse conditions and one avoidable complication already active."
+- Romantic reward: "The romantic lead initiates touch or teasing on her own, making the success feel like earned affection rather than the player taking it."
+- Trust reward: "A cautious ally quietly backs the player's next practical call without requiring a debate."
+- Scene unlock: "The artisan has enough time to add a custom detail, creating a later outfit reveal or confidence beat."
+- Authority reward: "The companion lets the player choose the next route or tactic without argument because he proved he can respect timing."
+- Information reward: "The grateful NPC volunteers a concrete lead, shortcut, password, or warning that would otherwise require negotiation."
+
+AVAILABLE OBJECTIVE IDS FOR UPDATE/DELETE:
+{{available_objective_ids}}
+
+CURRENT OBJECTIVE LEDGER:
+{{current_objectives}}
+
+QUEST TRACKER PORTFOLIO PRESSURE:
+{{objective_portfolio}}
+
+FINAL GRAND PLAN:
+{{grand_plan}}

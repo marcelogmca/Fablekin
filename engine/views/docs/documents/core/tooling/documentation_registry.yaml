@@ -1,0 +1,31 @@
+documented_files:
+  - path: engine/modules/utils/doc_scanner.js
+    hash: B28F0DF2B10DF568A9AA573DAAFE2449
+  - path: engine/modules/plugin_manager/plugin_manager.js
+    hash: 1EC75A4480D805B78171AF5A37E8231A
+  - path: engine/views/docs/renderer_docs.js
+    hash: C5E4F311069ED7AFF942D19B6BB4CF2F
+  - path: engine/views/docs/docs.html
+    hash: 95835971B5A60B69FAE54479B254A6B4
+  - path: engine/views/docs/documents/core/vn_api/index.html
+    hash: BFAEFE7EB13A1D89DDF58EA23B2EAA25
+  - path: engine/views/docs/documents/core/story_scripts/index.html
+    hash: 1985BC6508FCFF9169800B13119CB85D
+  - path: engine/views/docs/documents/core/sprite_setup/index.html
+    hash: 1DD776963CF04658414DF193FF86DE01
+  - path: engine/views/docs/documents/core/plugin_sdk_tooling/index.html
+    hash: 36C3B23EA3D327DFE7325FB63114B6AE
+  - path: engine/views/docs/documents/core/plugin_dev/index.html
+    hash: B961BD3BC070E0EC7FB2F54F2A43A324
+  - path: engine/views/docs/documents/core/plugin_db_best_practices/index.html
+    hash: F51036D052406A56999296BF95DEAE0B
+  - path: engine/views/docs/documents/core/persona_engine/index.html
+    hash: B469F641E192E6E1EB556E09AB6D2CB2
+  - path: engine/views/docs/documents/core/memory_lod/index.html
+    hash: 591F6207EEA97E0B16FDD17ED0EE570B
+  - path: engine/views/docs/documents/core/gui_intercept_sdk/index.html
+    hash: B308E59E4349DA442730DA0C5EB9E95F
+  - path: engine/views/docs/documents/core/getting_started/index.html
+    hash: 98E92A2CEA533F3110F89079AF5D5DCA
+  - path: engine/views/docs/documents/core/game_over_sdk/index.html
+    hash: F1A6355898C1BE313E9086563CD3E4AA

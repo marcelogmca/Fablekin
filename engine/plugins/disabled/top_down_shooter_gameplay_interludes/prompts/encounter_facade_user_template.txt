@@ -1,0 +1,19 @@
+Scene context:
+{{SCENE_CONTEXT}}
+
+Relevant lore / characters / factions:
+{{LORE_CONTEXT}}
+
+Recent player context:
+{{PLAYER_CONTEXT}}
+
+EncounterFacade v1 grammar:
+{{FACADE_GRAMMAR_SUMMARY}}
+
+Example facade:
+{{FACADE_EXAMPLE}}
+
+Required output:
+{{MARKER_START}}
+...
+{{MARKER_END}}

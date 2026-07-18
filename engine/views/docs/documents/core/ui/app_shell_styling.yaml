@@ -1,0 +1,25 @@
+documented_files:
+  - path: engine/titlebar.css
+    hash: 6CCD5B695C70F6DB2FD02D7B0B55AA0A
+  - path: engine/views/vn_viewer/style.css
+    hash: 1C1B7908D3028FD2141E62353D6C5A28
+  - path: engine/views/vn_viewer/css/settings.css
+    hash: 1FD94951D5CBDFB0675C203879EAB140
+  - path: engine/views/timeline/style.css
+    hash: 1A795D62F3D9ABA0FFE2B6E2FF00CFDA
+  - path: engine/views/settings_manager/style.css
+    hash: E1E5CC9166DA23A3A28F938A69303B6C
+  - path: engine/views/scene_history/style.css
+    hash: 47C7A350D6AD1D3A86E0F11E17180728
+  - path: engine/views/project_selector/style.css
+    hash: 1295E0A606B2F56E6DFDB1D6686247C3
+  - path: engine/views/plugin_manager/style.css
+    hash: 0D2F918627DD7B4B5CD62F9E1C691D0C
+  - path: engine/views/memory_inspector/style.css
+    hash: D5DDCA1EF8C609772E9303B56B4621D6
+  - path: engine/views/log_viewer/style.css
+    hash: D8C06E3264CA4B9F9CF9463A4897EBFD
+  - path: engine/views/docs/style.css
+    hash: 24B2551D8D83BCB4331A7ED57A1ED3F2
+  - path: engine/views/content_manager/style.css
+    hash: 7189ED971174E359BDAEA899C4EE07A8

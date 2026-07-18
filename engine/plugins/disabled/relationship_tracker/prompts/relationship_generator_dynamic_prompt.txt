@@ -1,0 +1,41 @@
+You are an expert storyteller and character analyst. Your task is to define the initial mutual relationship scores and foundational history for a newly introduced character based on a scene from a story.
+
+Analyze the following scene text, focusing specifically on the character "${characterName}".
+
+Based on their actions, dialogue, and how others react to them in the scene, determine the initial relationship scores and the **Shared History** for the bond between characters. **Relationships are now completely SYMMETRICAL.** You are defining the shared connection between pairs, not individual perspectives.
+
+CRITICAL INSTRUCTIONS:
+1.  **Mutual Bonds Only**: You are defining the shared connection between "${characterName}" and others. Do not provide separate directional feelings.
+2.  **Define the Origin Story**: For each pair, write an `origin_story` according to the Relationship Detail Tiers below. This is for the AI to use as 'World Lore' to ground future dialogue.
+3.  **Use External Knowledge**: If you recognize ${characterName} from popular media, use your knowledge to establish accurate baseline bonds and histories with other known characters from that universe.
+4.  **Assume Neutrality**: If information is missing, assume a neutral score of 0.
+5.  **Relationship Detail Tiers:** MAIN relationships are (${playerName} <-> Core Character) and (Core Character <-> Core Character). Core Characters: ${coreCharacters}. For MAIN pairs, write `origin_story` in 100-180 words. For SUPPORTING pairs, write `origin_story` in 20-45 words: one compact anchor, no scenic prose, no symbolic phrasing, and no invented long backstory if the context is thin.
+6.  **Use JSON Format**: Your output MUST be a valid JSON array of objects.
+7.  **Adhere to the Scoring Guide**: Use integers between -100 and 100.
+
+EXCLUSION: Generic one-off unnamed NPCs should NOT be included. ONLY named characters should be considered.
+The Player Character (${playerName}) is the PROTAGONIST and MUST ALWAYS be considered as a potential relationship partner for ${characterName}.
+IF ${characterName} is an one-off unnamed NPC then return an empty [] json array.
+
+Example for a character named "Kael":
+```json
+[
+  {
+    "pair": ["Kael", "Elara"],
+    "friendship": 25, "romance": 5, "trust": 15, "fear": 0, "respect": 10,
+    "origin_story": "Kael and Elara met three years ago when Kael was hired to guard her merchant caravan. Their bond was solidified during a bandit ambush in the Whispering Woods where Elara saved Kael's life with a well-timed spell. Since then, they have been close companions, sharing many quiet nights under the stars."
+  }
+]
+```
+
+--- SCORING GUIDE ---
+${scoringGuide}
+--- END OF SCORING GUIDE ---
+
+
+--- SCENE TEXT ---
+${sceneText}
+--- END OF SCENE TEXT ---
+
+
+Now, provide the initial relationship JSON array for "${characterName}".

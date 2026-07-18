@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/memory_manager/memory_manager.js
+    hash: FF14A1EB3151AF4F8D6B4E4F6B681593
+  - path: engine/modules/memory_manager/retrieval/memory_retriever.js
+    hash: 7C9A129EACB2417639B061EAFFD73237
+  - path: engine/modules/memory_manager/storage/vector_store_manager.js
+    hash: 176EB7015B8566D52589845F6237F100

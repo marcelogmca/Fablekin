@@ -1,0 +1,140 @@
+{
+    "dependencies":  [
+
+                     ],
+    "devDependencies":  [
+
+                        ],
+    "missing":  {
+
+                },
+    "using":  {
+                  "electron":  [
+                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\main.js",
+                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\package.json",
+                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\titlebar.js",
+                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\plugin_manager.js",
+                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\tools_builder.js",
+                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\secure_storage.js",
+                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\vn_handlers.js"
+                               ],
+                  "socket.io":  [
+                                    "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\main.js"
+                                ],
+                  "electron-window-state":  [
+                                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\main.js"
+                                            ],
+                  "express":  [
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\main.js"
+                              ],
+                  "socket.io-client":  [
+                                           "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\project_selector\\renderer_project_selector.js"
+                                       ],
+                  "graphology-utils":  [
+                                           "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\libs\\graphology-layout-forceatlas2.min.js"
+                                       ],
+                  "js-yaml":  [
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\scripts\\docs_coverage.js"
+                              ],
+                  "glob":  [
+                               "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\scripts\\docs_coverage.js",
+                               "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\tools_builder.js"
+                           ],
+                  "sharp":  [
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\logic.js",
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\cg_generator\\logic.js",
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\logic.test.js",
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\palette_extraction.js",
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\thumbnail_generator.js"
+                            ],
+                  "axios":  [
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\tts_core\\index.js"
+                            ],
+                  "string-similarity":  [
+                                            "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\post_writer_consistency_checker\\logic.js",
+                                            "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\parser.js",
+                                            "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\sprite_finder.js"
+                                        ],
+                  "crc-32":  [
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\post_writer_consistency_checker\\logic.js",
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\utils.js",
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\dialogue_processor.js"
+                             ],
+                  "sqlite3":  [
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_architect\\init_db.js",
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\knowledge_graph\\lib\\knowledge_graph.js",
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\chaptermanagement.js",
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\tools_builder.js",
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\devcache.js",
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\fact_manager.js",
+                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\static_data_manager.js"
+                              ],
+                  "sqlite":  [
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_architect\\init_db.js",
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\knowledge_graph\\lib\\knowledge_graph.js",
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\chaptermanagement.js",
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\tools_builder.js",
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\devcache.js",
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\fact_manager.js"
+                             ],
+                  "js-levenshtein":  [
+                                         "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\knowledge_graph\\lib\\knowledge_graph.js",
+                                         "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js"
+                                     ],
+                  "@langchain/core":  [
+                                          "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js",
+                                          "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\memory_manager.js",
+                                          "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\vector_store_manager.js",
+                                          "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\retrieval\\query_generator.js",
+                                          "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\retrieval\\rag_pipeline.js"
+                                      ],
+                  "@langchain/openai":  [
+                                            "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js"
+                                        ],
+                  "@langchain/google-genai":  [
+                                                  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js"
+                                              ],
+                  "@langchain/anthropic":  [
+                                               "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js"
+                                           ],
+                  "json5":  [
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js",
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\loader.js",
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\config\\global_settings_store.js"
+                            ],
+                  "jsonrepair":  [
+                                     "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js"
+                                 ],
+                  "chalk":  [
+                                "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\utils.js"
+                            ],
+                  "fuzzysort":  [
+                                    "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\asset_selector.js"
+                                ],
+                  "ffmpeg-static":  [
+                                        "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\thumbnail_generator.js"
+                                    ],
+                  "gender-detection-from-name":  [
+                                                     "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\genderguesser.js"
+                                                 ],
+                  "@langchain/textsplitters":  [
+                                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\memory_manager.js",
+                                                   "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\retrieval\\rag_pipeline.js"
+                                               ],
+                  "dotenv":  [
+                                 "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\memory_manager.js"
+                             ],
+                  "@lancedb/lancedb":  [
+                                           "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\vector_store_manager.js"
+                                       ],
+                  "@langchain/ollama":  [
+                                            "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\vector_store_manager.js"
+                                        ]
+              },
+    "invalidFiles":  {
+
+                     },
+    "invalidDirs":  {
+
+                    }
+}

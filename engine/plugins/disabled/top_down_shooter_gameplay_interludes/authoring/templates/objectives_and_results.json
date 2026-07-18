@@ -1,0 +1,240 @@
+{
+  "objectives": [
+    {
+      "id": "survive_primary_wave",
+      "type": "survive_time",
+      "title": "Survive the primary wave",
+      "target": 75,
+      "required": true,
+      "optional": false,
+      "failureCondition": {
+        "type": "player_defeated"
+      },
+      "timeoutSeconds": null,
+      "visibility": "visible",
+      "rewardTags": [
+        "held_the_line",
+        "survival_core"
+      ],
+      "enemyType": null,
+      "objectId": null,
+      "zoneId": null
+    },
+    {
+      "id": "defeat_any_enemies",
+      "type": "defeat_count",
+      "title": "Defeat 18 enemies",
+      "target": 18,
+      "required": true,
+      "optional": false,
+      "failureCondition": {
+        "type": "timeout",
+        "seconds": 95
+      },
+      "timeoutSeconds": 95,
+      "visibility": "visible",
+      "rewardTags": [
+        "enemy_wave_cleared",
+        "high_pressure_clear"
+      ],
+      "enemyType": null,
+      "objectId": null,
+      "zoneId": null
+    },
+    {
+      "id": "defeat_glass_drifters",
+      "type": "defeat_enemy_type",
+      "title": "Shatter 8 glass drifters",
+      "target": 8,
+      "required": false,
+      "optional": true,
+      "failureCondition": null,
+      "timeoutSeconds": null,
+      "visibility": "minimal",
+      "rewardTags": [
+        "drifter_breaker",
+        "optional_hunter"
+      ],
+      "enemyType": "glass_drifter",
+      "objectId": null,
+      "zoneId": null
+    },
+    {
+      "id": "defeat_mirror_captain",
+      "type": "defeat_boss",
+      "title": "Defeat the Mirror Captain",
+      "target": 1,
+      "required": true,
+      "optional": false,
+      "failureCondition": {
+        "type": "player_defeated"
+      },
+      "timeoutSeconds": null,
+      "visibility": "visible",
+      "rewardTags": [
+        "boss_defeated",
+        "captain_down"
+      ],
+      "enemyType": "mirror_captain",
+      "objectId": null,
+      "zoneId": null
+    },
+    {
+      "id": "protect_defense_core",
+      "type": "protect_object",
+      "title": "Protect the defense core",
+      "target": 1,
+      "required": true,
+      "optional": false,
+      "failureCondition": {
+        "type": "object_destroyed",
+        "objectId": "defense_core"
+      },
+      "timeoutSeconds": null,
+      "visibility": "visible",
+      "rewardTags": [
+        "core_intact",
+        "defensive_success"
+      ],
+      "enemyType": null,
+      "objectId": "defense_core",
+      "zoneId": null
+    },
+    {
+      "id": "reach_anchor_zone",
+      "type": "reach_zone",
+      "title": "Reach the anchor zone",
+      "target": 1,
+      "required": false,
+      "optional": true,
+      "failureCondition": null,
+      "timeoutSeconds": 60,
+      "visibility": "visible",
+      "rewardTags": [
+        "anchor_reached",
+        "positioning_success"
+      ],
+      "enemyType": null,
+      "objectId": null,
+      "zoneId": "capture_anchor"
+    },
+    {
+      "id": "clear_active_hazards",
+      "type": "clear_hazards",
+      "title": "Stabilize the hazard field",
+      "target": 0,
+      "required": false,
+      "optional": true,
+      "failureCondition": null,
+      "timeoutSeconds": null,
+      "visibility": "hidden",
+      "rewardTags": [
+        "hazard_field_stabilized"
+      ],
+      "enemyType": null,
+      "objectId": null,
+      "zoneId": null
+    }
+  ],
+  "resultRules": [
+    {
+      "id": "desperate_survival",
+      "when": {
+        "type": "player_hp_below",
+        "ratio": 0.25
+      },
+      "tag": "barely_survived",
+      "tags": [
+        "low_hp_finish",
+        "costly_victory"
+      ],
+      "grade": "desperate"
+    },
+    {
+      "id": "survival_objective_complete",
+      "when": {
+        "type": "objective_completed",
+        "objective": "survive_primary_wave"
+      },
+      "tag": "survived_primary_wave",
+      "tags": [
+        "held_the_line"
+      ],
+      "grade": "wounded"
+    },
+    {
+      "id": "core_lost",
+      "when": {
+        "type": "objective_failed",
+        "objective": "protect_defense_core"
+      },
+      "tag": "defense_core_lost",
+      "tags": [
+        "objective_failed_core"
+      ],
+      "grade": "failed"
+    },
+    {
+      "id": "enemy_clear_milestone",
+      "when": {
+        "type": "enemy_defeated_count_at_least",
+        "count": 18
+      },
+      "tag": "enemy_wave_cleared",
+      "tags": [
+        "combat_momentum"
+      ],
+      "grade": "clean"
+    },
+    {
+      "id": "captain_defeated",
+      "when": {
+        "type": "boss_defeated",
+        "bossId": "mirror_captain"
+      },
+      "tag": "mirror_captain_defeated",
+      "tags": [
+        "boss_down",
+        "duel_won"
+      ],
+      "grade": "clean"
+    },
+    {
+      "id": "retry_recovery",
+      "when": {
+        "type": "retries_at_least",
+        "count": 1
+      },
+      "tag": "won_after_retry",
+      "tags": [
+        "adapted_after_failure"
+      ],
+      "grade": "wounded"
+    },
+    {
+      "id": "fast_clear",
+      "when": {
+        "type": "duration_below",
+        "seconds": 80
+      },
+      "tag": "fast_clear",
+      "tags": [
+        "decisive_tempo"
+      ],
+      "grade": "clean"
+    },
+    {
+      "id": "attrition_clear",
+      "when": {
+        "type": "duration_above",
+        "seconds": 130
+      },
+      "tag": "attrition_clear",
+      "tags": [
+        "long_fight",
+        "exhausted_finish"
+      ],
+      "grade": "desperate"
+    }
+  ]
+}

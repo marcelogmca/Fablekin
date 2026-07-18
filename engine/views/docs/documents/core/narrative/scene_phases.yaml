@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/modules/director.js
+    hash: 1C784147CD1B63C4916D8C377EF553CB
+  - path: engine/modules/vn_manager/analysis/scene_phase_classifier.js
+    hash: E386C2DF2EB761D21763C0CBC0A5DF6A
+  - path: engine/modules/turncontext.js
+    hash: 033A5DA1A699F052EDC1BFFCE2B162F0
+  - path: engine/modules/vn_manager/vn_manager.js
+    hash: 290FABB1543C32821D95A0CBEA1987A4

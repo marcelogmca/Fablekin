@@ -1,0 +1,1284 @@
+{
+  "budgets": {
+    "maxEnemiesAlive": 24,
+    "maxEnemyBulletsAlive": 360,
+    "maxPlayerBulletsAlive": 160,
+    "maxEmittersAlive": 16,
+    "maxHazardsAlive": 32,
+    "maxPickupsAlive": 18,
+    "maxTelegraphsAlive": 48,
+    "maxActionsPerSecond": 160,
+    "maxEncounterSeconds": 180
+  },
+  "projectileTypes": {
+    "enemy_default_bullet": {
+      "team": "enemy",
+      "damage": 1,
+      "radius": 8,
+      "lifeTicks": 320,
+      "vz": -0.05,
+      "color": 16727949
+    },
+    "player_default_bullet": {
+      "team": "player",
+      "damage": 1,
+      "radius": 6,
+      "lifeTicks": 260,
+      "vz": -0.04,
+      "color": 3797759
+    }
+  },
+  "patterns": {
+    "enemy_spiral_pressure": {
+      "type": "spiral",
+      "count": 5,
+      "speed": 2.9,
+      "spreadDegrees": 48,
+      "projectileType": "enemy_default_bullet",
+      "aim": {
+        "type": "toward_player"
+      }
+    },
+    "fan_pressure": {
+      "type": "fan",
+      "count": 7,
+      "speed": 3.1,
+      "spreadDegrees": 64,
+      "projectileType": "enemy_default_bullet",
+      "aim": {
+        "type": "toward_player"
+      }
+    },
+    "line_lane": {
+      "type": "line",
+      "count": 6,
+      "speed": 3.4,
+      "spacing": 58,
+      "projectileType": "enemy_default_bullet",
+      "source": {
+        "type": "fixed_point",
+        "x": 0,
+        "y": -560
+      },
+      "aim": {
+        "type": "toward_player"
+      }
+    }
+  },
+  "enemyTypes": {
+    "scout": {
+      "hp": 10,
+      "radius": 20,
+      "speed": 1.35,
+      "behavior": "chase_player",
+      "attackPatternId": "enemy_spiral_pressure",
+      "attackIntervalMs": 820
+    },
+    "sentry": {
+      "hp": 18,
+      "radius": 24,
+      "speed": 0.85,
+      "behavior": "stationary_turret",
+      "attackPatternId": "fan_pressure",
+      "attackIntervalMs": 760
+    },
+    "mirror_captain": {
+      "hp": 120,
+      "radius": 38,
+      "speed": 0.9,
+      "behavior": "boss_anchor",
+      "attackPatternId": "fan_pressure",
+      "attackIntervalMs": 620,
+      "boss": true,
+      "bossId": "mirror_captain",
+      "displayName": "Mirror Captain",
+      "attacks": [
+        {
+          "id": "fan_volley",
+          "pattern": "fan_pressure",
+          "everySeconds": 1.25,
+          "weight": 1
+        },
+        {
+          "id": "lane_cut",
+          "pattern": "line_lane",
+          "everySeconds": 2.25,
+          "weight": 0.6
+        }
+      ],
+      "bossPhases": [
+        {
+          "id": "measured",
+          "hpBelow": 1,
+          "attackDeck": [
+            "fan_volley"
+          ]
+        },
+        {
+          "id": "enrage",
+          "hpBelow": 0.5,
+          "attackDeck": [
+            "fan_volley",
+            "lane_cut"
+          ],
+          "noRepeatWindow": 1
+        }
+      ]
+    }
+  },
+  "statusEffects": {
+    "guarded_window": {
+      "id": "guarded_window",
+      "category": "buff",
+      "durationSeconds": 2.2,
+      "maxStacks": 1,
+      "tickIntervalSeconds": 0.25,
+      "modifiers": [
+        {
+          "type": "incoming_damage_scalar",
+          "value": 0.5
+        }
+      ],
+      "onApplyActions": [],
+      "onExpireActions": []
+    },
+    "glass_bleed": {
+      "id": "glass_bleed",
+      "category": "debuff",
+      "durationSeconds": 5,
+      "maxStacks": 3,
+      "tickIntervalSeconds": 0.5,
+      "modifiers": [
+        {
+          "type": "bleed_per_second",
+          "value": 0.35,
+          "perStack": true
+        }
+      ],
+      "onApplyActions": [],
+      "onExpireActions": []
+    }
+  },
+  "hazards": {
+    "storm_damage": {
+      "hazardId": "storm_damage",
+      "type": "damage_circle",
+      "shape": "circle",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "radius": 170,
+      "durationSeconds": 6,
+      "tickIntervalSeconds": 0.45,
+      "damage": 1,
+      "statusOnHit": "glass_bleed",
+      "affectTeams": [
+        "player"
+      ]
+    },
+    "ring_pulse": {
+      "hazardId": "ring_pulse",
+      "type": "expanding_ring",
+      "shape": "ring",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "radius": 120,
+      "durationSeconds": 4,
+      "tickIntervalSeconds": 0.35,
+      "damage": 1,
+      "force": 60,
+      "growthPerSecond": 80,
+      "statusOnHit": null,
+      "affectTeams": [
+        "player"
+      ]
+    },
+    "safe_zone": {
+      "hazardId": "safe_zone",
+      "type": "safe_zone",
+      "shape": "zone_outline",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "radius": 260,
+      "durationSeconds": 8,
+      "tickIntervalSeconds": 0.5,
+      "damage": 0,
+      "affectTeams": [
+        "player"
+      ]
+    }
+  },
+  "objects": {
+    "defense_core": {
+      "objectId": "defense_core",
+      "type": "protect_target",
+      "team": "ally",
+      "hp": 36,
+      "radius": 34,
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "protect": true,
+      "capture": false,
+      "escort": false
+    },
+    "capture_anchor": {
+      "objectId": "capture_anchor",
+      "type": "capture_point",
+      "team": "neutral",
+      "hp": 999,
+      "radius": 52,
+      "source": {
+        "type": "fixed_point",
+        "x": -420,
+        "y": 340
+      },
+      "protect": false,
+      "capture": true,
+      "escort": false
+    }
+  },
+  "pickups": {
+    "heal_orb_small": {
+      "id": "heal_orb_small",
+      "type": "heal_orb",
+      "radius": 18,
+      "durationSeconds": 12,
+      "maxAlive": 5,
+      "effectActions": [],
+      "dropWeight": 1,
+      "statusOnPickup": null
+    },
+    "haste_pickup": {
+      "id": "haste_pickup",
+      "type": "status_pickup",
+      "radius": 18,
+      "durationSeconds": 10,
+      "maxAlive": 4,
+      "effectActions": [
+        {
+          "type": "show_banner",
+          "text": "Haste pickup collected."
+        }
+      ],
+      "dropWeight": 0.5,
+      "statusOnPickup": "guarded_window"
+    }
+  },
+  "emitters": {
+    "edge_stream": {
+      "emitterId": "edge_stream",
+      "source": {
+        "type": "arena_edge",
+        "edge": "top",
+        "position": 0.35
+      },
+      "pattern": "line_lane",
+      "intervalSeconds": 0.65,
+      "durationSeconds": 14,
+      "startDelaySeconds": 0.25,
+      "aim": {
+        "type": "toward_player"
+      },
+      "movement": {
+        "type": "linear",
+        "vx": 85,
+        "vy": 0
+      }
+    }
+  },
+  "music": {
+    "intensityTiers": {
+      "base": "battle_random",
+      "low": {
+        "track": "battle_random",
+        "duckFactor": 0.88
+      },
+      "high": {
+        "track": "battle_random",
+        "duckFactor": 0.68
+      },
+      "boss": {
+        "track": "battle_random",
+        "duckFactor": 0.6
+      }
+    },
+    "intensityRules": []
+  },
+  "objectives": [
+    {
+      "id": "survive_primary_wave",
+      "type": "survive_time",
+      "title": "Survive the opening pressure",
+      "target": 45,
+      "required": true
+    },
+    {
+      "id": "clear_optional",
+      "type": "defeat_count",
+      "title": "Defeat 10 enemies",
+      "target": 10,
+      "optional": true
+    },
+    {
+      "id": "reach_anchor_zone",
+      "type": "reach_zone",
+      "title": "Reach the anchor zone",
+      "target": 1,
+      "zoneId": "capture_anchor",
+      "optional": true
+    },
+    {
+      "id": "defeat_mirror_captain",
+      "type": "defeat_boss",
+      "title": "Defeat the Mirror Captain",
+      "target": 1,
+      "enemyType": "mirror_captain",
+      "required": true
+    },
+    {
+      "id": "protect_defense_core",
+      "type": "protect_object",
+      "title": "Protect the defense core",
+      "target": 1,
+      "objectId": "defense_core",
+      "required": true
+    }
+  ],
+  "sequence": {
+    "startPhase": "opening",
+    "initialFlags": {
+      "bossUnlocked": false,
+      "anchorReached": false,
+      "cleanupReady": false,
+      "mercyPickupDropped": false
+    },
+    "initialCounters": {
+      "waveCounter": 0,
+      "hazardCycles": 0,
+      "pickupCount": 0
+    },
+    "actionGroups": {
+      "opening_wave": [
+        {
+          "type": "set_objective",
+          "text": "Hold the center and keep the defense core alive."
+        },
+        {
+          "type": "spawn_object",
+          "object": "defense_core"
+        },
+        {
+          "type": "spawn_enemy",
+          "enemyType": "scout",
+          "count": 3,
+          "formation": "left_right"
+        },
+        {
+          "type": "spawn_hazard",
+          "hazard": "safe_zone",
+          "at": {
+            "type": "arena_center"
+          }
+        },
+        {
+          "type": "set_counter",
+          "counter": "waveCounter",
+          "value": 1
+        }
+      ],
+      "utility_rotation": [
+        {
+          "type": "spawn_pickup",
+          "pickup": "heal_orb_small",
+          "at": {
+            "type": "fixed_point",
+            "x": -360,
+            "y": 260
+          }
+        },
+        {
+          "type": "apply_status",
+          "target": "player",
+          "status": "guarded_window",
+          "stacks": 1
+        },
+        {
+          "type": "delay_actions",
+          "delaySeconds": 2,
+          "actions": [
+            {
+              "type": "remove_status",
+              "target": "player",
+              "status": "guarded_window"
+            },
+            {
+              "type": "clear_pickups",
+              "reason": "utility_rotation_cleanup"
+            }
+          ]
+        }
+      ],
+      "emitter_control": [
+        {
+          "type": "spawn_emitter",
+          "emitter": "edge_stream"
+        },
+        {
+          "type": "delay_actions",
+          "delaySeconds": 3,
+          "actions": [
+            {
+              "type": "pause_emitter",
+              "emitterId": "edge_stream"
+            }
+          ]
+        },
+        {
+          "type": "delay_actions",
+          "delaySeconds": 5,
+          "actions": [
+            {
+              "type": "resume_emitter",
+              "emitterId": "edge_stream"
+            }
+          ]
+        },
+        {
+          "type": "delay_actions",
+          "delaySeconds": 9,
+          "actions": [
+            {
+              "type": "stop_emitter",
+              "emitterId": "edge_stream"
+            }
+          ]
+        }
+      ],
+      "arena_shift": [
+        {
+          "type": "apply_arena_modifier",
+          "modifier": {
+            "id": "pressure_crosswind",
+            "type": "periodic_wind",
+            "strength": 110,
+            "periodSeconds": 2.4,
+            "durationSeconds": 12
+          }
+        },
+        {
+          "type": "delay_actions",
+          "delaySeconds": 12,
+          "actions": [
+            {
+              "type": "remove_arena_modifier",
+              "modifierId": "pressure_crosswind"
+            }
+          ]
+        }
+      ],
+      "player_kit_shift": [
+        {
+          "type": "grant_player_ability",
+          "ability": {
+            "id": "focus_beam",
+            "key": "r",
+            "cooldownSeconds": 12,
+            "charges": 1,
+            "castActions": [
+              {
+                "type": "spawn_pattern",
+                "pattern": {
+                  "type": "line",
+                  "projectileType": "player_default_bullet",
+                  "count": 6,
+                  "speed": 6,
+                  "spacing": 42
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "reset_player_ability_cooldown",
+          "abilityId": "focus_beam"
+        },
+        {
+          "type": "set_player_dash_variant",
+          "variant": "blink_short"
+        },
+        {
+          "type": "delay_actions",
+          "delaySeconds": 20,
+          "actions": [
+            {
+              "type": "remove_player_ability",
+              "abilityId": "focus_beam"
+            }
+          ]
+        }
+      ],
+      "audio_stingers": [
+        {
+          "type": "set_music",
+          "track": "battle_random"
+        },
+        {
+          "type": "set_music_intensity",
+          "level": "high"
+        },
+        {
+          "type": "play_sfx",
+          "sfx": "ui_confirm"
+        },
+        {
+          "type": "music_stinger",
+          "track": "battle_random"
+        },
+        {
+          "type": "delay_actions",
+          "delaySeconds": 7,
+          "actions": [
+            {
+              "type": "restore_music",
+              "reason": "opening_stinger_complete"
+            }
+          ]
+        }
+      ],
+      "cleanup_tools": [
+        {
+          "type": "clear_hazards"
+        },
+        {
+          "type": "clear_telegraphs"
+        },
+        {
+          "type": "clear_statuses",
+          "target": "player"
+        },
+        {
+          "type": "clear_pickups",
+          "reason": "encounter_cleanup"
+        },
+        {
+          "type": "clear_emitters"
+        },
+        {
+          "type": "clear_arena_modifiers",
+          "reason": "encounter_cleanup"
+        }
+      ]
+    },
+    "phases": [
+      {
+        "id": "opening",
+        "objective": "Opening: establish objectives, core, and first wave.",
+        "enter": [
+          {
+            "type": "show_banner",
+            "text": "Glass drones spill into the arena."
+          },
+          {
+            "type": "run_action_group",
+            "group": "opening_wave"
+          },
+          {
+            "type": "run_action_group",
+            "group": "audio_stingers"
+          },
+          {
+            "type": "spawn_telegraph",
+            "shape": "circle",
+            "style": "friendly",
+            "radius": 260,
+            "durationSeconds": 1.1,
+            "at": {
+              "type": "arena_center"
+            }
+          }
+        ],
+        "rules": [
+          {
+            "when": {
+              "type": "phase_elapsed",
+              "seconds": 3
+            },
+            "if": {
+              "type": "flag_is",
+              "flag": "bossUnlocked",
+              "value": false
+            },
+            "do": [
+              {
+                "type": "telegraph_then_spawn_enemy",
+                "enemyType": "scout",
+                "count": 2,
+                "formation": "random",
+                "shape": "circle",
+                "style": "danger",
+                "durationSeconds": 0.8,
+                "radius": 130,
+                "at": {
+                  "type": "arena_edge",
+                  "edge": "right",
+                  "position": 0.55
+                }
+              },
+              {
+                "type": "add_counter",
+                "counter": "waveCounter",
+                "value": 1
+              },
+              {
+                "type": "delay_actions",
+                "delaySeconds": 1.5,
+                "actions": [
+                  {
+                    "type": "run_action_group",
+                    "group": "utility_rotation"
+                  }
+                ]
+              }
+            ],
+            "elseActions": [
+              {
+                "type": "show_banner",
+                "text": "Opening wave already escalated."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "random_chance",
+              "chance": 0.2
+            },
+            "repeat": {
+              "everySeconds": 1.5,
+              "limit": 2
+            },
+            "maxRepeats": 2,
+            "cooldownSeconds": 0.25,
+            "do": [
+              {
+                "type": "spawn_pickup",
+                "pickup": "haste_pickup",
+                "at": {
+                  "type": "fixed_point",
+                  "x": 220,
+                  "y": 260
+                }
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "counter_at_least",
+              "counter": "waveCounter",
+              "value": 2
+            },
+            "do": [
+              {
+                "type": "set_flag",
+                "flag": "bossUnlocked",
+                "value": true
+              },
+              {
+                "type": "transition_phase",
+                "phase": "pressure"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "pressure",
+        "objective": "Pressure: hold the core, reach the anchor, and manage hazards.",
+        "enter": [
+          {
+            "type": "set_objective",
+            "text": "Reach the anchor while the pressure field builds."
+          },
+          {
+            "type": "show_banner",
+            "text": "The arena starts pushing back."
+          },
+          {
+            "type": "spawn_object",
+            "object": "capture_anchor"
+          },
+          {
+            "type": "activate_objective",
+            "objective": "reach_anchor_zone"
+          },
+          {
+            "type": "run_action_group",
+            "group": "emitter_control"
+          },
+          {
+            "type": "run_action_group",
+            "group": "arena_shift"
+          },
+          {
+            "type": "run_action_group",
+            "group": "player_kit_shift"
+          }
+        ],
+        "rules": [
+          {
+            "when": {
+              "type": "phase_elapsed",
+              "seconds": 2
+            },
+            "repeat": {
+              "everySeconds": 4,
+              "limit": 4
+            },
+            "repeatUntil": {
+              "type": "enemy_count_at_least",
+              "count": 8
+            },
+            "maxRepeats": 4,
+            "cooldownSeconds": 0.4,
+            "do": [
+              {
+                "type": "spawn_enemies_from_table",
+                "table": [
+                  {
+                    "enemyType": "scout",
+                    "count": 2,
+                    "weight": 0.7,
+                    "formation": "random"
+                  },
+                  {
+                    "enemyType": "sentry",
+                    "count": 1,
+                    "weight": 0.3,
+                    "formation": "left_right"
+                  }
+                ]
+              },
+              {
+                "type": "add_counter",
+                "counter": "waveCounter",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "hazard_count_below",
+              "count": 2
+            },
+            "repeat": {
+              "everySeconds": 5,
+              "limit": 3
+            },
+            "do": [
+              {
+                "type": "telegraph_then_spawn_hazard",
+                "hazard": "ring_pulse",
+                "shape": "ring",
+                "style": "danger",
+                "durationSeconds": 0.9,
+                "radius": 160,
+                "at": {
+                  "type": "arena_center"
+                }
+              },
+              {
+                "type": "add_counter",
+                "counter": "hazardCycles",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "hazard_count_at_least",
+              "count": 3
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "Hazard field is saturated."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "player_entered_zone",
+              "zone": "capture_anchor"
+            },
+            "do": [
+              {
+                "type": "complete_objective",
+                "objective": "reach_anchor_zone"
+              },
+              {
+                "type": "set_flag",
+                "flag": "anchorReached",
+                "value": true
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "player_left_zone",
+              "zone": "capture_anchor"
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "Anchor contact broken."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "object_hp_below",
+              "object": "defense_core",
+              "ratio": 0.5
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "Defense core integrity below fifty percent."
+              },
+              {
+                "type": "apply_status",
+                "target": "player",
+                "status": "guarded_window",
+                "stacks": 1
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "object_destroyed",
+              "object": "defense_core"
+            },
+            "do": [
+              {
+                "type": "fail_objective",
+                "objective": "protect_defense_core"
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "enemy_defeated_count",
+              "count": 6
+            },
+            "do": [
+              {
+                "type": "set_objective_progress",
+                "objective": "clear_optional",
+                "progress": 6,
+                "target": 10
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "objective_progress_at_least",
+              "objective": "clear_optional",
+              "progress": 6
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "Optional clear is more than halfway done."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "player_hp_below",
+              "ratio": 0.35
+            },
+            "if": {
+              "type": "flag_is",
+              "flag": "mercyPickupDropped",
+              "value": false
+            },
+            "do": [
+              {
+                "type": "spawn_pickup",
+                "pickup": "heal_orb_small",
+                "at": {
+                  "type": "player"
+                }
+              },
+              {
+                "type": "set_flag",
+                "flag": "mercyPickupDropped",
+                "value": true
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "player_ability_used",
+              "abilityId": "focus_beam",
+              "withinSeconds": 1.5
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "Focus beam synced."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "player_dash_used",
+              "variant": "blink_short",
+              "withinSeconds": 1.2
+            },
+            "do": [
+              {
+                "type": "toggle_flag",
+                "flag": "anchorReached"
+              },
+              {
+                "type": "toggle_flag",
+                "flag": "anchorReached"
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "status_active",
+              "target": "player",
+              "status": "guarded_window"
+            },
+            "do": [
+              {
+                "type": "spawn_telegraph",
+                "shape": "circle",
+                "style": "friendly",
+                "durationSeconds": 0.6,
+                "radius": 120,
+                "at": {
+                  "type": "player"
+                }
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "status_stacks_at_least",
+              "target": "player",
+              "status": "glass_bleed",
+              "count": 2
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "Glass bleed is stacking."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "status_applied_recently",
+              "target": "player",
+              "status": "guarded_window",
+              "withinSeconds": 2
+            },
+            "do": [
+              {
+                "type": "sub_counter",
+                "counter": "hazardCycles",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "pickup_collected",
+              "pickup": "haste_pickup",
+              "withinSeconds": 2
+            },
+            "do": [
+              {
+                "type": "add_counter",
+                "counter": "pickupCount",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "pickup_collected_count",
+              "pickup": "haste_pickup",
+              "count": 2
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "Two haste pickups collected."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "counter_below",
+              "counter": "hazardCycles",
+              "value": 0
+            },
+            "do": [
+              {
+                "type": "clear_flag",
+                "flag": "mercyPickupDropped"
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "objective_completed",
+              "objective": "reach_anchor_zone"
+            },
+            "if": {
+              "type": "flag_is",
+              "flag": "anchorReached",
+              "value": true
+            },
+            "do": [
+              {
+                "type": "transition_phase",
+                "phase": "boss"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "boss",
+        "objective": "Boss: survive the Mirror Captain and finish the duel.",
+        "enter": [
+          {
+            "type": "show_banner",
+            "text": "The Mirror Captain enters."
+          },
+          {
+            "type": "set_music_intensity",
+            "level": "boss"
+          },
+          {
+            "type": "spawn_enemy",
+            "enemyType": "mirror_captain",
+            "count": 1,
+            "formation": "left_right"
+          },
+          {
+            "type": "lock_boss_damage",
+            "bossId": "mirror_captain"
+          },
+          {
+            "type": "delay_actions",
+            "delaySeconds": 1.5,
+            "actions": [
+              {
+                "type": "unlock_boss_damage",
+                "bossId": "mirror_captain"
+              }
+            ]
+          },
+          {
+            "type": "telegraph_then_fire",
+            "pattern": "line_lane",
+            "shape": "line",
+            "style": "boss",
+            "durationSeconds": 1,
+            "length": 720,
+            "width": 90,
+            "at": {
+              "type": "arena_center"
+            }
+          }
+        ],
+        "rules": [
+          {
+            "when": {
+              "type": "boss_alive"
+            },
+            "repeat": {
+              "everySeconds": 6,
+              "limit": 3
+            },
+            "do": [
+              {
+                "type": "fire_pattern",
+                "pattern": "fan_pressure"
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "boss_hp_below",
+              "ratio": 0.66
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "The captain fractures the arena."
+              },
+              {
+                "type": "spawn_hazard",
+                "hazard": "storm_damage",
+                "at": {
+                  "type": "arena_center"
+                }
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "boss_phase_is",
+              "phase": "enrage"
+            },
+            "do": [
+              {
+                "type": "telegraph_then_fire",
+                "pattern": "line_lane",
+                "shape": "line",
+                "style": "boss",
+                "durationSeconds": 0.9,
+                "length": 760,
+                "width": 96,
+                "at": {
+                  "type": "arena_center"
+                }
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "enemy_type_defeated_count",
+              "enemyType": "mirror_captain",
+              "count": 1
+            },
+            "do": [
+              {
+                "type": "complete_objective",
+                "objective": "defeat_mirror_captain"
+              },
+              {
+                "type": "set_flag",
+                "flag": "cleanupReady",
+                "value": true
+              },
+              {
+                "type": "transition_phase",
+                "phase": "cleanup"
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "objective_failed",
+              "objective": "protect_defense_core"
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "The core is gone. Finish the fight anyway."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cleanup",
+        "objective": "Cleanup: clear leftover pressure and resolve the encounter.",
+        "enter": [
+          {
+            "type": "run_action_group",
+            "group": "cleanup_tools"
+          },
+          {
+            "type": "set_music_intensity",
+            "level": "low"
+          },
+          {
+            "type": "set_objective",
+            "text": "Regroup and confirm the field is clear."
+          },
+          {
+            "type": "show_banner",
+            "text": "Combat field stabilizing."
+          }
+        ],
+        "rules": [
+          {
+            "when": {
+              "type": "enemy_count_below",
+              "count": 1
+            },
+            "do": [
+              {
+                "type": "clear_telegraphs"
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "all_enemies_defeated"
+            },
+            "if": {
+              "type": "flag_is",
+              "flag": "cleanupReady",
+              "value": true
+            },
+            "do": [
+              {
+                "type": "show_banner",
+                "text": "All hostile pressure cleared."
+              }
+            ],
+            "elseActions": [
+              {
+                "type": "show_banner",
+                "text": "Waiting for final confirmation."
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "time_elapsed",
+              "seconds": 150
+            },
+            "do": [
+              {
+                "type": "win"
+              }
+            ]
+          },
+          {
+            "when": {
+              "type": "phase_elapsed",
+              "seconds": 2.5
+            },
+            "do": [
+              {
+                "type": "win"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+# Story Context
+
+## Story So Far ({{storySource}})
+{{storyText}}
+
+## Since The Last Arc Intro
+{{rangeLabel}}
+{{sourceDigest}}

@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/vn_manager/timeline.js
+    hash: 5CDC5A432DF61D39159150FB78027D11
+  - path: engine/views/timeline/renderer_timeline.js
+    hash: 86DCB4130D5BE9B02C3740606E635579
+  - path: engine/views/timeline/timeline.html
+    hash: 46913689BB14CEA4BB6DE9DDC50AA200

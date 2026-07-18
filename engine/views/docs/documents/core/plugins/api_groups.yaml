@@ -1,0 +1,17 @@
+documented_files:
+  - path: engine/modules/plugin_manager/plugin_manager.js
+    hash: ECBF4EB7D62B825C7E762111419B42C6
+  - path: engine/modules/plugin_manager/runtime/tools_builder.js
+    hash: 07EFEAC6519294B01065F50DAD4669AA
+  - path: engine/modules/plugin_manager/runtime/jobs_tools.js
+    hash: 226740806D1A761A04A28675AAFC549E
+  - path: engine/modules/plugin_manager/runtime/hook_executor.js
+    hash: 636C77ABDE4C4F66E9BE75D08874EB9C
+  - path: engine/views/libs/plugin_bridge.js
+    hash: 86FA864D957227FDEE2147A8FCC14835
+  - path: engine/views/vn_viewer/js/intercept_orchestrator.js
+    hash: D5BEFEDC0A62CA288670B53CC9CFABF9
+  - path: engine/views/vn_viewer/js/vn_api.js
+    hash: 60624C52CB0F6D7E70280F56680641A3
+  - path: engine/views/vn_viewer/js/pixi_plugin_runtime.js
+    hash: 76E7D53049701C6E100700B5A6E6FEA2

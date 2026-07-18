@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/plugin_manager/runtime/tools_builder.js
+    hash: 07EFEAC6519294B01065F50DAD4669AA
+  - path: engine/modules/plugin_manager/runtime/jobs_tools.js
+    hash: 226740806D1A761A04A28675AAFC549E

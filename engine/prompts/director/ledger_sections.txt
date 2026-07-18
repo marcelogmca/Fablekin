@@ -1,0 +1,50 @@
+### PARTY_LOGISTICS
+[PL-01] Roster: Commander Shepard, Garrus, Liara
+[PL-02] Formation: Split - Shepard & Garrus (Ground Team), Liara (Ship Comms)
+[PL-03] State: Combat Alert (Hostiles nearby)
+
+### WORLD_LOCATION
+[WL-01] Current Location [Origin: Ch44]: Locust Town
+[WL-02] Current Sub Location [Origin: Ch47]: Lin's Tavern
+[WLG-01] Journey Plan [Origin: Ch25]: Reach Central Lands -> Restock on Saga City -> Navigate the Dark Mountains -> Take ferry across the sea in Lala Port -> ... -> Reach Nothern Realms
+[WLG-02] Immediate Goal [Origin: Ch28]: Reach Saga City
+[WLG-03] Ultimate Location Goal [Origin: Ch25]: Reach Northern Realms
+[WLG-04] Travel Reason [Origin: Ch25]: Ask the Snow King about the artifact
+
+### CHARACTER_STATUS
+[CH-01] [Since Ch1] Sigewyne: Currently in the party, wounded on the left arm
+[CH-02] [Since Ch1] Stein: Currently in the party
+[CH-03] [Since Ch17] Stark: Left the party temporarily, went to buy food from the marketplace
+[CH-04] [Since Ch4] Lucy: Is away on an expedition
+[CH-05] [Since Ch10] Luna: Stayed in the kingdom's capital to continue her studies
+
+### WORLD_REGISTRY
+[WR-01] [Origin: Ch1]: Anderson: The Citadel | Political Support (Static)
+[WR-02] [Origin: Ch1]: The Illusive Man: Unknown Location | Manipulator (Monitoring communications)
+[WR-03] [Origin: Ch17]: Tali: Migrant Fleet | Unrecruited (Sent distress signal)
+
+### CHARACTER_AGENDAS
+[CA-01] Geralt (LTG) [Origin: Ch37]: Find Ciri before the Wild Hunt does.
+[CA-02] Geralt (STG) [Origin: Ch43]: Negotiate a better price for the Griffin contract.
+[CA-03] Yennefer (LTG) [Origin: Ch4]: Restore her political standing.
+[CA-04] Yennefer (STG) [Origin: Ch8]: Decipher the magical anomaly in the tower.
+
+(arguably the most important section; Character agendas can and SHOULD even keep track of "mundane" activities, like the fact that Stark wants to go buy food from the marketplace)
+(you can use CHARACTER_AGENDAS as the NPCs/Main character's "to-do list" or "memory" of sorts)
+(we don't want characters to feel like they have amnesia; if the user interrupted Frieren while she was going to send an important letter, Frieren should keep that "task" in mind so she can finish it later)
+
+### ACTIVE_THREADS
+[AT-01] [Prio: High | Status: In Progress | Origin: Ch1] The Missing Heiress - Find clues at the docks regarding the sprawling bloodstain.
+[AT-02] [Prio: Medium | Status: New | Origin: Ch3] The Corrupt Cop - Officer O'Malley is following the party; shake him off or confront him.
+
+### ACTION_QUEUE
+[AQ-01] [Status: Pending | Prio: Immediate | Origin: Ch4] Jumpscare - The Xenomorph drops from the vent when the player opens the airlock.
+[AQ-02] [Status: Pending | Prio: Low | Origin: Ch5] Atmosphere - Android Bishop comments on the dropping temperature.
+
+### DIRECTOR_WATCHLIST
+[DW-01] [Origin: Ch38] The player is being unusually aggressive with NPCs; consider shifting alignment to "Renegade."
+[DW-02] [Origin: Ch43] User ignored the glowing artifact in Turn 4; re-introduce it if they backtrack to the library.
+
+### MYSTERIES_NOT_TO_REVEAL
+[MNTR-01] [Origin: Ch1] The sprawling bloodstain at the docks - It is a red herring. The victim was killed elsewhere and dumped there. Reveal by Ch20+
+[MNTR-02] [Origin: Ch2] The "ghost" in the mansion - It is just the wind blowing through a broken window. Reveal by Ch35+

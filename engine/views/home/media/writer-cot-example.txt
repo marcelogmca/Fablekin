@@ -1,0 +1,224 @@
+**Step 1: Deconstruct Input & Assess Reality**
+
+- **Input Segmentation:**
+  - Point 1 (Dialogue): Talion says "So, what's the plan?" — a direct spoken line seeking strategic input from the party.
+
+- **On-Camera Input Requirement:** This is Talion speaking NOW, in the tavern, right after Devlin gave them the warning about silvered weapons. The line should appear on-page as spoken dialogue.
+
+- **Overall Intent:** Talion is trying to gather his party's thoughts, synthesize information, and move toward a concrete action plan before they depart. He's being a leader — but also acknowledging that he needs input from the others.
+
+- **Plausibility Check:** Completely plausible. This is exactly the kind of question a party leader would ask after receiving disturbing new information. No failure condition needed — it's a natural conversation prompt.
+
+**Step 2: Director Feedback Decomposition**
+
+- **Feedback Extraction:** The WRITER'S BRIEF (from system directives) gives me:
+  - Write the next narrative chapter
+  - Follow shared narrative foundation
+  - Output narrative prose in established format
+  - Minimum 2000 words
+  - Comedic and light-hearted tone
+  - End with a Call to Action (not narrative closure)
+  - Show don't tell
+  - Voice line density (3-4 lines dialogue without narration)
+  - No-bridge rule
+  - Include character thoughts and inner rationales
+  - Can control PC for minor actions/dialogue
+
+- **Categorization:**
+  - Narrative/Pacing Feedback: Minimum 2000 words, comedic tone, end with Call to Action, high dialogue density
+  - Writing Critiques: No purple prose, no clichés, show don't tell, chain dialogue, avoid narrative closure
+
+- **Priority Assignment:**
+  - MANDATORY: Minimum 2000 words, end with Call to Action, comedic/light-hearted tone, voice line density, no narrative closure
+  - HIGH: Character voices, party dynamics, establishing the journey start
+  - CRAFT: Avoid purple prose, avoid clichés ("because it's real," etc.), show don't tell
+
+- **Conflict Detection:** No conflicts. The comedic tone aligns with the party dynamics canon. The warning about silvered weapons adds dramatic tension that should be balanced with humor.
+
+**Step 3: Synthesize Context & Character Mindset**
+
+- **Critical Memory Recall:**
+  1. Devlin just warned them that the Red Boars (mercenaries) had silvered weapons — suggesting they expected to fight something that doesn't like silver
+  2. The party has agreed to take the Thornwell job: investigate a watchtower with blue lights, ground shaking, and "armor like a hole in the world"
+  3. They're Copper Spoon rank, under-equipped, and about to embark on their first real adventure
+  4. They need to get supplies on guild credit and leave at first light
+
+- **Relationship State Update:** The party is comfortable with each other — familiar, teasing, with established dynamics. Ingrid is the actual leader, Talion thinks he's the leader, Srava is sarcastic, Laios is practical.
+
+- **NPC Headspace:**
+
+  - **Srava:**
+    - Objective: Assess the danger level realistically, poke holes in Talion's optimism, but ultimately go along because she's curious and needs the money
+    - Emotional State: Wary but intrigued. The silvered weapons detail has her genuinely concerned beneath the sarcasm
+    - Knowledge Gap: She doesn't know what's in the tower, but she knows enough about magic to be worried about things that don't like silver
+    - Internal Monologue: "Silver. Of course it's silver. Things that hate silver are never just 'mildly annoying.' They're either undead, cursed, or something the old texts warned about. And we have a wand from Probably Magical. Fantastic."
+
+  - **Ingrid:**
+    - Objective: Create a practical, safe plan. Ensure the party is as prepared as possible given their limited resources.
+    - Emotional State: Calm on the surface, genuinely concerned underneath. The silver detail elevated this from "routine investigation" to "potentially serious threat" in her mind.
+    - Knowledge Gap: She doesn't know what they're facing, but she's already planning contingencies.
+    - Internal Monologue: "Silvered weapons mean the Red Boars knew something. They're professionals. If they didn't come back, we need to be smarter than them. Scout first. No heroics. And I'm carrying the rope."
+
+  - **Laios:**
+    - Objective: Get supplies, make sure there's food, and understand what they're walking into from a practical survival standpoint.
+    - Emotional State: Pragmatic and slightly excited. Old ruins mean interesting things. Interesting things sometimes mean interesting ingredients.
+    - Knowledge Gap: He wants to know more about the tower's construction and underground levels — that's where the real information will be.
+    - Internal Monologue: "Two hundred year old watchtower. Border fortification. Probably has storage cellars, maybe deeper foundations. If something's shaking the ground, it's underneath. And if it's been down there two hundred years, what's it been eating? Actually, better question: what does it taste like?"
+
+  - **Talion:**
+    - Objective: Rally the party, establish a plan, and maintain momentum toward the adventure
+    - Emotional State: Excited but now sobered by the silver revelation. Trying to balance confidence with appropriate caution.
+    - Knowledge Gap: He's the least experienced with old ruins and magical threats. He's relying on the others to fill in the gaps.
+    - Internal Monologue: "Silvered weapons. That's... that's not nothing. But we can handle this. We have Ingrid's shield, Srava's magic, Laios's axe, and my... enthusiasm. That's got to count for something. Right?"
+
+**Step 4: Visible Continuity Guard**
+
+- **On-Camera Characters:** Talion, Srava, Ingrid, Laios, Devlin (tavern keeper)
+
+- **Visual Locks:**
+  - Talion: Cheap sword (slightly bent near hilt), shield, clean-ish outfit, at the counter
+  - Srava: Patched cheap robe, wand in belt, brown eyes, elven ears, short-to-medium brown hair
+  - Ingrid: Blonde hair, brown eyes, sturdy armor, large shield, calm posture
+  - Laios: Bald head, huge brown beard, leather armor, heavy axe, sturdy build
+  - Devlin: Behind the counter, holding cleaning cloth
+
+- **Do Not Invent:** Keep physical descriptions consistent. No new injuries or appearance changes.
+
+**Step 5: Familiarity with World & Characters**
+
+- **Familiarity Score:** 7/10 — The party knows each other well enough to have running jokes, established dynamics, and shared history (the cellar beetles, the ravine incident, Srava's glowing food). They've been together long enough to know each other's habits.
+
+- **New-to-Reader vs New-to-Character:** The silvered weapons warning is new to both readers AND characters. The party's reaction should be genuine surprise and recalibration. But their knowledge about dungeons, magic, and ruins should feel lived-in — no character should explain basic concepts the others already know.
+
+- **Familiarity Assumption:** Srava doesn't need to explain to Laios what silver means for monsters. Laios doesn't need to explain underground construction to Ingrid. They should reference past adventures casually ("Like the ravine" "Like the beetles" etc.).
+
+**Step 6: World Logistics Check**
+
+- **Location Awareness:** The Crooked Tankard tavern. Evening. The party is still at the counter, Laios and Ingrid were heading for the door but paused when Devlin gave the silver warning.
+
+- **Time Awareness:** Evening, the night before departure. They need to get supplies before the general store closes, then rest, then leave before sunrise. This scene should cover the remaining evening — maybe 20-30 minutes of conversation and planning, then transition to the next morning.
+
+- **Time Planning & Committing:** Current time is evening. This chapter should cover: the planning conversation (now), the trip to the general store, perhaps the night, and the departure at dawn. That's a substantial time progression that fits within a 2000+ word chapter.
+
+- **Travel Reality:** They're still in the tavern. The journey hasn't started yet. This chapter is preparation and departure.
+
+- **Weather Awareness:** Earlier narration mentioned cold evening air and smell of distant rain. Should maintain that — chilly, possibly rainy night.
+
+**Step 7: Strategize the Scene Beats**
+
+- **Current Arc Position:** Rising Action — they've accepted the quest, received disturbing new information, and now need to solidify their plan and begin execution.
+
+- **Visual Cues:** Characters at the counter, varying expressions of concern. Srava's skeptical frown, Ingrid's steady gaze, Laios's calculating squint, Talion's attempt at confident leadership. Devlin watching with experienced cynicism.
+
+- **Atmosphere:** Medium tension — not combat-level, but the silver revelation has raised the stakes. Should be balanced with the party's natural banter and humor.
+
+- **Path Selection:** Direct/Dramatic — Talion asks for a plan, the party debates, they reach decisions, and then they act on them.
+
+- **The Hook:** The party realizes they need to take the silver threat seriously, but their limited resources force creative solutions. The emotional hook is the transition from "this is a simple job" to "this might be genuinely dangerous" — and the party choosing to go anyway.
+
+**Step 8: Script Structure & Pacing**
+
+- **Narration Check:** Keep environmental description minimal. Focus on dialogue and character action. The tavern setting is already established.
+
+- **Sensory Focus:** The cold draft from the door that Laios opened, the sound of rain starting outside, the warmth of the tavern contrasting with the cold journey ahead.
+
+- **Action Clarity:** Need to show: the party finalizing plans, going to the general store, morning departure. These are definitive state changes.
+
+- **End Goal:** End with the party on the road at dawn, facing the journey ahead, with a Call to Action — something that forces immediate engagement. NOT a summary or "the journey begins" fade-out.
+
+**Step 9: Feedback → Action Mapping**
+
+- **Player Response Plan:** Talion's "So, what's the plan?" should be answered by each party member in turn, revealing their personalities and concerns. Srava first (sarcastic but worried), Laios second (practical), Ingrid last (decisive and strategic).
+
+- **Character Action Injection:** Ingrid should take charge of the planning (subtly, as is her role). Laios should emphasize provisions and underground knowledge. Srava should research or at least theorize about what needs silver. Devlin should provide one final piece of useful information or a warning.
+
+- **Pacing & Structural Adjustments:** 
+  - Planning conversation: ~500-700 words
+  - Trip to general store: ~300-400 words
+  - Night/preparation montage: ~200-300 words
+  - Morning departure: ~500-600 words
+  - Road beginning: ~300-400 words
+  - Total: roughly 2000+ words
+
+- **Integration Strategy:** Entry point is Talion's question. Flow: planning debate → decision → action (store) → rest → dawn departure → road. The closing should be the party on the road, facing the unknown, with a specific immediate challenge or question.
+
+**Step 10: Beat Map Check / Revision**
+
+- **Beat Map Stress Test:** Needs to include Talion's spoken line, party reactions, planning, store visit, night, departure. Must maintain comedic tone despite the serious undertones.
+
+- **Agency Check:** Talion asks "what's the plan?" — this invites input, doesn't commit him to a decision. The party will offer suggestions, but the player still has agency over the ultimate direction.
+
+- **NPC Life Check:** Every party member should contribute meaningfully. Srava with magical knowledge and sarcasm. Laios with practical concerns and food. Ingrid with strategy and protection. Devlin with tavern-keeper cynicism.
+
+- **Immersion Check:** The planning should feel organic — not everyone agreeing immediately, some debate, some humor, but ultimately consensus because they've worked together before.
+
+**Step 11: Revised Beat Map**
+
+1. Talion asks "So, what's the plan?" — immediate party reactions
+2. Srava responds with magical analysis and concern about silver
+3. Laios adds practical underground/survival considerations
+4. Ingrid synthesizes into a strategic approach
+5. Devlin offers one more piece of useful local knowledge
+6. Party moves to general store for supplies
+7. Night montage — preparation, rest, Srava studying, Laios packing food
+8. Dawn departure — cold morning, last checks
+9. On the road — first moments of the journey, Call to Action
+
+**Step 12: Final Locked Beat Map**
+
+- **Locked Route:**
+  1. Talion: "So, what's the plan?" — the party reacts, Srava first with silver/magic concerns
+  2. Debate about what needs silver (undead? cursed constructs? something worse?)
+  3. Laios shifts to practical concerns: food, underground layout, what to expect in old border towers
+  4. Ingrid lays out the tactical approach: scout, don't split up, escape plan
+  5. Party moves to general store (credit-based shopping, comic scene with limited funds)
+  6. Night: preparations, Srava researching, Laios packing provisions, Ingrid checking gear
+  7. Dawn: cold morning, last tavern moment with Devlin
+  8. On the road: first hour of travel, banter, the weight of the unknown ahead
+  9. Call to Action: something specific on the road — a landmark, a strange sign, a traveler with news
+
+- **Required Inclusions:** Talion's spoken question, each party member's perspective on the plan, the silver concern, the general store scene, morning departure
+
+- **Hard Boundaries:** Do NOT reach Thornwell in this chapter. Do NOT resolve the silver mystery. Do NOT have the party forget the danger. Do NOT end with "the journey begins" summary.
+
+- **Ending Hook:** The party encounters something unusual on the road — a traveler or a sign that suggests the situation at Thornwell is worse or stranger than they thought. Forces immediate player response.
+
+**Step 13: Reflect on the Beat Map/Draft**
+
+- **MANDATORY ORDERS COMPLIANCE:** 
+  - Minimum 2000 words: Plan has enough beats to reach this.
+  - Comedic/light-hearted: Banter between party members, comic general store scene.
+  - End with Call to Action: Specific road encounter, not a summary.
+  - Voice line density: Plan multiple dialogue chains without narration between.
+  - Show don't tell: Characters will express concern through dialogue, not through narrator explaining their emotions.
+  - No narrative closure: End with unresolved hook.
+
+- **PLAYER ACTION COMPLIANCE:** Talion's "So, what's the plan?" will be the opening line of the chapter. Directly on-page.
+
+- **FAMILIARITY AUDIT:** 
+  - Srava and Laios shouldn't explain basic dungeon concepts to each other. They've worked together before.
+  - Past adventures (ravine, beetles, glowing food) should be referenced casually, not explained.
+  - Ingrid's leadership role should be shown through action, not announced.
+
+**Step 14: Forbidden Clichés**
+
+- **Purple Prose Check:** No "breaking down walls," no emotional epiphanies about "finally feeling free." Talion is most at risk for motivational clichés — keep his optimism grounded and specific. Srava is at risk for sarcastic clichés — make her humor weird and specific to this world.
+
+- **"Real" Cliché Check:** Potential moment when Talion says "this is our first real adventure" — but he already said this earlier. The party can call him out on it. Srava can mock him: "You said that about the beetles." That subverts the cliché through self-awareness.
+
+- **Relationship Visibility Logic:** The party's dynamics are open and known. Srava's sarcasm, Ingrid's quiet leadership, Laios's food obsession, Talion's overconfidence — these are established and visible. No need for secrecy or "getting caught" tension. They're a team, for better or worse.
+
+**Step 15: Dialogue Presence Audit**
+
+- **Total Lines Estimate:** ~60-80 VN lines in a 2000+ word chapter (mixing dialogue and narration)
+- **Voice Line Floor:** At least 30-40 spoken lines across all characters
+- **Beat Map Dialogue Check:** 
+  - Planning scene: heavy dialogue (Talion, Srava, Ingrid, Laios all speaking multiple times)
+  - General store: dialogue with shopkeeper and party members
+  - Night/montage: some dialogue, but can be narration-heavy (acceptable for transition)
+  - Dawn departure: dialogue with Devlin, party members
+  - Road scene: dialogue between party members, possible stranger
+- **Present Character Voice Check:** Every party member will speak multiple times. Devlin gets 2-3 lines. Storekeeper gets dialogue. Possible road stranger.
+- **Narration Balance:** Use narration for action (walking to store, packing, morning preparations, road travel) but keep dialogue driving the scenes.
+
+Now I'll write the chapter.

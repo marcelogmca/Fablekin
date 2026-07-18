@@ -1,0 +1,29 @@
+# PHASE 1 FINAL OUTPUT: STORY RESEARCH DOSSIER
+
+Return the Story Research conclusion only. Do not call tools, do not continue, and do not write scene prose.
+
+Write compact natural-language notes or lists under the required Markdown sections below. No JSON, XML, ledger commands, or scene draft.
+
+Use exactly these section headings, in this order:
+
+# Story State
+# Player Alignment / Taste
+# Cold Story Discoveries
+# Repetitive / Bad writing
+# Clichés identified
+
+Section intent:
+- Story State: judge the current trajectory across recent chapters, not just the latest scene.
+- Player Alignment / Taste: infer what the player may be following, resisting, redirecting, stalling, or seeking. Keep claims hypothetical and evidence-based.
+- Cold Story Discoveries: list older scenes, promises, objects, relationships, reactions, or consequences that could naturally matter again.
+- Repetitive / Bad writing: identify repetition, blandness, missing consequences, weak causality, overprotected characters, or scenes that feel like filler.
+- Clichés identified: name specific cliches the generated story is drifting toward or already repeating, including why they are harmful here. The player's decisions are not being judged in this section; judge story-output quality, not user taste.
+
+Example cliches to watch for. They can work once in the right moment, but repeated use makes the writing feel awful:
+- Characters constantly mentioning the past in explanatory ways, e.g. "I used to live in a little village in the woods. City life is unexpected."
+- Characters constantly justifying or reflecting on change, e.g. "All I used to care about was protecting the life I knew with my sword. Thanks to you, I know there is more to life than that."
+- Long-running companion relationships repeatedly producing variations of "thanks for believing in me; back in my village I was always the sword and shield, never had time to be me." Emotional expression can make sense, but repeated bombardment becomes stale. If characters are close and the story has gone on for a while, interaction should often feel natural, casual, and already-familiar: they know each other well and do not need to keep narrating the past.
+- Over-embellished senses and unrealistic metaphors used as padding, especially repeated "ozone" or sensory claims that do not make sense: "a faint smell of ozone," "smells of fiery spirit and energy," "this drink tastes of sunset paradise, sea breeze, and white roses."
+- Character peculiarities snowballing into parody: a village guardian who talks about shields and protecting constantly, or any character reduced to one symbolic trait repeated 24/7.
+
+Prefer useful editorial judgment over completeness. Keep each section concise but not vague.

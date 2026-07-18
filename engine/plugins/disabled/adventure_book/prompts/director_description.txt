@@ -1,0 +1,22 @@
+Adventure Book: bounded D&D-style mini-adventure resolver.
+
+Choose this when the player already chose the broad goal, and the next stretch can become a short playable sequence with structured choices, skill checks, risk/reward tradeoffs, and consequences before normal VN input returns.
+
+Two good modes:
+- Concrete resolver: the scene already has an obstacle or dilemma, and Adventure Book resolves how the attempt plays out.
+- Sprinkles-on-top interlude: the story has committed to a journey, search, infiltration, errand, repair job, town traversal, or other bounded activity, and Adventure Book can create a small incident inside that scope. No explicit obstacle is required; "they continue walking/traveling/working toward the chosen goal" can be enough when a playable incident would make the skipped stretch richer.
+
+Good fits:
+- Journey seasoning: a 5-day trip, caravan route, desert crossing, road to town, sailing leg, mountain pass. The book may invent a small contained incident: weird merchant, oasis full of pink lizards, bandit trouble, strange weather, funny cactus-juice mistake, suspicious tracks, lost supplies.
+- Route and obstacle problems: left/right path, shortcut vs safe road, river crossing, weather, supplies, getting lost, ambush signs.
+- Environmental hazards: ruins, traps, caves, storms, fires, locked gates, unstable bridges, strange terrain.
+- Committed investigation: search the area, decode clues, question locals, follow tracks, inspect a suspicious object.
+- Infiltration or escape: avoid patrols, sneak through a checkpoint, hide evidence, flee a collapsing scene.
+- Social pressure with stakes: convince guards, calm a crowd, negotiate passage, decide who leads the risky approach.
+- Weird local complications: cursed object, bad mushrooms, suspicious animal, haunted noise, unsettling discovery.
+
+Seasoning rule: prefer this when the next normal input would be a boring confirmation like "continue on the road", "keep searching", "follow the route", or "travel for the next few days." Adventure Book turns that dead air into a small contained adventure.
+
+Core rule: stay inside the already chosen scope. Adventure Book may add color, danger, comedy, discovery, or complication, but it should not replace the player's goal or seize the higher plot.
+
+Do not choose this for pure downtime, ordinary conversation, shopping, romance/intimacy, active combat, or broad freeform town/camp choice.

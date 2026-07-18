@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventure Book Plugin</title>
+    <style>
+        :root {
+            --ink: #2b2118;
+            --muted: #665746;
+            --paper: #f4e6c7;
+            --paper-deep: #dfc08b;
+            --rule: rgba(84, 52, 28, 0.28);
+            --accent: #9b3f22;
+            --panel: rgba(255, 248, 226, 0.72);
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.5), transparent 26rem),
+                linear-gradient(135deg, #f8edcf 0%, #dcc18d 100%);
+            font-family: Georgia, "Times New Roman", serif;
+            line-height: 1.6;
+        }
+
+        main {
+            max-width: 980px;
+            margin: 0 auto;
+            background: var(--panel);
+            border: 1px solid var(--rule);
+            box-shadow: 0 24px 80px rgba(64, 40, 20, 0.18);
+            padding: 2rem;
+        }
+
+        h1, h2 {
+            line-height: 1.12;
+            margin: 0 0 0.8rem;
+        }
+
+        h1 {
+            font-size: clamp(2.1rem, 5vw, 4rem);
+            color: var(--accent);
+            letter-spacing: -0.04em;
+        }
+
+        h2 {
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--rule);
+            padding-bottom: 0.35rem;
+        }
+
+        code, pre {
+            font-family: "Cascadia Code", Consolas, monospace;
+        }
+
+        pre {
+            overflow-x: auto;
+            background: rgba(43, 33, 24, 0.08);
+            border: 1px solid var(--rule);
+            padding: 1rem;
+        }
+
+        .lede {
+            color: var(--muted);
+            font-size: 1.12rem;
+            max-width: 74ch;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: rgba(255, 250, 237, 0.7);
+            border: 1px solid var(--rule);
+            padding: 1rem;
+        }
+
+        ul {
+            padding-left: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Adventure Book</h1>
+        <p class="lede">
+            Adventure Book turns suitable story moments into bounded storybook challenge loops:
+            investigations, journeys, ruins, hazards, decoding, infiltration, social pressure, and survival scenes.
+            It is intentionally not a full D&amp;D rules engine; it resolves uncertainty from narrative evidence.
+        </p>
+
+        <h2>Runtime Shape</h2>
+        <div class="grid">
+            <section class="card">
+                <strong>Director handoff</strong>
+                <p>The plugin registers a CHALLENGE capability and waits for natural decision points after mainline turns.</p>
+            </section>
+            <section class="card">
+                <strong>Book overlay</strong>
+                <p>A blocking VN intercept appears during user input and runs the choice/result loop through socket events.</p>
+            </section>
+            <section class="card">
+                <strong>Continuation handoff</strong>
+                <p>When complete, the transcript is summarized into a clean synthetic user prompt for the next VN turn.</p>
+            </section>
+        </div>
+
+        <h2>Force Testing</h2>
+        <p>
+            Enable <code>force_offer_every_turn</code> through the user-facing <strong>Force Generate Adventure Book</strong>
+            setting to bypass Director/classifier eligibility during testing. In this mode, the overlay appears after every
+            mainline turn and exposes a debug <strong>Rebuild</strong> button.
+        </p>
+        <p>
+            Rebuild expires the current uncommitted session and regenerates the first Adventure Book page from the same
+            parent turn. It does not replay choices, store facts, request CG, or submit the continuation
+            prompt. Canonization still only happens when the final Continue action runs.
+        </p>
+
+        <h2>Prompt Assets</h2>
+        <p>Adventure Book prompt text is kept in editable <code>.txt</code> files:</p>
+        <ul>
+            <li><code>prompts/initial_page.txt</code> creates the first situation and options.</li>
+            <li><code>prompts/advance_page.txt</code> continues after a player choice and server-side d20 roll.</li>
+            <li><code>prompts/final_capsule.txt</code> compresses the transcript into a rich summary and immediate scene ending.</li>
+            <li><code>prompts/director_description.txt</code> and <code>prompts/director_handoff_hint.txt</code> describe the Director capability.</li>
+            <li><code>prompts/cg_illustration.txt</code> templates the optional soft-dependency CG request.</li>
+        </ul>
+
+        <h2>Resolution Rules</h2>
+        <pre><code>80% chance -> roll 5+
+50% chance -> roll 11+
+20% chance -> roll 17+
+natural 1  -> critical failure
+natural 20 -> critical success</code></pre>
+        <p>
+            Failure is failure-forward: it changes the context and continues the story instead of dead-ending the loop.
+            Chance and stakes are separate, so a likely option can still be high risk, and a long shot can still be low reward.
+        </p>
+
+        <h2>Soft Dependencies</h2>
+        <p>
+            <code>cg_generator</code> is optional. If <code>prefer_cg</code> is enabled, <code>cg_model_tier</code>
+            is not <code>none</code>, and the plugin is installed, Adventure Book requests one non-blocking illustration
+            after completion. Missing or failed CG generation never blocks the VN continuation handoff.
+        </p>
+
+        <h2>Fact Ownership</h2>
+        <p>
+            Adventure Book stores lightweight plugin-scoped facts keyed by the parent turn. Other plugins should filter
+            by their own plugin id before reading fact ownership data.
+        </p>
+    </main>
+</body>
+</html>

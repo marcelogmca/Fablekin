@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/memory_manager/processing/summarization_service.js
+    hash: A4EAF09E7CCBE2C39F99FEAEDA2421B5
+  - path: engine/modules/memory_manager/storage/static_data_manager.js
+    hash: 4C44D919BF163F0D629D7ECB46E0AAB1

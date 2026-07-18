@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/main_process/handlers/ui_handlers.js
+    hash: 697AB33ACC79BC5442B9957BD5E68D0D
+  - path: engine/modules/main_process/handlers/project_handlers_base.js
+    hash: 51DE02F2DD7B9C76D983446FE51850E8

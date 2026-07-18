@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/modules/narrativeengine.js
+    hash: 9F369D588F28EA01AFA5BCC739CD6428
+  - path: engine/modules/prompt_builder.js
+    hash: 7CCD9BD20D28C7C9D3BA1DDF768B9CD7
+  - path: engine/modules/turncontext.js
+    hash: 033A5DA1A699F052EDC1BFFCE2B162F0
+  - path: engine/modules/director.js
+    hash: 1C784147CD1B63C4916D8C377EF553CB

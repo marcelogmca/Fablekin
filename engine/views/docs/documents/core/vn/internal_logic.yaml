@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/modules/vn_manager/analysis/dialogue_processor.js
+    hash: EC07DE5552DDCD8CEBA52AB1BBB4C1AB
+  - path: engine/modules/vn_manager/analysis/emotion_classifier.js
+    hash: 6E2F8C110FCA03597E8D13F10D22E527
+  - path: engine/modules/vn_manager/analysis/genderguesser.js
+    hash: 28BCBF6D1B76B0D9D6125E38F9DA8301
+  - path: engine/modules/vn_manager/analysis/narrative_analyzer.js
+    hash: C5D6D6A08606E8950965B2E55A58CE9B

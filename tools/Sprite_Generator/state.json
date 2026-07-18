@@ -1,0 +1,52 @@
+{
+    "config": {
+        "model": "nano-banana-2-fast",
+        "char_name": "Generic2",
+        "eye_color": "",
+        "base_image": "C:/Users/ineyv/Downloads/ChatGPT Image Jul 17, 2026, 09_58_09 PM.png",
+        "ref_image": "C:/Users/ineyv/Downloads/ChatGPT Image Jul 17, 2026, 09_58_09 PM.png",
+        "ref_images": [
+            "C:/Users/ineyv/Downloads/ChatGPT Image Jul 17, 2026, 09_58_09 PM.png"
+        ],
+        "selected_expressions": [
+            "neutral"
+        ],
+        "selected_angles": [
+            "front"
+        ],
+        "prompt_expression": "Change the original image (the green screen one) so they have a {expr} expression and pose (looking towards the viewer), keep realistic proportions. Full body view. USE MY REFERENCE IMAGE AS MUCH AS POSSIBLE! Keep the exact same clothes, hair and art style. Keep eyes OPEN and mouth closed. Feel free to make their body more expressive, but keep the feet anchored. Keep their eyes accurate with the reference image. Keep the green background. You MUST keep the same overall dimensions of the original image. Full body view.",
+        "prompt_angle": "Change it so they are LOOKING and facing directly to the {angle}!!  You MUST use the reference image in consideration to accurately draw the details of the character, but you should keep the same expression/pose and appearance of the original image.\nKeep the green background.",
+        "prompt_post": "Close their eyes and change their mouth to open keeping the same {expr} expression. Its extremely important to leave the hair completely untouched. Change ONLY their eyes and mouth. Everything else must remain exactly the same, with pixel perfect accuracy. USE INPAINTING ONLY - DO NOT TOUCH THE BODY OR HAIR. KEEP THE CHARACTERS SILHUETTE UNTOUCHED. Keep the background unchanged.\nDO NOT CHANGE THE NOSE IN ANY WAY. KEEP THE NOSE PIXEL PERFECT.\nDO NOT CHANGE THE CHARACTER'S ANGLE.",
+        "upscale_4x": true,
+        "compress_final_webp": true,
+        "use_greenscreen": true,
+        "fit_sprite_to_frame": true,
+        "use_alignment_warping": true,
+        "use_context_micro_align": true,
+        "use_canny_head_align": true,
+        "normalize_skin_tone": true,
+        "symmetric_sprite": true,
+        "use_local_comfyui": false,
+        "comfyui_url": "http://127.0.0.1:8188",
+        "comfyui_workflow_path": "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\tools\\Sprite_Generator\\workflow_flux.json",
+        "use_blink_safe_eye_mask": true,
+        "landmark_backend": "auto"
+    },
+    "tasks": [
+        {
+            "id": "Generic2_neutral_front",
+            "type": "API_EXPRESSION",
+            "status": "SUCCESS"
+        },
+        {
+            "id": "Generic2_neutral_front_post",
+            "type": "API_POST",
+            "status": "SUCCESS"
+        },
+        {
+            "id": "Generic2_neutral_front_local",
+            "type": "LOCAL_PROCESS",
+            "status": "SUCCESS"
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/views/content_manager/renderer_content_manager.js
+    hash: BFC5A571F52CEFF1FBF668FBF158F1F8
+  - path: engine/views/content_manager/modules/file_actions.js
+    hash: 341EB06024E6F47AD3C6A39ABDE7C753
+  - path: engine/views/content_manager/modules/player_metadata.js
+    hash: 38B48E1A394596591615ADDA14BC5B1D
+  - path: engine/views/content_manager/modules/state.js
+    hash: 8666405EF929F27E3C71831D73A9B573

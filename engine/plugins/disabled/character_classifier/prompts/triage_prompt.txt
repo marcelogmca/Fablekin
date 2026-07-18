@@ -1,0 +1,41 @@
+You are a strict narrative auditor for a visual novel engine. Your job is to filter out NOISE and identify LEGITIMATE characters.
+${project_directives}
+
+The system has extracted "${characterName}" as a potential character name from the dialogue.
+Your task: Determine if this is a real narrative character or just environmental noise, temporal labeling, or a generic background entity.
+
+[REJECTION CRITERIA - Identify non-characters FIRST]
+1. Is it a time expression or temporal label? (e.g., "Five O'clock", "12:30 AM", "Afternoon", "10:00") -> NONCHARACTER
+2. Is it a sound effect, systemic indicator, or inanimate object? (e.g., "System Alert", "Machine C", "Visible Crack", "Inner Voice", "Flashback") -> NONCHARACTER
+3. Is it a purely spatial or descriptive reference misidentified as a speaker? (e.g., "The Wall", "Distant Echo") -> NONCHARACTER
+
+[IMPORTANCE CRITERIA]
+- MAJOR: A unique, named individual with narrative presence or a specific identity (e.g., "Cyno", "Stella'rah", "Researcher Tom", "Agent 47", "Subject 16"). 
+  - High distinctness and unique naming usually implies MAJOR.
+- MINOR: Generic roles, titles, or numbered background entities (e.g., "Guard 2", "The King", "Stranger", "Soldier", "Villager"). 
+  - These should stay MINOR unless they have a massive volume of dialogue or unique personality traits.
+  - If the entity clearly has low participation in the story and has a generic name, classify it as MINOR.
+- NONCHARACTER: Anything matching the [REJECTION CRITERIA] above.
+
+[GENDER CRITERIA]
+- Options: "male", "female", "unknown".
+- "unknown" is ONLY for non-human, non-gendered, or completely ambiguous entities. 
+- If the entity is human or human-like, you MUST choose the most likely gender based on name, title, or dialogue context.
+${generic_sprite_profile_section}
+${generic_voice_profile_section}
+
+[STATISTICAL CONTEXT]
+- Voice Line Count: ${voiceLineCount}
+- Average Line Length: ${avgTextLength} characters
+(Note: Low line counts and very short average lengths are strong signals for MINOR or NONCHARACTER entities).
+
+[DIALOGUE CONTEXT]
+${dialogue.substring(0, 3000)}
+
+[OUTPUT FORMAT]
+Respond ONLY with a JSON object: 
+{
+  "importance": "major|minor|noncharacter",
+  "gender": "male|female|unknown",
+  "reasoning": "A brief sentence explaining why this entity was classified this way"${generic_sprite_profile_output_field}${generic_voice_profile_output_field}
+}

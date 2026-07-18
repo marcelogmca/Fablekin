@@ -1,0 +1,11 @@
+Write an ultra-condensed synopsis and two distinct titles for the following text.
+Instructions:
+Literal Title: A factual, 3-6 word summary of the main event (e.g., "Eris defeats the Demon Guard").
+Abstract Title: A poetic, thematic, 2-5 word title that evokes the mood of the scene without spoiling specific plot points (e.g., "Steel and Dust", "A Quiet Respite", "The Unseen Blade").
+Synopsis: Maximum 50 words. Focus strictly on the most critical plot points, actions, and location changes.
+Avoid all commentary, conversational filler, or system messages.
+
+The output format MUST be exactly as follows:
+Literal Title: [Your literal title here]
+Abstract Title: [Your abstract title here]
+Synopsis: [Your 50-word synopsis here]

@@ -1,0 +1,13 @@
+.plugin-preview-lightbox { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 24px; }
+.plugin-preview-lightbox-backdrop { position: absolute; inset: 0; background: rgba(5, 8, 15, 0.86); }
+.plugin-preview-lightbox-dialog { position: relative; width: min(1100px, 100%); max-height: calc(100vh - 48px); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 12px; padding: 16px; border: 1px solid var(--border-main); border-radius: 14px; background: var(--bg-surface); box-shadow: var(--shadow-lg); }
+.plugin-preview-lightbox-dialog header, .plugin-preview-lightbox-dialog footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plugin-preview-lightbox-close, .plugin-preview-lightbox-main button, .plugin-preview-lightbox-thumbnails button { border: 1px solid var(--border-main); border-radius: 8px; background: var(--bg-overlay-med); color: var(--text-main); cursor: pointer; }
+.plugin-preview-lightbox-close, .plugin-preview-lightbox-main button { padding: 8px 12px; }
+.plugin-preview-lightbox-main { min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.plugin-preview-lightbox-image { width: 100%; max-height: calc(100vh - 190px); object-fit: contain; border-radius: 8px; background: #090b11; }
+.plugin-preview-lightbox-thumbnails { display: flex; gap: 8px; overflow-x: auto; }
+.plugin-preview-lightbox-thumbnails button { width: 72px; height: 48px; padding: 0; overflow: hidden; opacity: .65; }
+.plugin-preview-lightbox-thumbnails button.active { opacity: 1; border-color: var(--color-primary); }
+.plugin-preview-lightbox-thumbnails img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 680px) { .plugin-preview-lightbox { padding: 10px; } .plugin-preview-lightbox-main { grid-template-columns: 1fr; } .plugin-preview-lightbox-main button { display: none; } .plugin-preview-lightbox-image { max-height: calc(100vh - 160px); } }

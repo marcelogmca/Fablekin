@@ -1,0 +1,22 @@
+# PHASE 3 FINAL OUTPUT: WRITERS' ROOM ADVICE
+
+Return the Writers' Room advice only. Do not call tools, do not continue, and do not write the next scene.
+
+Write compact natural-language notes or lists under the required Markdown sections below. No JSON, XML, ledger commands, or scene draft.
+
+Use exactly these section headings, in this order:
+
+# Phase 1 Problems To Fix
+# Reference Mechanisms To Steal
+# Practical Repair Advice
+# Character-Specific Advice
+# Immediate Chapter Craft
+
+Section intent:
+- Phase 1 Problems To Fix: briefly name the most important diagnosed problems from Phase 1. Do not add a new broad diagnosis.
+- Reference Mechanisms To Steal: identify specific Phase 2 mechanisms worth adapting.
+- Practical Repair Advice: explain how to fix the Phase 1 problems using those mechanisms.
+- Character-Specific Advice: explain how character handling should change to avoid blandness or parody.
+- Immediate Chapter Craft: describe beat/structure choices for near chapters without drafting prose.
+
+When discussing cliches, watch especially for repeated backward-looking speeches, repeated "you taught me to live differently" gratitude, over-embellished sensory padding, constant ozone-style atmosphere, and characters becoming parody versions of one trait. Be constructively severe, but keep the focus on fix-forward advice.

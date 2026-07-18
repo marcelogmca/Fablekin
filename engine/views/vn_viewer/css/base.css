@@ -1,0 +1,57 @@
+/* Base styles for VN Viewer */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background: var(--bg-app-background);
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: var(--text-main);
+}
+
+.blinking-cursor {
+    display: inline-block;
+    width: 0px;
+    height: 16px;
+    vertical-align: middle;
+    position: relative;
+    animation: blink 1s infinite;
+}
+
+.blinking-cursor::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 0;
+    width: 8px;
+    height: 16px;
+    background: var(--color-primary);
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1 !important;
+    }
+    50% {
+        opacity: 0 !important;
+    }
+}

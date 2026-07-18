@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/content_manager/content_manager.js
+    hash: E0141B1A8F7976F5A9789049973FDBE2
+  - path: engine/modules/content_manager/operations/config_manager.js
+    hash: 83DFD97FFB50A46B3DB04C954C7ACADA
+  - path: engine/modules/content_manager/operations/directory_processor.js
+    hash: 9C82E45D171C9DF8226CC881F95801A1

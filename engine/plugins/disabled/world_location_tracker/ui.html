@@ -1,0 +1,103 @@
+<div id="world-location-container" class="hud-module map-shape-circle" style="display: none;">
+    <div class="hud-content">
+        <div class="hud-header">
+            <div class="map-heading">
+                <span class="map-heading-kicker">World Navigation</span>
+                <span class="map-heading-title">World Map</span>
+            </div>
+            <div class="header-actions">
+                <button id="map-expand-toggle" type="button" aria-expanded="false" aria-label="Open full map">
+                    <span class="map-expand-label" aria-hidden="true">Map</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="map-workspace">
+            <div id="map-viewport">
+                <div id="map-leaflet"></div>
+                <div id="map-location-undetermined" role="status" hidden>Location not determined yet.</div>
+                <div id="map-north-indicator" aria-hidden="true">
+                    <span class="north-arrow">^</span>
+                    <span class="north-letter">N</span>
+                </div>
+                <div id="map-command-bar" aria-label="Map movement commands">
+                    <button id="move-party-button" class="wlt-map-command-primary" type="button">
+                        <span class="wlt-map-command-copy">
+                            <strong>Move Party</strong>
+                            <small>Choose a destination and route</small>
+                        </span>
+                    </button>
+                    <button id="cancel-party-journey-button" class="wlt-map-command-danger" type="button" hidden>Cancel Journey</button>
+                </div>
+                <div id="map-location-pill">
+                    <span class="map-location-pulse"></span>
+                    <div class="map-location-pill-text">
+                        <div id="map-location-label">Awaiting location...</div>
+                        <div id="map-location-status">Above Ground</div>
+                    </div>
+                </div>
+
+                <section id="manual-route-panel" class="wlt-manual-panel" hidden aria-live="polite">
+                    <div class="wlt-manual-panel-heading">
+                        <div>
+                            <span class="map-rail-kicker">User-Directed Travel</span>
+                            <strong id="manual-route-title">Choose a destination</strong>
+                        </div>
+                        <button id="manual-route-cancel" class="wlt-icon-action" type="button" aria-label="Cancel manual movement">Cancel</button>
+                    </div>
+                    <p id="manual-route-instruction">Click a location on the map. Nearby map nodes will snap automatically.</p>
+                    <div id="manual-route-options"></div>
+                    <section id="manual-travelers-field" class="wlt-travelers-field" hidden>
+                        <div class="wlt-travelers-heading">
+                            <span>Traveling group</span>
+                            <small>Click a character to include or exclude them</small>
+                        </div>
+                        <div id="manual-travelers" class="wlt-travelers" role="group" aria-label="Characters joining this journey"></div>
+                    </section>
+                    <label id="manual-travel-reason-field" class="wlt-reason-field" hidden>
+                        <span>Reason for travel <small>Optional, shared with Director and Writer</small></span>
+                        <textarea id="manual-travel-reason" rows="3" maxlength="600" placeholder="For example: We need to warn the village before the storm arrives."></textarea>
+                    </label>
+                    <div id="manual-route-actions" class="wlt-manual-actions" hidden>
+                        <button id="manual-plan-button" class="wlt-primary-action" type="button">Plan Journey - Continue Through Story</button>
+                        <button id="manual-instant-button" class="wlt-secondary-action" type="button">Instant Arrival - Skip Journey</button>
+                    </div>
+                    <div id="manual-instant-confirm" class="wlt-confirm-card" hidden>
+                        <div id="manual-instant-summary"></div>
+                        <div class="wlt-manual-actions">
+                            <button id="manual-instant-confirm-button" class="wlt-danger-action" type="button">Confirm Arrival and Time Skip</button>
+                            <button id="manual-instant-back-button" class="wlt-secondary-action" type="button">Back</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside id="map-navigation-rail" aria-label="Journey details">
+                <div class="map-rail-heading">
+                    <span class="map-rail-kicker">Party Position</span>
+                    <strong id="map-rail-location">Awaiting location...</strong>
+                </div>
+
+                <section id="manual-navigation-controls" aria-label="Manual party movement">
+                    <label class="wlt-lock-control" for="manual-movement-toggle">
+                        <span class="wlt-lock-copy">
+                            <span class="wlt-policy-kicker">Movement policy</span>
+                            <strong id="movement-policy-title">Auto Navigation On</strong>
+                            <span id="movement-policy-description">Automatic journey movement is allowed. Click this switch to require manual Move Party orders instead.</span>
+                        </span>
+                        <input id="manual-movement-toggle" type="checkbox" role="switch">
+                        <span class="wlt-switch-track" aria-hidden="true"><span></span></span>
+                    </label>
+                    <div id="manual-navigation-status" class="wlt-manual-status" aria-live="polite"></div>
+                </section>
+
+                <div id="navigation-info" aria-live="polite"></div>
+
+                <div id="location-info">
+                    <div id="current-coords">Coords: 0, 0</div>
+                    <div id="nearby-locations"></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>

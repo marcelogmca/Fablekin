@@ -1,0 +1,317 @@
+<div id="world-map-editor-root" class="world-map-editor-root">
+    <div class="world-map-editor-shell">
+        <aside class="world-map-sidebar world-map-sidebar-left">
+            <section class="world-map-panel">
+                <div class="world-map-panel-header">
+                    <div>
+                        <p class="world-map-eyebrow">World Package</p>
+                        <h2>World Map Editor</h2>
+                    </div>
+                    <span id="world-map-dirty-pill" class="world-map-pill">Saved</span>
+                </div>
+                <p id="world-map-package-label" class="world-map-package-label"></p>
+                <div class="world-map-action-row">
+                    <button id="world-map-upload-btn" class="world-map-btn world-map-btn-primary" type="button">Upload Image</button>
+                    <button id="world-map-save-btn" class="world-map-btn world-map-save-button" type="button">Saved</button>
+                </div>
+                <p id="world-map-image-label" class="world-map-muted"></p>
+                <p id="world-map-status" class="world-map-status">Ready.</p>
+                <div class="world-map-stat-grid">
+                    <div class="world-map-stat-card">
+                        <span class="world-map-stat-label">Locations</span>
+                        <strong id="world-map-node-total">0</strong>
+                    </div>
+                    <div class="world-map-stat-card">
+                        <span class="world-map-stat-label">Areas</span>
+                        <strong id="world-map-area-total">0</strong>
+                    </div>
+                    <div class="world-map-stat-card">
+                        <span class="world-map-stat-label">Biomes</span>
+                        <strong id="world-map-biome-total">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <details class="world-map-panel world-map-collapsible">
+                <summary>
+                    <div>
+                        <p class="world-map-eyebrow">Map Meta</p>
+                        <h3>Scale And Origin</h3>
+                    </div>
+                    <span class="world-map-pill muted">Open</span>
+                </summary>
+                <div class="world-map-form-grid">
+                    <label>
+                        <span>Origin X</span>
+                        <input id="wm-origin-x" type="number">
+                    </label>
+                    <label>
+                        <span>Origin Y</span>
+                        <input id="wm-origin-y" type="number">
+                    </label>
+                    <label>
+                        <span>Scale Factor</span>
+                        <input id="wm-scale-factor" type="number" step="0.01">
+                    </label>
+                    <label>
+                        <span>Pixels / KM</span>
+                        <input id="wm-pixels-per-km" type="number" step="0.1">
+                    </label>
+                    <label>
+                        <span>Walk Speed</span>
+                        <input id="wm-walk-speed" type="number" step="0.1">
+                    </label>
+                    <label>
+                        <span>Winding Factor</span>
+                        <input id="wm-winding-factor" type="number" step="0.1">
+                    </label>
+                </div>
+                <div class="world-map-travel-sim">
+                    <div class="world-map-travel-sim-header">
+                        <p class="world-map-eyebrow">Travel Validation</p>
+                        <span id="world-map-travel-sim-state" class="world-map-pill muted">Waiting</span>
+                    </div>
+                    <p id="world-map-travel-sim-message" class="world-map-muted">Add at least two locations to validate travel distance and time.</p>
+                    <div class="world-map-form-grid">
+                        <label>
+                            <span>Origin Node</span>
+                            <select id="wm-sim-origin-node"></select>
+                        </label>
+                        <label>
+                            <span>Destination Node</span>
+                            <select id="wm-sim-destination-node"></select>
+                        </label>
+                    </div>
+                    <div class="world-map-travel-sim-grid">
+                        <div class="world-map-stat-card">
+                            <span class="world-map-stat-label">Distance (km)</span>
+                            <strong id="world-map-travel-sim-distance">-</strong>
+                        </div>
+                        <div class="world-map-stat-card">
+                            <span class="world-map-stat-label">Days</span>
+                            <strong id="world-map-travel-sim-days">-</strong>
+                        </div>
+                        <div class="world-map-stat-card">
+                            <span class="world-map-stat-label">Narrative Time</span>
+                            <strong id="world-map-travel-sim-label">-</strong>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="world-map-panel world-map-collapsible" open>
+                <summary>
+                    <div>
+                        <p class="world-map-eyebrow">Map Tools</p>
+                        <h3>Authoring</h3>
+                    </div>
+                    <span class="world-map-pill muted">Open</span>
+                </summary>
+                <div class="world-map-action-column">
+                    <button id="world-map-add-node-btn" class="world-map-btn" type="button">Add Location From Map Click</button>
+                    <button id="world-map-origin-mode-btn" class="world-map-btn" type="button">Set Origin From Map Click</button>
+                    <button id="world-map-draw-area-btn" class="world-map-btn" type="button">Draw Area Polygon</button>
+                    <button id="world-map-finish-area-btn" class="world-map-btn" type="button" disabled>Finish Area</button>
+                    <button id="world-map-cancel-area-btn" class="world-map-btn world-map-btn-ghost" type="button" disabled>Cancel Drawing</button>
+                    <button id="world-map-reset-view-btn" class="world-map-btn" type="button">Reset View</button>
+                </div>
+                <p id="world-map-mode-indicator" class="world-map-mode-indicator">Mode: Pan</p>
+                <p id="world-map-draw-hint" class="world-map-muted">
+                    Click to place area vertices. Double-click or use Finish Area to close the polygon. Right-click while drawing to remove the last point.
+                </p>
+            </details>
+        </aside>
+
+        <section class="world-map-stage-panel">
+            <div class="world-map-stage-toolbar">
+                <div>
+                    <p class="world-map-eyebrow">Map Canvas</p>
+                    <h3>World Surface</h3>
+                </div>
+                <span id="world-map-selection-summary" class="world-map-pill muted">Nothing selected</span>
+            </div>
+            <div id="world-map-canvas" class="world-map-canvas">
+                <div id="world-map-canvas-empty" class="world-map-canvas-empty">
+                    <strong>No map image yet.</strong>
+                    <span>Upload an image to start placing locations, areas, and origin markers.</span>
+                </div>
+                <div id="world-map-leaflet"></div>
+            </div>
+            <div class="world-map-stage-footer">
+                <span id="world-map-cursor">Cursor: -, -</span>
+                <span id="world-map-origin-readout">Origin: -, -</span>
+                <span id="world-map-area-readout">Area: none</span>
+            </div>
+        </section>
+
+        <aside class="world-map-sidebar world-map-sidebar-right">
+            <section class="world-map-panel world-map-index-panel">
+                <div class="world-map-panel-header compact">
+                    <div>
+                        <p class="world-map-eyebrow">World Index</p>
+                        <h3>Find And Select</h3>
+                    </div>
+                    <span id="world-map-node-count" class="world-map-pill muted">0 locations</span>
+                </div>
+                <div class="world-map-tab-row">
+                    <button id="world-map-tab-nodes" class="world-map-tab active" type="button">Locations</button>
+                    <button id="world-map-tab-areas" class="world-map-tab" type="button">Areas</button>
+                    <button id="world-map-tab-biomes" class="world-map-tab" type="button">Biomes</button>
+                </div>
+                <label class="world-map-search">
+                    <span>Search</span>
+                    <input id="world-map-index-search" type="search" placeholder="Search locations by name, type, tags, or area">
+                </label>
+                <div id="world-map-node-list" class="world-map-item-list world-map-index-list"></div>
+                <div id="world-map-area-list" class="world-map-item-list world-map-index-list world-map-hidden"></div>
+                <div id="world-map-biome-list" class="world-map-item-list world-map-index-list world-map-hidden"></div>
+            </section>
+
+            <section id="world-map-node-editor-panel" class="world-map-panel world-map-inspector-panel">
+                <div class="world-map-panel-header compact">
+                    <div>
+                        <p class="world-map-eyebrow">Location</p>
+                        <h3 id="world-map-node-title">No Location Selected</h3>
+                    </div>
+                </div>
+                <p id="world-map-node-area-readout" class="world-map-muted">Computed area: none</p>
+                <div class="world-map-form-grid">
+                    <label>
+                        <span>Name</span>
+                        <input id="wm-node-name" type="text">
+                    </label>
+                    <label class="world-map-type-field">
+                        <span>Type</span>
+                        <input id="wm-node-type" type="text" autocomplete="off" placeholder="city, port, ruin">
+                        <div id="world-map-node-type-suggestions" class="world-map-type-suggestions" role="listbox"></div>
+                    </label>
+                    <label>
+                        <span>World X</span>
+                        <input id="wm-node-world-x" type="number">
+                    </label>
+                    <label>
+                        <span>World Y</span>
+                        <input id="wm-node-world-y" type="number">
+                    </label>
+                    <label class="world-map-form-grid-full">
+                        <span>Description</span>
+                        <textarea id="wm-node-description" rows="3"></textarea>
+                    </label>
+                    <label class="world-map-form-grid-full">
+                        <span>Tags</span>
+                        <input id="wm-node-tags" type="text">
+                    </label>
+                </div>
+                <div class="world-map-action-row">
+                    <button id="world-map-delete-node-btn" class="world-map-btn world-map-btn-danger" type="button">Delete Selected</button>
+                </div>
+            </section>
+
+            <section id="world-map-area-editor-panel" class="world-map-panel world-map-inspector-panel world-map-hidden">
+                <div class="world-map-panel-header compact">
+                    <div>
+                        <p class="world-map-eyebrow">Area</p>
+                        <h3 id="world-map-area-title">No Area Selected</h3>
+                    </div>
+                    <span id="world-map-area-count" class="world-map-pill muted">0 areas</span>
+                </div>
+                <p id="world-map-area-hierarchy" class="world-map-muted">Hierarchy: none</p>
+                <p id="world-map-area-points" class="world-map-muted">Shape points: 0</p>
+                <div class="world-map-form-grid">
+                    <label>
+                        <span>Name</span>
+                        <input id="wm-area-name" type="text">
+                    </label>
+                    <label class="world-map-type-field">
+                        <span>Type</span>
+                        <input id="wm-area-kind" type="text" autocomplete="off" placeholder="nation, city_region, district">
+                        <div id="world-map-area-type-suggestions" class="world-map-type-suggestions" role="listbox"></div>
+                    </label>
+                    <label>
+                        <span>Parent Area</span>
+                        <select id="wm-area-parent"></select>
+                    </label>
+                    <label>
+                        <span>Color</span>
+                        <input id="wm-area-color" type="color">
+                    </label>
+                    <label>
+                        <span>Tags</span>
+                        <input id="wm-area-tags" type="text">
+                    </label>
+                    <label class="world-map-form-grid-full">
+                        <span>Description</span>
+                        <textarea id="wm-area-description" rows="3"></textarea>
+                    </label>
+                </div>
+                <div class="world-map-action-row">
+                    <button id="world-map-delete-area-btn" class="world-map-btn world-map-btn-danger" type="button">Delete Selected</button>
+                </div>
+            </section>
+
+            <section id="world-map-biome-editor-panel" class="world-map-panel world-map-inspector-panel world-map-hidden">
+                <div class="world-map-panel-header compact">
+                    <div>
+                        <p class="world-map-eyebrow">Biome Brush</p>
+                        <h3>Paint Terrain</h3>
+                    </div>
+                    <span id="world-map-biome-count" class="world-map-pill muted">0 biomes</span>
+                </div>
+                <div class="world-map-form-grid">
+                    <label>
+                        <span>Name</span>
+                        <input id="wm-biome-name" type="text">
+                    </label>
+                    <label>
+                        <span>Color</span>
+                        <input id="wm-biome-color" type="color">
+                    </label>
+                    <label class="world-map-checkbox-row world-map-form-grid-full">
+                        <input id="wm-biome-needs-boat" type="checkbox">
+                        <span>Is water - needs boat</span>
+                    </label>
+                    <label class="world-map-checkbox-row world-map-form-grid-full">
+                        <input id="wm-biome-slows-down" type="checkbox">
+                        <span>Slows down</span>
+                    </label>
+                    <label class="world-map-checkbox-row world-map-form-grid-full">
+                        <input id="wm-biome-is-road" type="checkbox">
+                        <span>Is road</span>
+                    </label>
+                    <label class="world-map-checkbox-row world-map-form-grid-full">
+                        <input id="wm-biome-is-river" type="checkbox">
+                        <span>Is river</span>
+                    </label>
+                    <label class="world-map-form-grid-full">
+                        <span>Brush Size: <strong id="wm-biome-brush-size-readout">24</strong></span>
+                        <input id="wm-biome-brush-size" type="range" min="2" max="160" step="1" value="24">
+                    </label>
+                    <label class="world-map-form-grid-full">
+                        <span>Mask Opacity: <strong id="wm-biome-opacity-readout">45%</strong></span>
+                        <input id="wm-biome-opacity" type="range" min="0" max="100" step="5" value="45">
+                    </label>
+                    <label class="world-map-checkbox-row world-map-form-grid-full">
+                        <input id="wm-biome-eraser" type="checkbox">
+                        <span>Erase instead of paint</span>
+                    </label>
+                </div>
+                <div class="world-map-action-row">
+                    <button id="world-map-add-biome-btn" class="world-map-btn" type="button">Add Biome</button>
+                    <button id="world-map-delete-biome-btn" class="world-map-btn world-map-btn-danger" type="button">Delete Selected</button>
+                    <button id="world-map-clear-biome-mask-btn" class="world-map-btn world-map-btn-ghost" type="button">Clear Mask</button>
+                </div>
+                <p class="world-map-muted">Painting edits a low-resolution biome mask. Transparent pixels are unpainted terrain.</p>
+            </section>
+        </aside>
+    </div>
+
+    <div id="world-map-save-nudge" class="world-map-save-nudge" aria-live="polite">
+        <div>
+            <strong>Unsaved changes</strong>
+            <span>Click Save Changes to write this world package.</span>
+        </div>
+        <button id="world-map-save-nudge-btn" class="world-map-btn world-map-btn-primary" type="button">Save Changes</button>
+    </div>
+
+    <input id="world-map-image-input" type="file" accept="image/*" hidden>
+</div>

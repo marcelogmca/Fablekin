@@ -1,0 +1,475 @@
+{
+  "projectileTypes": {
+    "enemy_default_bullet": {
+      "team": "enemy",
+      "damage": 1,
+      "radius": 8,
+      "lifeTicks": 320,
+      "vz": -0.05,
+      "color": 16711884,
+      "collision": {
+        "destroyOnHit": true,
+        "pierce": 0,
+        "canBeCleared": true,
+        "activeAfterSeconds": 0,
+        "hitCooldownByTarget": 0.05,
+        "friendlyFire": false
+      },
+      "render": {
+        "preset": "orb",
+        "color": 16711884,
+        "secondaryColor": 16752699,
+        "alpha": 0.95,
+        "glow": true,
+        "scale": 1,
+        "rotationMode": "fixed"
+      }
+    },
+    "player_default_bullet": {
+      "team": "player",
+      "damage": 1,
+      "radius": 7,
+      "lifeTicks": 120,
+      "vz": 0,
+      "color": 3797759,
+      "collision": {
+        "destroyOnHit": true,
+        "pierce": 0,
+        "canBeCleared": false,
+        "activeAfterSeconds": 0,
+        "hitCooldownByTarget": 0,
+        "friendlyFire": false
+      },
+      "render": {
+        "preset": "needle",
+        "color": 3797759,
+        "secondaryColor": 6682111,
+        "alpha": 1,
+        "glow": true,
+        "scale": 1,
+        "rotationMode": "velocity"
+      }
+    },
+    "enemy_warning_orb": {
+      "team": "enemy",
+      "damage": 1,
+      "radius": 10,
+      "lifeTicks": 360,
+      "vz": -0.08,
+      "color": 16734703,
+      "collision": {
+        "destroyOnHit": true,
+        "pierce": 0,
+        "canBeCleared": true,
+        "activeAfterSeconds": 0.65,
+        "hitCooldownByTarget": 0.08,
+        "friendlyFire": false
+      },
+      "render": {
+        "preset": "diamond",
+        "color": 16734703,
+        "secondaryColor": 16766782,
+        "alpha": 0.9,
+        "glow": true,
+        "scale": 1.1,
+        "rotationMode": "spin"
+      }
+    },
+    "enemy_lance": {
+      "team": "enemy",
+      "damage": 1.5,
+      "radius": 7,
+      "lifeTicks": 300,
+      "vz": -0.04,
+      "color": 16748381,
+      "collision": {
+        "destroyOnHit": true,
+        "pierce": 1,
+        "canBeCleared": true,
+        "activeAfterSeconds": 0,
+        "hitCooldownByTarget": 0.04,
+        "friendlyFire": false
+      },
+      "render": {
+        "preset": "needle",
+        "color": 16748381,
+        "secondaryColor": 16763341,
+        "alpha": 0.92,
+        "glow": true,
+        "scale": 1,
+        "rotationMode": "velocity"
+      }
+    },
+    "enemy_mine": {
+      "team": "enemy",
+      "damage": 2,
+      "radius": 12,
+      "lifeTicks": 220,
+      "vz": -0.12,
+      "color": 16757570,
+      "collision": {
+        "destroyOnHit": false,
+        "pierce": 2,
+        "canBeCleared": true,
+        "activeAfterSeconds": 0.35,
+        "hitCooldownByTarget": 0.25,
+        "friendlyFire": false
+      },
+      "render": {
+        "preset": "orb",
+        "color": 16757570,
+        "secondaryColor": 16775910,
+        "alpha": 0.86,
+        "glow": true,
+        "scale": 1.25,
+        "rotationMode": "spin"
+      }
+    }
+  },
+  "pressurePattern": {
+    "enabled": true,
+    "intervalMs": 140,
+    "originRadius": 720,
+    "bulletLifeTicks": 340,
+    "bulletSpeed": 3.2,
+    "bulletVz": -0.08,
+    "ringCount": 5,
+    "pattern": {
+      "type": "spiral",
+      "count": 5,
+      "speed": 3.2,
+      "spreadDegrees": 48,
+      "baseAngle": 0,
+      "angleOffset": 0.18
+    }
+  },
+  "patterns": {
+    "enemy_spiral_pressure": {
+      "type": "spiral",
+      "count": 5,
+      "speed": 3.2,
+      "spreadDegrees": 48,
+      "baseAngle": 0,
+      "angleOffset": 0.18,
+      "spacing": 60,
+      "width": 900,
+      "originYOffset": -480,
+      "downwardBias": 0.18,
+      "projectileType": "enemy_default_bullet",
+      "source": {
+        "type": "arena_center"
+      },
+      "aim": {
+        "type": "random"
+      },
+      "burstCount": 2,
+      "burstIntervalSeconds": 0.18,
+      "angleStepPerBurst": 9,
+      "countStepPerBurst": 0,
+      "speedStepPerBurst": 0.15,
+      "modifiers": [
+        {
+          "type": "accelerate",
+          "perSecond": 0.42
+        },
+        {
+          "type": "sine_wave",
+          "amplitude": 7,
+          "frequency": 1.1
+        },
+        {
+          "type": "pulse",
+          "amplitude": 0.16,
+          "frequency": 2.2
+        }
+      ]
+    },
+    "enemy_radial_bloom": {
+      "type": "radial",
+      "count": 14,
+      "speed": 2.5,
+      "spreadDegrees": 360,
+      "baseAngle": 0,
+      "angleOffset": 0,
+      "spacing": 60,
+      "width": 900,
+      "originYOffset": -480,
+      "downwardBias": 0.18,
+      "projectileType": "enemy_warning_orb",
+      "source": {
+        "type": "target"
+      },
+      "aim": {
+        "type": "fixed_angle",
+        "angle": 0
+      },
+      "burstCount": 1,
+      "burstIntervalSeconds": 0,
+      "angleStepPerBurst": 0,
+      "countStepPerBurst": 0,
+      "speedStepPerBurst": 0,
+      "modifiers": [
+        {
+          "type": "decelerate",
+          "perSecond": 0.55
+        },
+        {
+          "type": "min_speed",
+          "minSpeed": 1.25
+        },
+        {
+          "type": "rotate_velocity",
+          "degreesPerSecond": 36
+        },
+        {
+          "type": "warning_until_active"
+        }
+      ]
+    },
+    "enemy_fan_snipe": {
+      "type": "fan",
+      "count": 6,
+      "speed": 3.8,
+      "spreadDegrees": 42,
+      "baseAngle": 0,
+      "angleOffset": 0,
+      "spacing": 60,
+      "width": 900,
+      "originYOffset": -480,
+      "downwardBias": 0.18,
+      "projectileType": "enemy_lance",
+      "source": {
+        "type": "arena_edge",
+        "edge": "top",
+        "position": 0.5
+      },
+      "aim": {
+        "type": "toward_player"
+      },
+      "burstCount": 3,
+      "burstIntervalSeconds": 0.22,
+      "angleStepPerBurst": -6,
+      "countStepPerBurst": 0,
+      "speedStepPerBurst": 0,
+      "modifiers": [
+        {
+          "type": "max_speed",
+          "maxSpeed": 5.5
+        },
+        {
+          "type": "curve",
+          "radiansPerSecond": 0.18
+        },
+        {
+          "type": "home_to_player",
+          "delaySeconds": 0.25,
+          "maxTurnRateDegPerSecond": 80
+        }
+      ]
+    },
+    "enemy_aimed_mine": {
+      "type": "aimed",
+      "count": 1,
+      "speed": 2.7,
+      "spreadDegrees": 0,
+      "baseAngle": 0,
+      "angleOffset": 0,
+      "spacing": 60,
+      "width": 900,
+      "originYOffset": -480,
+      "downwardBias": 0.18,
+      "projectileType": "enemy_mine",
+      "source": {
+        "type": "player"
+      },
+      "aim": {
+        "type": "away_from_player"
+      },
+      "burstCount": 1,
+      "burstIntervalSeconds": 0,
+      "angleStepPerBurst": 0,
+      "countStepPerBurst": 0,
+      "speedStepPerBurst": 0,
+      "modifiers": [
+        {
+          "type": "friction",
+          "perSecond": 0.18
+        },
+        {
+          "type": "split_after_time",
+          "timeSeconds": 0.9,
+          "count": 5,
+          "speed": 2.4
+        },
+        {
+          "type": "explode_on_timeout",
+          "count": 9,
+          "speed": 2.8
+        },
+        {
+          "type": "pierce",
+          "value": 2
+        }
+      ]
+    },
+    "enemy_line_gate": {
+      "type": "line",
+      "count": 9,
+      "speed": 3.1,
+      "spreadDegrees": 0,
+      "baseAngle": 1.5708,
+      "angleOffset": 0,
+      "spacing": 72,
+      "width": 900,
+      "originYOffset": -480,
+      "downwardBias": 0.18,
+      "projectileType": "enemy_lance",
+      "source": {
+        "type": "arena_edge",
+        "edge": "left",
+        "position": 0.5
+      },
+      "aim": {
+        "type": "clockwise_around_player"
+      },
+      "burstCount": 1,
+      "burstIntervalSeconds": 0,
+      "angleStepPerBurst": 0,
+      "countStepPerBurst": 0,
+      "speedStepPerBurst": 0,
+      "modifiers": [
+        {
+          "type": "dash_clearable",
+          "enabled": true
+        },
+        {
+          "type": "grazable",
+          "enabled": true
+        },
+        {
+          "type": "spin",
+          "degreesPerSecond": 220
+        },
+        {
+          "type": "color_shift",
+          "fromColor": 16748381,
+          "toColor": 16775910,
+          "speed": 0.9
+        }
+      ]
+    },
+    "enemy_rain_curtain": {
+      "type": "rain",
+      "count": 12,
+      "speed": 3.4,
+      "spreadDegrees": 0,
+      "baseAngle": 0,
+      "angleOffset": 0,
+      "spacing": 60,
+      "width": 1100,
+      "originYOffset": -560,
+      "downwardBias": 0.22,
+      "projectileType": "enemy_warning_orb",
+      "source": {
+        "type": "random_arena"
+      },
+      "aim": {
+        "type": "counterclockwise_around_player"
+      },
+      "burstCount": 2,
+      "burstIntervalSeconds": 0.3,
+      "angleStepPerBurst": 0,
+      "countStepPerBurst": 1,
+      "speedStepPerBurst": 0.1,
+      "modifiers": [
+        {
+          "type": "scale_over_time",
+          "durationSeconds": 1.2,
+          "from": 0.75,
+          "to": 1.45
+        },
+        {
+          "type": "alpha_over_time",
+          "durationSeconds": 1.2,
+          "from": 1,
+          "to": 0.35
+        }
+      ]
+    }
+  },
+  "emitters": {
+    "center_spiral_emitter": {
+      "emitterId": "center_spiral_emitter",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0,
+        "edge": "top",
+        "position": 0.5
+      },
+      "pattern": "enemy_spiral_pressure",
+      "intervalSeconds": 0.85,
+      "durationSeconds": 12,
+      "startDelaySeconds": 0,
+      "aim": {
+        "type": "toward_player"
+      },
+      "movement": {
+        "type": "none",
+        "vx": 0,
+        "vy": 0
+      },
+      "ownerType": "encounter",
+      "ownerId": "center_spiral_emitter"
+    },
+    "left_gate_emitter": {
+      "emitterId": "left_gate_emitter",
+      "source": {
+        "type": "arena_edge",
+        "x": 0,
+        "y": 0,
+        "edge": "left",
+        "position": 0.35
+      },
+      "pattern": "enemy_line_gate",
+      "intervalSeconds": 1.4,
+      "durationSeconds": 16,
+      "startDelaySeconds": 0.5,
+      "aim": {
+        "type": "toward_player"
+      },
+      "movement": {
+        "type": "linear",
+        "vx": 34,
+        "vy": 16
+      },
+      "ownerType": "phase",
+      "ownerId": "pressure"
+    },
+    "fixed_rain_emitter": {
+      "emitterId": "fixed_rain_emitter",
+      "source": {
+        "type": "fixed_point",
+        "x": 0,
+        "y": -520,
+        "edge": "top",
+        "position": 0.5
+      },
+      "pattern": "enemy_rain_curtain",
+      "intervalSeconds": 2.1,
+      "durationSeconds": 18,
+      "startDelaySeconds": 1.25,
+      "aim": {
+        "type": "fixed_angle",
+        "angle": 1.5708
+      },
+      "movement": {
+        "type": "linear",
+        "vx": 0,
+        "vy": 26
+      },
+      "ownerType": "phase",
+      "ownerId": "finale"
+    }
+  }
+}

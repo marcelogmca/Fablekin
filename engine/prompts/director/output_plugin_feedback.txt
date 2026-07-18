@@ -1,0 +1,18 @@
+Review the directable plugin reports in the shared narrative context and give each plugin a concise professional opinion.
+
+Plugins in scope: ${directablePluginIds}
+
+This is collaboration, not mandatory criticism. Validate a plugin explicitly when its interpretation and current state look sound. Offer an advisory when another interpretation may be useful. Mark a concern only for a meaningful continuity, canon, chronology, or state-tracking problem.
+
+The feedback will be read by the plugin during a later turn. Make every note self-contained and durable. Do not order a plugin to overwrite canonical state. Explain what you agree or disagree with and what evidence or continuity principle should be reconsidered. The plugin remains responsible for checking the newer narrative and deciding whether your older feedback is still relevant.
+
+Return only valid JSON in this exact shape, with exactly one entry for every plugin in scope:
+{
+  "plugin_feedback": [
+    {
+      "plugin": "plugin_id",
+      "assessment": "aligned|advisory|concern",
+      "feedback": "Concise validation or opinion. Saying that everything looks correct is fully acceptable."
+    }
+  ]
+}

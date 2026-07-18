@@ -1,0 +1,1063 @@
+.camp-rest-test-shell-overlay {
+    --camp-rest-panel-bg: var(--glass-bg-med, rgba(var(--color-black-rgb), 0.55));
+    --camp-rest-panel-bg-strong: var(--glass-bg, rgba(var(--color-black-rgb), 0.78));
+    --camp-rest-panel-bg-thin: var(--glass-bg-thin, rgba(var(--color-white-rgb), 0.04));
+    --camp-rest-panel-border: var(--glass-border, rgba(var(--color-primary-rgb), 0.2));
+    --camp-rest-panel-border-faint: var(--glass-border-faint, rgba(var(--color-primary-rgb), 0.08));
+    --camp-rest-accent: var(--color-primary);
+    --camp-rest-invite-accent: var(--color-feedback-accent);
+    --camp-rest-wheel-hover-rgb: var(--color-feedback-accent-rgb, 108, 184, 158);
+    --camp-rest-wheel-surface-rgb: 22, 34, 28;
+    --camp-rest-invite-text: var(--text-feedback);
+    --camp-rest-invite-bg: var(--color-feedback-bg, var(--glass-bg-thin, rgba(var(--color-white-rgb), 0.04)));
+    --camp-rest-invite-border: var(--color-feedback-border, var(--glass-border, rgba(var(--color-primary-rgb), 0.2)));
+    --camp-rest-bottom-safe-area: max(var(--vn-dialogue-box-height, var(--vn-hud-height, 200px)), var(--vn-hud-height, 200px));
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: var(--camp-rest-bottom-safe-area);
+    z-index: 2;
+    /* Ensures it stays visible above basic backgrounds but below system popups */
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background: transparent;
+    color: var(--text-main);
+    font-family: var(--font-ui, sans-serif);
+    box-sizing: border-box;
+    padding: 0;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.15s ease, visibility 0s linear 0s;
+}
+
+.camp-rest-test-shell-overlay.camp-rest-overlay-hidden {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.12s ease, visibility 0s linear 0.12s;
+}
+
+.camp-rest-top-header {
+    width: 100%;
+    margin-bottom: var(--space-sm, 12px);
+    border-bottom: 1px solid rgba(var(--color-white-rgb), 0.08);
+    padding: 24px 36px var(--space-xs, 6px) 36px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.camp-rest-cycle-tag {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--camp-rest-accent);
+    text-shadow: 0 0 10px rgba(var(--color-black-rgb), 0.95), 0 0 4px rgba(var(--color-black-rgb), 0.95);
+    font-family: var(--font-cinematic, serif);
+}
+
+.camp-rest-test-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 100%;
+    flex: 1;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: hidden;
+    /* Constrains the flex items height correctly */
+    position: relative;
+    box-sizing: border-box;
+    pointer-events: none;
+    padding: 0 36px 24px 36px;
+}
+
+/* PANELS: LEFT & RIGHT BOXES TO THE EXTREME EDGES */
+.camp-rest-left-panel {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    padding: 6px 0 12px 0;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+    width: min(420px, 31vw);
+    max-width: 460px;
+    min-width: 310px;
+    font-family: var(--font-ui, sans-serif);
+    color: var(--text-main);
+    opacity: 0.96;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 0.4s ease;
+    position: relative;
+}
+
+.camp-rest-left-panel:hover {
+    opacity: 1;
+}
+
+
+.camp-rest-right-panel {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+    box-sizing: border-box;
+    height: fit-content;
+    align-self: center;
+    transform: translateY(8%);
+    width: min(460px, 31vw);
+    max-width: 500px;
+    min-width: 380px;
+    font-family: var(--font-ui, sans-serif);
+    color: var(--text-main);
+    opacity: 0.96;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.camp-rest-right-panel:hover {
+    opacity: 1;
+}
+
+.camp-rest-right-panel:hover .camp-rest-companion-box {
+    background: linear-gradient(
+        180deg,
+        rgba(var(--camp-rest-wheel-hover-rgb), 0.12),
+        rgba(var(--color-black-rgb), 0.26)
+    );
+    border-radius: 12px;
+}
+
+
+.camp-rest-section-header {
+    font-family: var(--font-cinematic, serif);
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-muted);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: none;
+    padding: 0;
+    margin: 0 0 var(--space-xs, 8px) 0;
+    text-shadow: 0 2px 10px rgba(var(--color-black-rgb), 0.9);
+}
+
+.camp-rest-left-panel .camp-rest-section-header {
+    padding-left: 36px;
+}
+
+.camp-rest-panel-floating {
+    transform: none !important;
+    align-self: auto !important;
+    z-index: 3;
+    overflow: visible;
+}
+
+.camp-rest-panel-drag-handle {
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+}
+
+.camp-rest-panel-dragging,
+.camp-rest-panel-resizing {
+    opacity: 1;
+    box-shadow: 0 16px 42px rgba(var(--color-black-rgb), 0.72);
+}
+
+.camp-rest-panel-resize-handle {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-bottom: 2px solid rgba(var(--color-white-rgb), 0.45);
+    border-right: 2px solid rgba(var(--color-white-rgb), 0.45);
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    border-radius: 0 0 4px 0;
+    cursor: nwse-resize;
+    opacity: 0.7;
+    transition: opacity 0.18s ease, border-color 0.18s ease;
+}
+
+.camp-rest-panel-resize-handle:hover,
+.camp-rest-panel-resize-handle:focus-visible {
+    opacity: 1;
+    border-color: var(--camp-rest-accent);
+    outline: none;
+}
+
+.camp-rest-right-panel.camp-rest-panel-floating .camp-rest-companion-box {
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.camp-rest-right-panel.camp-rest-panel-floating .camp-rest-companion-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.camp-rest-right-panel.camp-rest-panel-floating .camp-rest-companion-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.camp-rest-right-panel.camp-rest-panel-floating .camp-rest-companion-box::-webkit-scrollbar-thumb {
+    background-color: var(--camp-rest-accent);
+    border-radius: 99px;
+}
+
+body.camp-rest-panel-interacting {
+    user-select: none;
+}
+
+.camp-rest-option-title {
+    font-family: var(--font-cinematic, serif);
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin: 0 0 var(--space-xs, 4px) 0;
+    font-weight: bold;
+}
+
+.camp-rest-option-desc {
+    font-family: var(--font-ui, sans-serif);
+    font-size: 0.775rem;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.4;
+    margin: 0 0 var(--space-xs, 8px) 0;
+}
+
+.camp-rest-option-participants {
+    display: flex;
+    gap: var(--space-xs, 6px);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.camp-rest-participant-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(var(--color-white-rgb), 0.04);
+    border: 1px solid rgba(var(--color-white-rgb), 0.12);
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: var(--text-muted);
+}
+
+.camp-rest-test-tag {
+    font-size: 0.575rem;
+    font-weight: bold;
+    color: var(--camp-rest-invite-text);
+    background: var(--camp-rest-invite-bg);
+    border: 1px solid var(--camp-rest-invite-border);
+    padding: 2px 6px;
+    border-radius: 99px;
+    text-transform: uppercase;
+}
+
+/* COMPANION BOX */
+.camp-rest-companion-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.camp-rest-sub-header {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    margin-top: var(--space-xs, 2px);
+    font-weight: bold;
+    text-shadow: 0 2px 10px rgba(var(--color-black-rgb), 0.9);
+}
+
+.camp-rest-invite-note {
+    margin-top: var(--space-xs, 6px);
+    text-align: left;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    opacity: 0.95;
+    text-shadow: 0 2px 10px rgba(var(--color-black-rgb), 0.9);
+}
+
+.camp-rest-companion-circle-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    pointer-events: auto;
+}
+
+.camp-rest-companion-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs, 8px);
+}
+
+.camp-rest-circle-avatar {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    background: rgba(var(--color-white-rgb), 0.03);
+    border: 2px solid rgba(var(--color-white-rgb), 0.12);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--font-cinematic, serif);
+    font-size: 1.45rem;
+    color: rgba(var(--color-white-rgb), 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+}
+
+.camp-rest-companion-circle-item.invited {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.camp-rest-companion-name {
+    font-family: var(--font-cinematic, serif);
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.camp-rest-invite-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--camp-rest-accent);
+    color: var(--camp-rest-accent);
+    font-family: var(--font-cinematic, serif);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: var(--space-md, 12px);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    clip-path: polygon(3% 0%, 100% 0%, 97% 100%, 0% 100%);
+}
+
+.camp-rest-invite-btn:hover {
+    background: rgba(var(--color-primary-rgb), 0.1);
+    box-shadow: 0 0 20px rgba(var(--color-primary-rgb), 0.25);
+    transform: translateY(-1px);
+}
+
+.camp-rest-test-empty {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-align: center;
+    font-style: italic;
+    padding: var(--space-sm, 10px) var(--space-xs, 8px);
+    opacity: 0.9;
+}
+
+/* CUSTOM INVITE MODAL */
+.camp-rest-custom-invite-modal {
+    position: absolute;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(var(--color-black-rgb), var(--modal-overlay-opacity, 0.65));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.camp-rest-custom-invite-content {
+    background: var(--modal-bg);
+    border: var(--modal-border);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-lg, 24px);
+    width: min(520px, 90vw);
+    box-shadow: var(--shadow-lg), inset 0 0 20px rgba(var(--color-white-rgb), 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md, 16px);
+}
+
+.camp-rest-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(var(--color-white-rgb), 0.1);
+    padding-bottom: var(--space-sm, 12px);
+}
+
+.camp-rest-modal-header h3 {
+    font-family: var(--font-cinematic, serif);
+    font-size: 1.15rem;
+    color: var(--camp-rest-accent);
+    margin: 0;
+}
+
+.camp-rest-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.camp-rest-modal-close:hover {
+    color: var(--camp-rest-accent);
+}
+
+.camp-rest-modal-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs, 8px);
+}
+
+.camp-rest-modal-textarea {
+    width: 100%;
+    min-height: 120px;
+    background: rgba(var(--color-black-rgb), 0.3);
+    border: 1px solid rgba(var(--color-white-rgb), 0.12);
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-sm, 12px);
+    color: var(--text-main);
+    font-family: var(--font-ui, sans-serif);
+    font-size: 0.925rem;
+    resize: none;
+    outline: none;
+}
+
+.camp-rest-modal-textarea:focus {
+    border-color: var(--camp-rest-accent);
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.camp-rest-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.camp-rest-send-btn {
+    background: var(--camp-rest-accent);
+    color: var(--text-inverse);
+    font-weight: 700;
+    padding: var(--space-sm, 12px) var(--space-lg, 24px);
+    border-radius: var(--radius-md, 8px);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    font-family: var(--font-cinematic, serif);
+    letter-spacing: 1.5px;
+}
+
+.camp-rest-send-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+}
+
+.camp-rest-test-status {
+    position: absolute;
+    bottom: 8px;
+    left: var(--space-xl, 32px);
+    font-size: 0.775rem;
+    color: var(--camp-rest-accent);
+}
+
+.camp-rest-test-status.error {
+    color: var(--status-danger);
+}
+
+.camp-rest-processing-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 11000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    background: rgba(var(--color-black-rgb), var(--modal-overlay-opacity, 0.58));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.camp-rest-processing-overlay.visible {
+    display: flex;
+}
+
+.camp-rest-processing-card {
+    min-width: 320px;
+    max-width: min(520px, 80vw);
+    background: var(--modal-bg);
+    border: 1px solid var(--status-info);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 16px 50px rgba(var(--color-black-rgb), 0.55);
+    text-align: center;
+}
+
+.camp-rest-processing-title {
+    font-family: var(--font-cinematic, serif);
+    color: var(--status-info);
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.camp-rest-processing-message {
+    color: var(--text-main);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.camp-rest-processing-dots::after {
+    content: '';
+    display: inline-block;
+    width: 1.15em;
+    text-align: left;
+    animation: campRestEllipsis 1.05s infinite steps(4, end);
+}
+
+@keyframes campRestEllipsis {
+    0% {
+        content: '';
+    }
+
+    25% {
+        content: '.';
+    }
+
+    50% {
+        content: '..';
+    }
+
+    75% {
+        content: '...';
+    }
+
+    100% {
+        content: '';
+    }
+}
+
+.camp-rest-circle-img-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(var(--color-white-rgb), 0.12);
+    box-shadow: 0 4px 15px rgba(var(--color-black-rgb), 0.4);
+    transition: all 0.3s ease;
+}
+
+.camp-rest-companion-circle-item:hover .camp-rest-circle-img-avatar {
+    border-color: var(--camp-rest-accent);
+    box-shadow: 0 0 15px var(--camp-rest-accent);
+    transform: scale(1.05);
+}
+
+.camp-rest-companion-circle-item.invited .camp-rest-circle-img-avatar {
+    opacity: 0.4;
+    border-color: var(--status-success);
+    filter: grayscale(80%);
+}
+
+.camp-rest-center-summary-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: -1;
+}
+
+.camp-rest-center-summary {
+    position: absolute;
+    bottom: var(--space-xl, 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(var(--color-white-rgb), 0.75);
+    font-size: 0.825rem;
+    font-family: var(--font-cinematic, serif);
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    width: max-content;
+    max-width: 600px;
+    text-shadow: 0 2px 10px rgba(var(--color-black-rgb), 0.98), 0 0 5px rgba(var(--color-black-rgb), 0.95);
+    pointer-events: none;
+    letter-spacing: 0.5px;
+    margin-bottom: 0;
+    animation: fadeInCenterSummary 0.8s ease-out both;
+}
+
+.camp-rest-center-instructions {
+    position: absolute;
+    bottom: var(--space-xl, 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(var(--color-white-rgb), 0.75);
+    font-size: 0.825rem;
+    font-style: italic;
+    font-weight: 500;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(var(--color-black-rgb), 0.98), 0 0 5px rgba(var(--color-black-rgb), 0.95);
+    pointer-events: none;
+    width: max-content;
+    max-width: 450px;
+    letter-spacing: 0.5px;
+    font-family: var(--font-cinematic, serif);
+}
+
+@keyframes fadeInCenterSummary {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+body.camp-rest-interlude-busy #user-input-container,
+body.camp-rest-interlude-busy #controls,
+body.camp-rest-interlude-busy #dialogue-container {
+    pointer-events: none !important;
+}
+
+body.camp-rest-interlude-busy #user-input-container {
+    opacity: 0.6 !important;
+    transition: opacity 0.15s ease;
+}
+
+/* While invite prompt modal is open, suppress native VN input to avoid dual-input confusion. */
+body.camp-rest-invite-modal-open #user-input-container {
+    pointer-events: none !important;
+    opacity: 0.35 !important;
+    filter: blur(1.5px);
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+/* Scene wheel + invitation rails */
+.camp-rest-scene-wheel {
+    position: relative;
+    display: grid;
+    grid-template-rows: 42px minmax(330px, 1fr) 42px;
+    gap: 8px;
+    flex: 1;
+    min-height: 430px;
+    outline: none;
+    overflow: visible;
+}
+
+.camp-rest-scene-wheel-viewport {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+}
+
+.camp-rest-scene-wheel-viewport::before,
+.camp-rest-scene-wheel-viewport::after {
+    display: none;
+}
+
+.camp-rest-scene-wheel-viewport::before {
+    top: 0;
+    background: linear-gradient(180deg, var(--camp-rest-panel-bg-strong), transparent);
+}
+
+.camp-rest-scene-wheel-viewport::after {
+    bottom: 0;
+    background: linear-gradient(0deg, var(--camp-rest-panel-bg-strong), transparent);
+}
+
+.camp-rest-scene-wheel-track {
+    position: absolute;
+    inset: 0;
+}
+
+.camp-rest-scene-wheel-item {
+    position: absolute;
+    left: 42%;
+    top: 50%;
+    width: min(320px, calc(100% - 18px));
+    min-height: 156px;
+    border: 1px solid rgba(var(--color-primary-rgb), 0.34);
+    border-radius: 16px;
+    padding: 14px 15px 13px 15px;
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    transform-origin: 50% 50%;
+    transition:
+        transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 320ms ease,
+        border-color 220ms ease,
+        box-shadow 220ms ease;
+    background:
+        linear-gradient(135deg, rgba(var(--color-white-rgb), 0.14), rgba(var(--color-white-rgb), 0.05)),
+        rgba(var(--camp-rest-wheel-surface-rgb), 0.78);
+    color: var(--text-main);
+    box-shadow: 0 12px 34px rgba(var(--color-black-rgb), 0.32);
+    text-shadow: 0 2px 12px rgba(var(--color-black-rgb), 0.98);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    will-change: transform, opacity;
+    contain: layout paint;
+}
+
+.camp-rest-scene-card-sheen {
+    position: absolute;
+    inset: -40% -20% auto auto;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: rgba(var(--color-primary-rgb), 0.12);
+    filter: none;
+    opacity: 0;
+    transition: opacity 260ms ease;
+    pointer-events: none;
+}
+
+.camp-rest-scene-wheel-item.active {
+    border-color: rgba(var(--color-primary-rgb), 0.82);
+    box-shadow: 0 20px 48px rgba(var(--color-black-rgb), 0.62), 0 0 30px rgba(var(--color-primary-rgb), 0.18);
+    background:
+        linear-gradient(135deg, rgba(var(--color-white-rgb), 0.18), rgba(var(--color-white-rgb), 0.07)),
+        rgba(var(--camp-rest-wheel-surface-rgb), 0.88);
+}
+
+.camp-rest-scene-wheel-item.active .camp-rest-scene-card-sheen {
+    opacity: 1;
+}
+
+.camp-rest-scene-wheel-item.near {
+    box-shadow: 0 10px 28px rgba(var(--color-black-rgb), 0.38);
+}
+
+.camp-rest-scene-wheel-item.far {
+    cursor: default;
+}
+
+.camp-rest-scene-wheel-item:hover {
+    border-color: rgba(var(--camp-rest-wheel-hover-rgb), 0.92);
+    background:
+        linear-gradient(135deg, rgba(var(--camp-rest-wheel-hover-rgb), 0.3), rgba(var(--camp-rest-wheel-hover-rgb), 0.12)),
+        rgba(var(--camp-rest-wheel-surface-rgb), 0.92);
+    box-shadow: 0 18px 42px rgba(var(--color-black-rgb), 0.58), 0 0 22px rgba(var(--camp-rest-wheel-hover-rgb), 0.26);
+    color: rgba(var(--color-white-rgb), 0.98);
+}
+
+.camp-rest-scene-kind-invitation {
+    border-color: var(--camp-rest-invite-border);
+    background:
+        linear-gradient(135deg, rgba(var(--camp-rest-wheel-hover-rgb), 0.18), rgba(var(--color-white-rgb), 0.04)),
+        rgba(var(--camp-rest-wheel-surface-rgb), 0.82);
+}
+
+.camp-rest-scene-kind-invitation.active {
+    border-color: var(--camp-rest-invite-accent);
+    box-shadow: 0 20px 48px rgba(var(--color-black-rgb), 0.62), 0 0 30px var(--camp-rest-invite-border);
+}
+
+.camp-rest-scene-card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 18px;
+    margin-bottom: 8px;
+}
+
+.camp-rest-scene-kind-invitation .camp-rest-test-tag {
+    color: var(--camp-rest-invite-text);
+    background: var(--camp-rest-invite-bg);
+    border-color: var(--camp-rest-invite-border);
+}
+
+.camp-rest-wheel-arrow {
+    position: relative;
+    width: 104px;
+    height: 30px;
+    justify-self: start;
+    border: 1px solid rgba(var(--camp-rest-wheel-hover-rgb), 0.34);
+    border-radius: 999px;
+    background: rgba(var(--color-black-rgb), 0.16);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    cursor: pointer;
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.camp-rest-wheel-arrow::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    border-left: 2px solid rgba(var(--camp-rest-wheel-hover-rgb), 0.96);
+    border-top: 2px solid rgba(var(--camp-rest-wheel-hover-rgb), 0.96);
+}
+
+.camp-rest-wheel-arrow-up::before {
+    transform: translate(-50%, -28%) rotate(45deg);
+}
+
+.camp-rest-wheel-arrow-down::before {
+    transform: translate(-50%, -72%) rotate(225deg);
+}
+
+.camp-rest-wheel-arrow:hover {
+    border-color: rgba(var(--camp-rest-wheel-hover-rgb), 0.86);
+    background: rgba(var(--camp-rest-wheel-hover-rgb), 0.18);
+    transform: translateY(-1px);
+}
+
+.camp-rest-invite-title-block {
+    margin-bottom: 8px;
+}
+
+.camp-rest-invite-buckets {
+    display: grid;
+    gap: 8px;
+}
+
+.camp-rest-bucket-label {
+    font-family: var(--font-cinematic, serif);
+    font-size: 0.62rem;
+    letter-spacing: 1.8px;
+    color: var(--camp-rest-invite-text);
+    text-transform: uppercase;
+    text-align: left;
+    padding-left: 8px;
+    text-shadow: 0 2px 10px rgba(var(--color-black-rgb), 0.9);
+}
+
+.camp-rest-avatar-bar {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    overflow: hidden;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--camp-rest-invite-border);
+    background:
+        linear-gradient(90deg, rgba(var(--color-black-rgb), 0.16), rgba(var(--color-white-rgb), 0.025), rgba(var(--color-black-rgb), 0.12)),
+        rgba(var(--color-black-rgb), 0.08);
+    box-shadow: inset 0 0 16px rgba(var(--color-black-rgb), 0.16);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    scrollbar-width: none;
+}
+
+.camp-rest-avatar-bar::-webkit-scrollbar {
+    height: 0;
+    display: none;
+}
+
+.camp-rest-avatar-bar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.camp-rest-avatar-bar::-webkit-scrollbar-thumb {
+    background-color: var(--camp-rest-invite-border);
+    border-radius: 99px;
+}
+
+.camp-rest-avatar-bar-selected {
+    border-color: rgba(var(--color-primary-rgb), 0.32);
+    background:
+        linear-gradient(90deg, rgba(var(--color-primary-rgb), 0.055), rgba(var(--color-primary-rgb), 0.03), rgba(var(--color-primary-rgb), 0.055)),
+        rgba(var(--color-black-rgb), 0.06);
+}
+
+.camp-rest-avatar-rail {
+    position: relative;
+    width: 100%;
+}
+
+.camp-rest-avatar-rail .camp-rest-avatar-bar {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+.camp-rest-avatar-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0;
+    line-height: 1;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--color-white-rgb), 0.28);
+    background: rgba(var(--color-black-rgb), 0.44);
+    color: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transition: background 0.18s ease, border-color 0.18s ease, opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.camp-rest-avatar-nav::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid rgba(var(--color-white-rgb), 0.96);
+    border-right: 2px solid rgba(var(--color-white-rgb), 0.96);
+    transform: rotate(45deg) translateZ(0);
+    filter: drop-shadow(0 1px 2px rgba(var(--color-black-rgb), 0.7));
+}
+
+.camp-rest-avatar-nav.left::before {
+    transform: rotate(-135deg);
+}
+
+.camp-rest-avatar-nav.right::before {
+    transform: rotate(45deg);
+}
+
+.camp-rest-avatar-nav.left {
+    left: 5px;
+}
+
+.camp-rest-avatar-nav.right {
+    right: 5px;
+}
+
+.camp-rest-avatar-nav:hover {
+    border-color: rgba(var(--camp-rest-wheel-hover-rgb), 0.9);
+    background: rgba(var(--color-black-rgb), 0.58);
+    box-shadow: 0 0 16px rgba(var(--camp-rest-wheel-hover-rgb), 0.28);
+    transform: translateY(-50%) scale(1.04);
+}
+
+.camp-rest-avatar-nav:disabled {
+    opacity: 0.35;
+    cursor: default;
+    transform: translateY(-50%);
+}
+
+.camp-rest-avatar-nav:disabled:hover {
+    transform: translateY(-50%);
+    box-shadow: none;
+}
+
+.camp-rest-invite-avatar {
+    flex: 0 0 auto;
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.camp-rest-invite-avatar .camp-rest-companion-name {
+    display: none;
+}
+
+.camp-rest-invite-avatar .camp-rest-circle-img-avatar,
+.camp-rest-invite-avatar .camp-rest-circle-avatar {
+    width: 54px;
+    height: 54px;
+}
+
+.camp-rest-invite-avatar .camp-rest-circle-avatar {
+    font-size: 1.2rem;
+}
+
+.camp-rest-invite-avatar.selected .camp-rest-circle-img-avatar,
+.camp-rest-invite-avatar.selected .camp-rest-circle-avatar {
+    border-color: rgba(var(--color-primary-rgb), 0.95);
+    box-shadow: 0 0 18px rgba(var(--color-primary-rgb), 0.38);
+    transform: scale(1.05);
+}
+
+.camp-rest-selected-empty {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-style: italic;
+    white-space: nowrap;
+    padding: 0 6px;
+}
+
+.camp-rest-invite-actions {
+    margin-top: 8px;
+}
+
+.camp-rest-invite-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+@media (max-width: 1100px) {
+    .camp-rest-left-panel,
+    .camp-rest-right-panel {
+        min-width: 300px;
+        width: min(360px, 44vw);
+    }
+
+    .camp-rest-scene-wheel {
+        min-height: 360px;
+    }
+
+    .camp-rest-scene-wheel-item {
+        width: min(292px, calc(100% - 22px));
+        min-height: 138px;
+    }
+}

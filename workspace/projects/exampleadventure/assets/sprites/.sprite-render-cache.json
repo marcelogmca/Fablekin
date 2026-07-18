@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "algorithmVersion": 1,
+  "maxAnalysisSize": 384,
+  "entries": {
+    "sprites/Laios_neutral_front.webp": {
+      "fingerprint": "494856:1783700483370",
+      "boundsNormalized": {
+        "x": 0.1050228310502283,
+        "y": 0.234375,
+        "width": 0.7899543378995434,
+        "height": 0.7369791666666666
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-16T21:43:50.100Z"
+    },
+    "sprites/generic_npc_female.webp": {
+      "fingerprint": "235672:1783632321787",
+      "boundsNormalized": {
+        "x": 0.1963470319634703,
+        "y": 0.036458333333333336,
+        "width": 0.5753424657534246,
+        "height": 0.9322916666666666
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-16T21:43:50.688Z"
+    },
+    "sprites/Ingrid_thinking_front.webp": {
+      "fingerprint": "419978:1783451039721",
+      "boundsNormalized": {
+        "x": 0.2420091324200913,
+        "y": 0.0078125,
+        "width": 0.6575342465753424,
+        "height": 0.9921875
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-16T21:43:50.916Z"
+    },
+    "sprites/Laios_neutral_left.webp": {
+      "fingerprint": "380374:1783701093375",
+      "boundsNormalized": {
+        "x": 0.1506849315068493,
+        "y": 0.20052083333333334,
+        "width": 0.6986301369863014,
+        "height": 0.7708333333333334
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-16T21:43:51.515Z"
+    },
+    "sprites/Ingrid_thinking_left.webp": {
+      "fingerprint": "373748:1783453778794",
+      "boundsNormalized": {
+        "x": 0.2876712328767123,
+        "y": 0.0078125,
+        "width": 0.6164383561643836,
+        "height": 0.9921875
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-16T21:43:52.087Z"
+    },
+    "sprites/Laios_happy_front.webp": {
+      "fingerprint": "531310:1783676487324",
+      "boundsNormalized": {
+        "x": 0.0273972602739726,
+        "y": 0.140625,
+        "width": 0.9452054794520548,
+        "height": 0.8307291666666666
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:12:39.276Z"
+    },
+    "sprites/Laios_happy_right.webp": {
+      "fingerprint": "623770:1783700461748",
+      "boundsNormalized": {
+        "x": 0.1004566210045662,
+        "y": 0.234375,
+        "width": 0.7990867579908676,
+        "height": 0.7369791666666666
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:12:39.931Z"
+    },
+    "sprites/Ingrid_neutral_front.webp": {
+      "fingerprint": "478838:1783352637381",
+      "boundsNormalized": {
+        "x": 0.2054794520547945,
+        "y": 0.010416666666666666,
+        "width": 0.684931506849315,
+        "height": 0.9895833333333334
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:12:40.453Z"
+    },
+    "sprites/Ingrid_neutral_left.webp": {
+      "fingerprint": "579614:1783934074295",
+      "boundsNormalized": {
+        "x": 0.1050228310502283,
+        "y": 0.026041666666666668,
+        "width": 0.6940639269406392,
+        "height": 0.9739583333333334
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:12:41.295Z"
+    },
+    "sprites/Laios_happy_left.webp": {
+      "fingerprint": "614196:1783700443070",
+      "boundsNormalized": {
+        "x": 0.1004566210045662,
+        "y": 0.234375,
+        "width": 0.7990867579908676,
+        "height": 0.7369791666666666
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:17:06.395Z"
+    },
+    "sprites/Srava_neutral_front.webp": {
+      "fingerprint": "621880:1783462115949",
+      "boundsNormalized": {
+        "x": 0.1598173515981735,
+        "y": 0.018229166666666668,
+        "width": 0.680365296803653,
+        "height": 0.953125
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:17:07.000Z"
+    },
+    "sprites/Srava_neutral_right.webp": {
+      "fingerprint": "515126:1783463527526",
+      "boundsNormalized": {
+        "x": 0.2191780821917808,
+        "y": 0.018229166666666668,
+        "width": 0.5616438356164384,
+        "height": 0.953125
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:34:40.192Z"
+    },
+    "sprites/Srava_happy_front.webp": {
+      "fingerprint": "676956:1783498667332",
+      "boundsNormalized": {
+        "x": 0.1598173515981735,
+        "y": 0.018229166666666668,
+        "width": 0.680365296803653,
+        "height": 0.953125
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:34:45.307Z"
+    },
+    "sprites/Srava_happy_right.webp": {
+      "fingerprint": "612030:1783500073291",
+      "boundsNormalized": {
+        "x": 0.1780821917808219,
+        "y": 0.018229166666666668,
+        "width": 0.6438356164383562,
+        "height": 0.953125
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:37:09.171Z"
+    },
+    "sprites/Laios_neutral_right.webp": {
+      "fingerprint": "380790:1783711611336",
+      "boundsNormalized": {
+        "x": 0.1506849315068493,
+        "y": 0.20052083333333334,
+        "width": 0.6986301369863014,
+        "height": 0.7708333333333334
+      },
+      "detected": true,
+      "sourceWidth": 3072,
+      "sourceHeight": 5376,
+      "updatedAt": "2026-07-18T14:37:23.878Z"
+    }
+  }
+}

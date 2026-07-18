@@ -1,0 +1,272 @@
+/* Unified with default.css */
+
+body {
+    background: var(--bg-app-background);
+    background-attachment: fixed;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.main-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - var(--space-xl)); /* Subtract titlebar height - assuming 32px standard */
+    padding: var(--space-md);
+}
+
+.selector-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur) saturate(160%);
+    -webkit-backdrop-filter: var(--glass-blur) saturate(160%);
+    border: var(--border-main);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), 
+                inset 0 0 var(--space-md) rgba(var(--color-primary-rgb), var(--opacity-subtle));
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInScale 0.4s ease-out;
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.card-header {
+    padding: var(--space-xl) var(--space-xl) var(--space-md);
+    text-align: center;
+}
+
+.card-header h1 {
+    font-size: var(--font-xl);
+    margin-bottom: var(--space-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+}
+
+.header-icon {
+    font-size: var(--font-2xl);
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: var(--font-sm);
+}
+
+.project-list-container {
+    padding: 0 var(--space-md);
+    max-height: 280px;
+    overflow-y: auto;
+    margin: var(--space-sm) 0;
+}
+
+#project-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+#project-list li {
+    background: var(--bg-overlay-subtle);
+    border: var(--border-thin);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-main);
+    font-weight: 500;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#project-list li::before {
+    content: '◈';
+    margin-right: var(--space-sm);
+    color: var(--color-primary);
+    font-size: var(--font-2xs);
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+#project-list li:hover {
+    background: rgba(var(--color-primary-rgb), var(--opacity-low));
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateX(var(--space-3xs));
+}
+
+#project-list li:hover::before {
+    opacity: 1;
+}
+
+.project-name-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    flex: 1;
+    pointer-events: none; /* Let the parent LI handle the click */
+}
+
+.project-name {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.project-last-opened {
+    font-size: var(--font-2xs);
+    color: var(--text-muted);
+    line-height: 1.2;
+}
+
+.project-actions {
+    display: flex;
+    gap: var(--space-2xs);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+#project-list li:hover .project-actions {
+    opacity: 1;
+}
+
+.action-icon-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--bg-surface-2);
+    border: var(--border-thin);
+    color: var(--text-muted);
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.action-icon-btn:hover {
+    background: var(--bg-surface-hover);
+    color: var(--text-main);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.action-icon-btn.rename:hover {
+    color: var(--color-primary);
+}
+
+.action-icon-btn.delete:hover {
+    background: var(--status-danger-dim);
+    color: var(--status-danger);
+    border-color: var(--status-danger);
+}
+
+.action-icon-btn svg {
+    pointer-events: none;
+}
+
+.card-footer {
+    padding: var(--space-md) var(--space-xl) var(--space-2xl);
+    background: var(--bg-overlay-dark);
+}
+
+.divider {
+    text-align: center;
+    position: relative;
+    margin-bottom: var(--space-lg);
+}
+
+.divider::before, .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 35%;
+    height: 1px;
+    background: var(--border-thin);
+}
+
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+.divider span {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.create-project-section h2 {
+    font-size: var(--font-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+    text-align: center;
+}
+
+.input-group {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+#new-project-name {
+    flex: 1;
+    background: var(--bg-overlay-dark);
+    border: var(--border-thin);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-md);
+    transition: border-color 0.2s;
+}
+
+#new-project-name:focus {
+    border-color: var(--color-primary);
+    box-shadow: var(--glow-primary);
+}
+
+#create-project-btn {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    border: none;
+    transition: transform 0.1s;
+}
+
+#create-project-btn:active {
+    transform: scale(0.95);
+}
+
+.error-message {
+    color: var(--status-danger);
+    font-size: var(--font-xs);
+    margin-top: var(--space-sm);
+    text-align: center;
+    min-height: 15px;
+}
+
+/* Scrollbar styling */
+.project-list-container::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+}
+
+.project-list-container::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: var(--scrollbar-radius);
+}
+
+.project-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Manager</title>
+    <link rel="stylesheet" id="theme-link" href="../../themes/active/global.css">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../libs/premium_select.css">
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+    <script src="../scripts/tooltips.js"></script>
+    <script src="../scripts/modals.js"></script>
+    <script src="../libs/premium_select.js"></script>
+</head>
+
+<body>
+    <div class="settings-container">
+        <header class="settings-header-main header-with-actions">
+            <div>
+                <h1><span class="icon">⚙️</span> Settings Manager</h1>
+                <p class="subtitle">Global application configuration</p>
+            </div>
+            <div class="header-actions">
+                <button id="sync-settings-btn" class="btn-base btn-primary"
+                    title="Sync settings from disk"><span>↻</span> Sync</button>
+            </div>
+        </header>
+
+        <div class="settings-layout">
+            <nav class="settings-sidebar">
+                <div class="sidebar-item active" data-tab="aesthetics">
+                    <span class="sidebar-icon">🎨</span>
+                    <span class="sidebar-label">Aesthetics</span>
+                </div>
+                <div class="sidebar-item" data-tab="providers">
+                    <span class="sidebar-icon">🔑</span>
+                    <span class="sidebar-label">Secrets</span>
+                </div>
+                <div class="sidebar-item" data-tab="models-config">
+                    <span class="sidebar-icon">🤖</span>
+                    <span class="sidebar-label">Models & Routing</span>
+                </div>
+                <div class="sidebar-item" data-tab="engine-assignment">
+                    <span class="sidebar-icon">🧠</span>
+                    <span class="sidebar-label">Engine Management</span>
+                </div>
+                <div class="sidebar-item" data-tab="memory-management">
+                    <span class="sidebar-icon">MM</span>
+                    <span class="sidebar-label">Memory Management</span>
+                </div>
+            </nav>
+
+            <main class="settings-main-content">
+                <!-- AESTHETICS TAB -->
+                <section id="tab-aesthetics" class="tab-content active">
+                    <div class="settings-form">
+                        <div class="settings-header">Visual Theme</div>
+                        <div class="settings-description-block"
+                            style="border-left: none; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);">
+                            Select a visual theme to apply across the entire application. Themes control colors, fonts,
+                            and UI transparency.
+                        </div>
+
+                        <div class="form-group">
+                            <label for="theme-select">Interface Theme</label>
+                            <div class="description">Choose the visual style that best suits your creative flow.</div>
+                            <select id="theme-select" class="premium-select" data-settings-path="infrastructure.theme">
+                                <!-- Options populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROVIDERS TAB -->
+                <section id="tab-providers" class="tab-content">
+                    <div class="settings-form">
+                        <div class="settings-header">API Providers</div>
+                        <div class="settings-description-block"
+                            style="border-left: none; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);">
+                            Configure access to LLM services. All API keys are stored with encryption using
+                            Electron SafeStorage and are never transmitted outside of direct API calls.
+                        </div>
+
+                        <div id="provider-cards-container"
+                            style="display: flex; flex-direction: column; gap: var(--space-xl);">
+                            <!-- Provider items dynamically generated -->
+                        </div>
+
+                        <div
+                            style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--color-primary-dim); display: flex; justify-content: flex-end;">
+                            <button id="save-providers-btn" class="btn-base btn-primary">Save Provider Keys</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODELS & ROUTING TAB -->
+                <section id="tab-models-config" class="tab-content">
+                    <div class="settings-form">
+                        <div class="settings-header">Global Model Aliases</div>
+                        <div class="settings-description-block section-info">
+                            Choose the provider and model used for each quality tier. The rest of Fablekin uses these tiers automatically.
+                        </div>
+
+                        <div id="model-alias-cards" class="model-alias-grid"></div>
+                        <div id="custom-alias-summary" class="custom-alias-summary"></div>
+
+                        <div class="settings-header">Provider Connections</div>
+                        <div class="settings-description-block">
+                            Connection endpoints are separate from model routing.
+                        </div>
+                        <div class="provider-connection-grid">
+                            <div class="form-group"><label>OpenRouter URL</label><input class="premium-input" data-settings-path="infrastructure.providers.openrouter.url"></div>
+                            <div class="form-group"><label>DeepSeek URL</label><input class="premium-input" data-settings-path="infrastructure.providers.deepseek.url"></div>
+                            <div class="form-group"><label>Gemini URL</label><input class="premium-input" data-settings-path="infrastructure.providers.gemini.url"></div>
+                            <div class="form-group"><label>NanoGPT URL</label><input class="premium-input" data-settings-path="infrastructure.providers.nano_gpt.url"></div>
+                            <div class="form-group"><label>Ollama Base URL</label><input class="premium-input" data-settings-path="infrastructure.providers.ollama.base_url"></div>
+                            <div class="form-group"><label>Ollama Embedding Model</label><input class="premium-input" data-settings-path="infrastructure.providers.ollama.model"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Global Model Pricing (JSON)</label>
+                            <div class="description">Optional pricing data used only for local cost estimates.</div>
+                            <textarea class="premium-input premium-textarea" style="height: 500px; font-family: monospace;"
+                                data-settings-path="infrastructure.model_costs"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ENGINE ASSIGNMENT TAB -->
+                <section id="tab-engine-assignment" class="tab-content">
+                    <div class="settings-form">
+                        <div class="settings-header">Narrative Engine Management</div>
+                        <div class="settings-description-block section-info">
+                            Assign one global model alias to each core narrative function. Each alias resolves to its provider and concrete model in the Models & Routing tab.
+                        </div>
+
+                        <!-- REFERENCE GUIDE INJECTION POINT -->
+                        <div id="engine-reference-guide"></div>
+
+                        <!-- DYNAMIC LIST INJECTION POINT -->
+                        <div id="engine-management-list">
+                            <!-- Populated dynamically by renderer_settings_manager.js -->
+                        </div>
+
+                        <!-- SYSTEM AUDIT SECTION -->
+                        <div class="settings-header"
+                            style="margin-top: var(--space-2xl); border-top: 1px solid var(--color-primary-dim); padding-top: var(--space-xl);">
+                            Plugin Audit</div>
+                        <div class="settings-description-block audit-info">
+                            A read-only overview of which plugins are currently assigned to global model tiers.
+                            Assignments are managed individually via the Plugin Manager.
+                        </div>
+                        <div id="plugin-audit-grid" class="audit-grid">
+                            <!-- Cards populated dynamically -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MEMORY MANAGEMENT TAB -->
+                <section id="tab-memory-management" class="tab-content memory-management-tab">
+                    <section class="memory-puzzle-overview" aria-labelledby="memory-puzzle-title">
+                        <div class="memory-puzzle-intro">
+                            <div>
+                                <div class="memory-puzzle-kicker">How story memory is assembled</div>
+                                <h2 id="memory-puzzle-title">How story memory is organized</h2>
+                            </div>
+                            <p>
+                                Story memory is arranged chronologically, with each chapter represented at an
+                                appropriate level of detail. Retrieved fragments are placed alongside their source
+                                chapters so the resulting context preserves the structure of the narrative.
+                            </p>
+                        </div>
+
+                        <div class="memory-puzzle-example">
+                            <div class="memory-example-header">
+                                <span>Example prompt memory at turn 75</span>
+                                <span class="memory-example-direction">Distant past to current scene</span>
+                            </div>
+                            <div class="memory-piece-track" aria-label="Example chronological memory timeline">
+                                <div class="memory-piece memory-piece-arc">
+                                    <span class="memory-piece-type">Arc capsule</span>
+                                    <strong>Turns 1-30</strong>
+                                    <small>Many old synopses, compressed</small>
+                                </div>
+                                <div class="memory-piece memory-piece-synopsis">
+                                    <span class="memory-piece-type">Synopsis</span>
+                                    <strong>Turn 31</strong>
+                                    <small>Compact continuity</small>
+                                </div>
+                                <div class="memory-piece memory-piece-elevated">
+                                    <span class="memory-piece-type">Auto elevated</span>
+                                    <strong>Turn 32</strong>
+                                    <small>Synopsis restored to summary</small>
+                                </div>
+                                <div class="memory-piece memory-piece-rag">
+                                    <span class="memory-piece-type">Synopsis</span>
+                                    <strong>Turn 33</strong>
+                                    <span class="memory-rag-fragment">Slotted RAG detail</span>
+                                    <small>Retrieved here, at its source</small>
+                                </div>
+                                <div class="memory-piece memory-piece-summary">
+                                    <span class="memory-piece-type">Summary</span>
+                                    <strong>Turns 70-72</strong>
+                                    <small>Recent context, condensed</small>
+                                </div>
+                                <div class="memory-piece memory-piece-full">
+                                    <span class="memory-piece-type">Fulltext</span>
+                                    <strong>Turns 73-74</strong>
+                                    <small>Newest chapters, complete</small>
+                                </div>
+                                <div class="memory-current-turn">
+                                    <span>Now</span>
+                                    <strong>75</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="memory-puzzle-notes">
+                            <article>
+                                <span class="memory-note-index">01</span>
+                                <div>
+                                    <h3>Fidelity follows age</h3>
+                                    <p>Fulltext becomes summary, then synopsis as chapters recede, preserving the whole timeline at a sustainable size.</p>
+                                </div>
+                            </article>
+                            <article>
+                                <span class="memory-note-index">02</span>
+                                <div>
+                                    <h3>Recall returns to its slot</h3>
+                                    <p>RAG chunks are attached to their source chapter's position in history, so retrieved facts arrive with chronological meaning.</p>
+                                </div>
+                            </article>
+                            <article>
+                                <span class="memory-note-index">03</span>
+                                <div>
+                                    <h3>Relevance restores detail</h3>
+                                    <p>Auto elevation temporarily promotes an important old synopsis to summary or fulltext for the current turn.</p>
+                                </div>
+                            </article>
+                            <article>
+                                <span class="memory-note-index">04</span>
+                                <div>
+                                    <h3>Old arcs become one piece</h3>
+                                    <p>Arc compression merges long consecutive runs of distant synopses while retaining their location in the story.</p>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+
+                    <div class="memory-management-grid">
+                    <div class="settings-form memory-settings-column">
+                        <div class="settings-header">Memory Management</div>
+                        <div class="settings-description-block section-info">
+                            Configure history tiers and dynamic elevation behavior for long-term memory retrieval.
+                        </div>
+
+                        <div class="engine-group-box">
+                            <div class="engine-title-row">
+                                <h3>Base History Tiers</h3>
+                                <div class="engine-badge">Simple</div>
+                            </div>
+                            <div class="memory-category-summary">
+                                This is the default memory shape before any smart retrieval happens. Recent chapters stay
+                                detailed, mid-range chapters become summaries, and everything older falls back to
+                                synopsis so long stories stay manageable.
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Fulltext Chapters</label>
+                                    <input class="premium-input mini-input" type="number" min="0" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.full_chapters">
+                                    <div class="description">Newest chapters kept as full text.</div>
+                                </div>
+                                <div class="form-group mini-form-group">
+                                    <label>Summary Chapters</label>
+                                    <input class="premium-input mini-input" type="number" min="0" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.summary_chapters">
+                                    <div class="description">Next tier kept as summaries.</div>
+                                </div>
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Synopsis Chapters</label>
+                                    <input class="premium-input mini-input" type="number" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.synopsis_chapters">
+                                    <div class="description">Oldest tier kept as synopsis. Use -1 for unlimited.</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="engine-group-box">
+                            <div class="engine-title-row">
+                                <h3>Slotted RAG</h3>
+                                <div class="engine-badge">Retrieval</div>
+                            </div>
+                            <div class="memory-category-summary">
+                                Slotted RAG searches older synopsis chapters for specific relevant fragments and injects
+                                only those fragments back into the prompt. It is useful when an old detail matters, but
+                                you do not want the whole old chapter promoted.
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Auto Slot Old Chapters</label>
+                                    <select class="premium-select mini-input"
+                                        data-settings-path="infrastructure.narrative_history.auto_slot_rag_old_chapters"
+                                        data-is-boolean="true">
+                                        <option value="true">Enabled</option>
+                                        <option value="false">Disabled</option>
+                                    </select>
+                                    <div class="description">Inject relevant chunks from old synopsis chapters.</div>
+                                </div>
+                                <div class="form-group mini-form-group">
+                                    <label>Max Slotted Chunks</label>
+                                    <input class="premium-input mini-input" type="number" min="1" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.max_chunks_auto_slot_rag_old_chapters">
+                                    <div class="description">Maximum chunks injected into prompt context.</div>
+                                </div>
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Random Old-Memory Chunks</label>
+                                    <input class="premium-input mini-input" type="number" min="0" step="1" value="0"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.random_slot_rag_chunks">
+                                    <div class="description">Number of randomly selected chunks from older chapters to add alongside smart RAG results. These chunks are not selected for relevance. Use 0 to disable.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="engine-group-box">
+                            <div class="engine-title-row">
+                                <h3>Dynamic Elevation</h3>
+                                <div class="engine-badge">LOD</div>
+                            </div>
+                            <div class="memory-category-summary">
+                                Elevation promotes the most relevant old chapters from synopsis into summary or fulltext
+                                for the current turn. The budgets below are caps, so they control how much extra context
+                                the engine is allowed to spend.
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Elevation System</label>
+                                    <select class="premium-select mini-input"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.enabled"
+                                        data-is-boolean="true">
+                                        <option value="true">Enabled</option>
+                                        <option value="false">Disabled</option>
+                                    </select>
+                                    <div class="description">Promote old chapters to higher fidelity when relevant.</div>
+                                </div>
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Elevation Budget: Fulltext</label>
+                                    <input class="premium-input mini-input" type="number" min="0" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.full_chapters">
+                                    <div class="description">How many synopsis chapters can be elevated to full text.</div>
+                                </div>
+                                <div class="form-group mini-form-group">
+                                    <label>Elevation Budget: Summary</label>
+                                    <input class="premium-input mini-input" type="number" min="0" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.summary_chapters">
+                                    <div class="description">How many synopsis chapters can be elevated to summary.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="engine-group-box">
+                            <div class="engine-title-row">
+                                <h3>Arc Compression</h3>
+                                <div class="engine-badge">Optimization</div>
+                            </div>
+                            <div class="memory-category-summary">
+                                Arc compression merges long runs of distant synopsis chapters into compact story-arc
+                                capsules. This keeps ancient history present without letting many small synopsis entries
+                                crowd out the current scene.
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Arc Compression</label>
+                                    <select class="premium-select mini-input"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.enable_arc_compression"
+                                        data-is-boolean="true">
+                                        <option value="true">Enabled</option>
+                                        <option value="false">Disabled</option>
+                                    </select>
+                                    <div class="description">Compress distant synopsis ranges into dense arc summaries.</div>
+                                </div>
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Min Consecutive Chapters</label>
+                                    <input class="premium-input mini-input" type="number" min="1" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.arc_compress_old_chapter_min_threshold">
+                                    <div class="description">Minimum contiguous chapters required before compression.</div>
+                                </div>
+                                <div class="form-group mini-form-group">
+                                    <label>Only Compress Older Than (Turns)</label>
+                                    <input class="premium-input mini-input" type="number" min="1" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.arc_compress_older_chapters_than">
+                                    <div class="description">Only chapters older than this turn distance are eligible.</div>
+                                </div>
+                            </div>
+
+                            <div class="engine-config-row">
+                                <div class="form-group mini-form-group">
+                                    <label>Rollover Grace (Chapters)</label>
+                                    <input class="premium-input mini-input" type="number" min="1" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.arc_rollover_grace_chapters">
+                                    <div class="description">Batch newly old synopses before updating an open arc tile.</div>
+                                </div>
+                                <div class="form-group mini-form-group">
+                                    <label>Arc Tile Size (Chapters)</label>
+                                    <input class="premium-input mini-input" type="number" min="1" step="1"
+                                        data-value-type="number"
+                                        data-settings-path="infrastructure.narrative_history.memory_lod.arc_tile_chapters">
+                                    <div class="description">Seal reusable arc tiles after this many chapters.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="memory-lod-simulator">
+                        <div class="memory-sim-header">
+                            <div>
+                                <div class="memory-sim-kicker">Live Preview</div>
+                                <h3>Memory LOD Simulator</h3>
+                            </div>
+                            <div class="memory-sim-token-box">
+                                <span id="memory-sim-total-tokens">0</span>
+                                <small>est. tokens</small>
+                            </div>
+                        </div>
+                        <div class="memory-sim-note">
+                            This estimate only covers ongoing story memory. It does not include selected input files,
+                            plugin data, instructions, or other prompt sections. Use the Logs Inspector for the actual
+                            context size.
+                        </div>
+
+                        <div class="form-group mini-form-group memory-sim-control">
+                            <label for="memory-sim-current-turn">Current Turn Number</label>
+                            <input id="memory-sim-current-turn" class="premium-input mini-input" type="number" min="1"
+                                step="1" value="75">
+                        </div>
+
+                        <div class="memory-sim-stack" id="memory-sim-stack"></div>
+
+                        <div class="memory-sim-metrics">
+                            <div>
+                                <span id="memory-sim-full-count">0</span>
+                                <small>Fulltext</small>
+                            </div>
+                            <div>
+                                <span id="memory-sim-summary-count">0</span>
+                                <small>Summary</small>
+                            </div>
+                            <div>
+                                <span id="memory-sim-synopsis-count">0</span>
+                                <small>Synopsis</small>
+                            </div>
+                            <div>
+                                <span id="memory-sim-arc-count">0</span>
+                                <small>Arcs</small>
+                            </div>
+                        </div>
+
+                        <div class="memory-sim-legend">
+                            <span><i class="legend-full"></i> Full</span>
+                            <span><i class="legend-summary"></i> Summary</span>
+                            <span><i class="legend-synopsis"></i> Synopsis</span>
+                            <span><i class="legend-elevated"></i> Elevated</span>
+                            <span><i class="legend-arc"></i> Arc</span>
+                            <span><i class="legend-rag"></i> RAG</span>
+                            <span><i class="legend-random-rag"></i> Recall</span>
+                        </div>
+
+                        <div id="memory-sim-timeline" class="memory-sim-timeline"></div>
+
+                        <div class="memory-sim-section-title">Chapter Size Stack</div>
+                        <div class="memory-sim-section-note">
+                            Oldest chapters sit at the bottom. Green inset bars are smart RAG chunks, warm inset bars are
+                            associative recall chunks, and purple blocks are compressed arc ranges.
+                        </div>
+                        <div id="memory-sim-vertical-stack" class="memory-sim-vertical-stack"></div>
+
+                        <div id="memory-sim-summary" class="memory-sim-summary"></div>
+                    </aside>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <footer class="settings-footer">
+            <p>Fablekin &bull; All keys are saved securely using Electron SafeStorage.</p>
+        </footer>
+    </div>
+
+    <script src="renderer_settings_manager.js"></script>
+</body>
+
+</html>

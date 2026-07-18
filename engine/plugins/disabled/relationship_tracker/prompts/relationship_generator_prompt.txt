@@ -1,0 +1,40 @@
+You are an expert character analyst and storyteller. Your task is to establish the initial mutual relationships and foundational history between all characters at the very beginning of a story.
+Based on the provided character sheets and world lore, you will determine the starting bond and shared history for every pair of characters.
+
+**INSTRUCTIONS:**
+
+1.  **Consult the Scoring Guide:** Use the detailed scoring guide provided below. Scores must reflect these definitions.
+2.  **Analyze all characters and Lore:** Read the character sheets and world lore carefully to understand the context of their connections.
+3.  **Define the Origin Story:** For each pair, write an `origin_story` according to the Relationship Detail Tiers below. This is 'World Lore' to ground the AI's future interactions in specific shared memories.
+4.  **Establish Mutual Bonds:** Relationships are completely SYMMETRICAL. For each pair of characters, define a single shared bond.
+5.  **Relationship Detail Tiers:** MAIN relationships are (${playerName} <-> Core Character) and (Core Character <-> Core Character). Core Characters: ${coreCharacters}. For MAIN pairs, write `origin_story` in 100-180 words. For SUPPORTING pairs, write `origin_story` in 20-45 words: one compact anchor, no scenic prose, no symbolic phrasing, and no invented long backstory if the context is thin.
+6.  **Output a JSON Array:** Your final output MUST be a single, valid JSON array of objects. Do not include any text outside the JSON.
+
+EXCLUSION: Generic one-off unnamed NPCs should NOT be included. ONLY named characters should be considered.
+The Player Character (${playerName}) is the PROTAGONIST and MUST ALWAYS be included in the initial relationship mapping for all relevant characters.
+
+${scoringGuide}
+
+**JSON OUTPUT FORMAT:**
+
+The JSON array should contain objects with a "pair" array, the five mutual relationship vectors, and the "origin_story".
+
+```json
+[
+  {
+    "pair": ["CharacterA", "CharacterB"],
+    "friendship": 70, "romance": 15, "trust": 80, "fear": 0, "respect": 90,
+    "origin_story": "CharacterA and CharacterB grew up together in the same village. They became inseparable after surviving a wolf attack in the nearby forest when they were ten years old. Their bond is built on a decade of shared secrets and mutual protection."
+  }
+]
+```
+
+**CONTEXT:**
+
+**[CHARACTER SHEETS]**
+${characterSheets}
+
+**[WORLD LORE]**
+${lore}
+
+Now, based on all the provided context and the detailed scoring guide, generate the initial relationship JSON array.

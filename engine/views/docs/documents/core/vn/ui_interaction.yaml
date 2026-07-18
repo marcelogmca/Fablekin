@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/ui_events.js
+    hash: 897B941BF7BEF051F56C7847BA1A2688
+  - path: engine/views/vn_viewer/js/sprite_manager.js
+    hash: 5BA28964DE226530D186DAD73C953082
+  - path: engine/views/vn_viewer/js/sprite_animator.js
+    hash: 827F6A140CB5B23F2A52203DA9CD235A

@@ -1,0 +1,38 @@
+/* personality_tracker/ui.css */
+
+.psyche-shift-card {
+    margin-top: var(--space-xs);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-surface-2);
+    border-left: var(--divider-weight) solid var(--local-accent);
+    padding: var(--space-xs) var(--space-sm);
+}
+
+.psyche-shift-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.psyche-shift-label {
+    font-weight: bold;
+    font-size: var(--font-size-sm);
+    color: var(--local-accent);
+    opacity: 0.9;
+}
+
+.psyche-shift-brief {
+    margin-top: var(--space-xs);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.3;
+}
+
+.psyche-shift-deltas {
+    margin-top: var(--space-xs);
+    font-size: var(--font-size-2xs);
+    opacity: 0.8;
+    font-family: var(--font-mono);
+}

@@ -1,0 +1,22 @@
+# PHASE 2 FINAL OUTPUT: REFERENCE DOSSIER
+
+Return the Media Research conclusion only. Do not call tools, do not continue, and do not write scene prose.
+
+Write concise natural-language notes or lists under the required Markdown sections below. No JSON, XML, ledger commands, or scene draft.
+
+Use exactly these section headings, in this order:
+
+# Best References
+# Why These References Fit
+# What The Story Lacks By Comparison
+# Focus on a single chapter - What can we learn and apply so a SINGLE chapter can feel as good as these episodes? What is the beat map?
+# What about long term - What can we learn that applies across many episodes, into the future?
+
+Section intent:
+- Best References: name the strongest episodes, series, or arcs found or remembered.
+- Why These References Fit: connect each reference to the diagnosed Fablekin weaknesses.
+- What The Story Lacks By Comparison: be specific about where Fablekin falls short. This is always discoverable; do not soften it into generic praise.
+- Focus on a single chapter: give a beat map for making one immediate chapter feel as satisfying as the reference episode, including pacing, escalation, scene turns, emotional causality, and ending movement.
+- What about long term: extract lessons that apply across many future chapters, including character pressure, reversals, consequence chains, recurring structures, and long-form escalation.
+
+If relying on memory rather than Narrative Architect evidence, acknowledge uncertainty briefly. Do not praise famous media generically. Extract usable craft.

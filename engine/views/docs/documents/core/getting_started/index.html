@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Getting Started</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; line-height: 1.6; color: #e0e0e0; background-color: #0f0f0f; max-width: 800px; margin: 0 auto; }
+        h1 { color: #b83b5e; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { color: #b83b5e; margin-top: 30px; }
+        code { background: #1e1e1e; color: #ffeb3b; padding: 2px 5px; border-radius: 3px; border: 1px solid #333; }
+        .note { background: rgba(184, 59, 94, 0.1); border-left: 5px solid #b83b5e; padding: 15px; margin: 20px 0; color: #ccc; }
+        ul, ol { padding-left: 20px; }
+        li { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Getting Started</h1>
+    <p>Fablekin turns your directives, lore, and player choices into an ongoing visual story. This guide covers the shortest path from a fresh installation to your first generated turn.</p>
+
+    <h2>1. Connect a Model Provider</h2>
+    <p>Open <strong>Settings → Secrets</strong> and save an API key for one supported provider. The first provider key you save configures Fablekin's four model tiers automatically.</p>
+    <div class="note">
+        <strong>Local models:</strong> Ollama does not use an API key. Configure its connection and model routes manually under <strong>Models &amp; Routing</strong>.
+    </div>
+
+    <h2>2. Review Your Model Tiers</h2>
+    <p>Open <strong>Settings → Models &amp; Routing</strong> to review the Low, Medium, High, and Very High tiers. Each tier selects the service and concrete model used for that level of work.</p>
+    <p>Most users can keep the starter choices. <strong>Engine Management</strong> lets you choose which tier each narrative function uses.</p>
+
+    <h2>3. Create a Project</h2>
+    <p>Use the <strong>Project Selector</strong> to create a project. Fablekin creates its core content and asset folders immediately; memory and plugin-storage directories are added when a feature needs them.</p>
+
+    <h2>4. Add Story Material</h2>
+    <p>Open the <strong>Content Manager</strong> and add or edit:</p>
+    <ul>
+        <li><strong>Directives</strong> for tone, rules, perspective, and storytelling constraints.</li>
+        <li><strong>Lore</strong> for characters, locations, factions, and world information.</li>
+        <li><strong>Intro content</strong> that should be included when the story begins.</li>
+    </ul>
+    <p>Choose a content mode for each file so Fablekin knows whether to include it fully, summarize it, retrieve relevant passages, or use it only during the introduction.</p>
+
+    <h2>5. Start the Story</h2>
+    <p>Select a chronicle database, enter the opening action or premise, and generate the first turn. A turn is one story beat: Fablekin plans it, writes the prose, updates state, and prepares the visual presentation.</p>
+
+    <h2>6. Open the Viewer</h2>
+    <p>The <strong>Viewer</strong> presents the generated turn with its backgrounds, sprites, music, and any enabled plugin features. Continue by entering the next player action.</p>
+
+    <div class="note">
+        <strong>Next:</strong> Read <a href="../management/project_structure.md">Project &amp; Content Structure</a> to understand what Fablekin creates, or <a href="../narrative/llm_orchestration.md">LLM Orchestration and Global Model Routes</a> to tune model usage.
+    </div>
+</body>
+</html>

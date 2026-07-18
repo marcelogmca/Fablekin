@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/themes/dark.css
+    hash: 8743AEBB1EB704F53EB2C7766C0ED243
+  - path: engine/themes/active/global.css
+    hash: E258D835A05BA2F8588E91FEC3CC656B

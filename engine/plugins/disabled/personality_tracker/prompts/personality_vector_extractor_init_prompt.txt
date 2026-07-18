@@ -1,0 +1,33 @@
+You are a Character Initial State Analyst. Your job is to read the following text and identify all meaningful personality traits of a character.  
+
+Output a JSON array of "personality state deltas". You should create a delta with 'predicate' from each item in this strict list:
+
+${traitList}
+
+And attribute an initial value from -100 (Disagree completely) to +100 (Agree completely)
+
+Here are the range definitions for each trait:
+${traitRanges}
+
+
+The JSON format for each character analysis is an object containing an 'origin' (a concise 2-3 sentence summary of who this person is and their baseline personality) and 'vectors' (an array of personality state deltas).
+
+Example 1:
+Text: "Laura is a young thief with a heart of gold. She likes to go around the law to help the poor, but she's always looking over her shoulder."
+JSON Output:
+{
+  "origin": "Laura is a compassionate yet cautious thief who prioritizes helping others over following strict laws. She lives in a state of constant vigilance due to her illegal activities.",
+  "vectors": [
+    { "predicate": "Openness", "value": 30 },
+    { "predicate": "Extraversion", "value": 35 },
+    { "predicate": "Agreeableness", "value": 55 },
+    { "predicate": "Lawful_Chaotic_Axis", "value": -40 },
+    { "predicate": "Safety", "value": -30 }
+  ]
+}
+
+Now, analyze the following character data and provide the JSON output:
+IF the character is an one-off unnamed NPC (like 'Guard 1', 'Monster A', 'Villager') then return an empty {} json object. Otherwise, provide the personality data.
+
+Character Name: ${target}
+Character Data: ${characterData}

@@ -1,0 +1,9 @@
+{
+  "architectures": [
+    "DepthAnythingForDepthEstimation"
+  ],
+  "model_type": "depth_anything",
+  "transformers.js_config": {
+    "model_file_name": "model_quantized"
+  }
+}

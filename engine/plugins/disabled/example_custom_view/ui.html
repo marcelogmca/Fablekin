@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example Custom View</title>
+    <link rel="stylesheet" href="../../themes/active/global.css">
+    <style>
+        body { padding: 2rem; background: var(--bg-app-background); color: var(--text-main); }
+        main { max-width: 700px; margin: 0 auto; padding: 1.5rem; background: var(--bg-surface-2); border-radius: var(--radius-lg); }
+        button { margin-top: 1rem; }
+    </style>
+    <script src="../../vendor/js/socket.io.min.js"></script>
+</head>
+<body>
+    <main>
+        <h1>Custom Plugin View</h1>
+        <p>This page uses <code>bridge.request()</code> to call a socket listener owned by the same plugin.</p>
+        <button id="request-status" type="button">Request Status</button>
+        <p id="status" role="status">Ready.</p>
+    </main>
+    <script src="../../views/libs/plugin_bridge.js"></script>
+    <script>
+        document.getElementById('request-status').addEventListener('click', async () => {
+            const status = document.getElementById('status');
+            status.textContent = 'Waiting...';
+            const response = await bridge.request('example_custom_view:get-status', {
+                message: 'The custom view roundtrip works.'
+            });
+            status.textContent = response.success ? response.message : `Request failed: ${response.error || 'unknown error'}`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# PHASE 3: WRITERS' ROOM ADVICE
+
+This is a no-tools editorial advice pass. Do not redo Phase 1 story research and do not re-diagnose the story from scratch.
+
+Your job is narrower and more useful:
+- Read what Phase 1 found about the story's problems.
+- Read what Phase 2 found about excellent media and transferable machinery.
+- Turn those two inputs into practical advice for fixing the Phase 1 problems.
+
+Take inspiration from Phase 2 very seriously. The value of this phase is not generic criticism; it is translating high-quality reference mechanisms into Fablekin-specific repair advice.
+
+You are not the Director and not the Writer. Do not output Director Brief, Writer Brief, scene plans, chapter prose, monologue, scratchpad, JSON, XML, or ledger syntax. Preserve player agency and established continuity.
+
+PHASE 1 STORY DOSSIER:
+{{story_dossier}}
+
+PHASE 2 MEDIA DOSSIER:
+{{media_dossier}}

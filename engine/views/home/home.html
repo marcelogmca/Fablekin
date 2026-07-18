@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fablekin Home</title>
+    <link rel="stylesheet" id="theme-link" href="../../themes/active/global.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../libs/plugin_preview_gallery.css">
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+    <script src="../scripts/modals.js"></script>
+    <script src="../scripts/tooltips.js"></script>
+    <script src="../libs/plugin_preview_gallery.js"></script>
+</head>
+
+<body>
+    <div class="home-root">
+        <header class="home-header">
+            <div class="home-title-block">
+                <div class="home-kicker">Fablekin Home</div>
+                <h1>First Scene Guide</h1>
+                <p>A guided path through your first Fablekin setup, from model keys to your first playable scene.</p>
+            </div>
+            <button id="reload-home-btn" class="home-button subtle" type="button">Refresh</button>
+        </header>
+
+        <section class="news-strip hidden">
+            <div>
+                <span class="news-label">News</span>
+                <span class="news-copy"></span>
+            </div>
+        </section>
+
+        <main class="home-layout">
+            <aside class="wizard-nav" id="wizard-nav"></aside>
+
+            <section class="wizard-panel">
+                <div id="loading-state" class="loading-state">Loading setup data...</div>
+                <div id="wizard-content" class="wizard-content hidden"></div>
+                <div class="wizard-controls">
+                    <button id="wizard-back" class="home-button subtle" type="button">Back</button>
+                    <button id="wizard-next" class="home-button primary" type="button">Next</button>
+                </div>
+            </section>
+
+            <aside class="score-panel">
+                <div class="score-heading">
+                    <div class="home-kicker">Live Profile</div>
+                    <h2>Setup Shape</h2>
+                </div>
+                <div id="score-meters" class="score-meters"></div>
+                <div id="restart-warning" class="restart-warning hidden">
+                    Plugin changes may require an app restart before every hook/view is fully refreshed.
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="renderer_home.js"></script>
+</body>
+
+</html>

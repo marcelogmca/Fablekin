@@ -1,0 +1,56 @@
+Great. Now, based on your analysis and the events of the last turn, update your internal notebook ([CURRENT DIRECTOR STATE]).
+
+DELETE any completed events, threads, actions, etc.
+
+[MAINTENANCE PROTOCOL]
+The [CURRENT DIRECTOR STATE] below displays your active ledger entries, each prefixed with an [ID] tag.
+To update your ledger, you must output specific operation commands on separate lines. Use the exact ID from the tags below.
+
+[LEDGER IDENTITY RULE]
+Existing ledger entries are persistent notebook items. They carry forward automatically if you output no operation for them.
+DO NOT delete and recreate an entry merely to refresh wording.
+DO NOT insert a replacement for an existing ID.
+DO NOT rewrite stable entries for style, summarization, neatness, or because they are still relevant.
+Use UPDATE only when the factual meaning, status, priority, or actionable instruction has genuinely changed.
+Use DELETE only when the entry is completed, contradicted, impossible, obsolete, or intentionally retired.
+Use INSERT only for genuinely new long-lived information.
+If an entry remains true but unchanged, output nothing for it.
+
+Syntax:
+DELETE [ID] (Removes the entry with the given ID)
+UPDATE [ID] new text (Replaces the text of the given ID with new text)
+INSERT [ID] text (Creates an entirely new ledger entry with the given new ID tag)
+[ID] text (Upserts the text. If the ID exists, it updates it. If not, it creates a new entry.)
+
+Examples:
+DELETE [SB-4]
+UPDATE [CHR-2] The protagonist is now fully aware of the traitor's identity.
+INSERT [NEW-1] The weather has turned completely hostile and survival is key.
+[CHR-3] Sarah has lost her sword.
+
+
+[LEDGER FORMAT]
+The categories below are a REQUIRED COVERAGE CHECKLIST, not optional suggestions.
+Before answering, silently audit EVERY category and every currently true, unresolved, or actionable point from the story and your analysis:
+- If a relevant point already exists and is unchanged, leave it untouched.
+- If a relevant point exists but its meaning, status, priority, or instruction changed, UPDATE it.
+- If a relevant point has no ledger entry, INSERT it. Your update is incomplete if you leave such a point untracked.
+- If an entry is completed, contradicted, impossible, obsolete, or intentionally retired, DELETE it.
+- A category may remain empty only when there is genuinely nothing relevant to track in it.
+
+The categories below are a required completeness checklist, not optional suggestions.
+Before answering, silently inspect EVERY category and make sure EVERY currently true, unresolved, or actionable point from the story and your analysis already has a ledger entry. INSERT any missing point. UPDATE changed points and DELETE obsolete ones. Unchanged entries persist automatically and must not be repeated.
+
+Your ledger update is incomplete if even one relevant point is missing. A category may remain empty only when there is genuinely nothing relevant to track in it.
+
+${ledgerTemplate}
+
+[FINAL OUTPUT FORMAT]
+Use the format "--- DIRECTOR_NOTES ---" and use the syntax above to apply your changes. Ensure you don't miss anything you decided to change in your analysis.
+Before writing DIRECTOR_NOTES, audit every operation:
+- Is this DELETE retiring something, or am I just rewriting it?
+- Is this INSERT genuinely new, or replacing an existing idea?
+- Is this UPDATE changing meaning/status, or only restating?
+If the answer is restating, remove the operation.
+
+--- DIRECTOR_NOTES ---

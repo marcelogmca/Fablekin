@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/pixi_engine.js
+    hash: 619550C097A8B97A3042094BD1D4F6EB
+  - path: engine/views/vn_viewer/js/pixi_renderer.js
+    hash: A3FA6F0059B0248770FDA43549EEC5E2

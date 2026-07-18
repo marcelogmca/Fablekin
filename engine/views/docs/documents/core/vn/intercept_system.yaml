@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/intercept_orchestrator.js
+    hash: D5BEFEDC0A62CA288670B53CC9CFABF9
+  - path: engine/views/vn_viewer/js/pixi_plugin_runtime.js
+    hash: 76E7D53049701C6E100700B5A6E6FEA2
+  - path: engine/views/vn_viewer/js/pixi_takeover_manager.js
+    hash: 2AB87BDC641386C3105E27F42D930464

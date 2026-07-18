@@ -1,0 +1,1 @@
+Have the story be comedic and light hearted in nature.

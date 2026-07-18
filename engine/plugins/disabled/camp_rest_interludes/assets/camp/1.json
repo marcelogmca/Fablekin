@@ -1,0 +1,38 @@
+﻿{
+  "positions": [
+    {
+      "x": 433,
+      "y": 751,
+      "slot": "convo_1"
+    },
+    {
+      "x": 607,
+      "y": 755,
+      "slot": "convo_1"
+    },
+    {
+      "x": 996,
+      "y": 770,
+      "slot": "convo_2"
+    },
+    {
+      "x": 1377,
+      "y": 753,
+      "slot": "convo_2"
+    },
+    {
+      "x": 757,
+      "y": 755,
+      "slot": "default"
+    }
+  ],
+  "perspective_scale_far": 0.7,
+  "perspective_scale_nearby": 0.8,
+  "shadow": {
+    "enabled": true,
+    "angle_degrees": 82,
+    "strength": 0.35,
+    "length": 0.85,
+    "blur": 4
+  }
+}

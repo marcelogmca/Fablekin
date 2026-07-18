@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/memory_manager/processing/memory_lod.js
+    hash: A4EE4F5600387C09F2DFF37CFBAFA297
+  - path: engine/modules/memory_manager/processing/chapter_processor.js
+    hash: 5CBFB4ADF06C28427F1FFD777013FC73

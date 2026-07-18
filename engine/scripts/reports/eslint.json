@@ -1,0 +1,5914 @@
+[
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\main.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\chaptermanagement.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\config\\core_directives.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\config\\core_folders.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\config\\global_settings_store.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\config\\project_config_store.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\content_manager\\content_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\content_manager\\operations\\cache_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\content_manager\\operations\\config_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\content_manager\\operations\\directory_processor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\director.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\llm.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\bootstrap\\app_startup.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\bootstrap\\socket_connection.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\bootstrap\\socket_emit_helpers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\bootstrap\\socket_event_routes.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\bootstrap\\socket_frontend_injection.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\bootstrap\\socket_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\bootstrap\\window_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\chapter_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\file_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\home_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\log_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\memory_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\player_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\project_handlers_base.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\project_select_handler.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\scene_history_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\settings_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\socket_plugin_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\ui_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\handlers\\vn_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\secure_storage.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\shared\\log_retention.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\shared\\path_guard.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\main_process\\state\\runtime_socket_state.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\diagnostics\\memory_browser_cli.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\memory_config.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\memory_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\processing\\chapter_processor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\processing\\memory_lod.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\processing\\memory_lod.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\processing\\summarization_service.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\retrieval\\memory_retriever.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\retrieval\\query_generator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\retrieval\\rag_pipeline.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\devcache.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\fact_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\static_data_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\memory_manager\\storage\\vector_store_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\narrativeengine.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\pipeline_cancellation.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\plugin_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\assets_tools.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\errors.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\hook_executor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\jobs_tools.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\loader.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\tools_builder.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\runtime\\turns_tools.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\plugin_manager\\script_security.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\prompt_builder.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\turn_runner\\run_profiles.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\turn_runner\\turn_runner.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\turn_storage_key.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\turncontext.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\utils.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\utils\\doc_scanner.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\character_bootstrapper.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\dialogue_processor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\emotion_classifier.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\focus_analyzer.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\genderguesser.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\narrative_analyzer.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\scene_phase_classifier.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\scene_phase_classifier.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\analysis\\sprite_variant_orchestrator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\helpers\\text_formatting.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\helpers\\variant_applicator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\asset_selector.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\background_asset_helpers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\background_asset_helpers.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\cast_enter_compiler.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\cast_enter_compiler.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\composition_positioner.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\composition_positioner.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\spatial_stage_projection.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\spatial_stage_projection.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\sprite_finder.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\sprite_finder_generic_profiles.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\sprite_metadata.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\sprite_positioner.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\rendering\\thumbnail_generator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\sequence_api.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\spatial_stage_sidecar_service.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\timeline.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\ucp_parser.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\vn_manager\\vn_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\modules\\writer_prompt_snapshot.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\adventure_book\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\adventure_book\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\adventure_book\\logic.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\adventure_book\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\cg_prompting.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\logic.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\palette_extraction.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\pixi_takeover.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\poem_prompting.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\arc_cinematics\\prompt_templates.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\camp_rest_interludes\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\camp_rest_interludes\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\camp_rest_interludes\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\camp_rest_interludes\\ui_scene_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\cg_generator\\character_references.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\cg_generator\\frontend_injection.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\cg_generator\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\cg_generator\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\cg_generator\\providers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_classifier\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_classifier\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_recall\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\auditor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\discovery.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\identity.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\parser.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\sanitizer.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\schema_adapter.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\storage.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\libs\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\character_sheets\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\grand_story_planner\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\grand_story_planner\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\knowledge_graph\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\knowledge_graph\\lib\\knowledge_graph.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\knowledge_graph\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\knowledge_graph\\views\\renderer_kg.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\lore_book\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\lore_book\\libs\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\lore_book\\libs\\ui_logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\lore_book\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\memory_recall\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\memory_recall\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_architect\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_architect\\init_db.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_architect\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_architect\\prompts.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_architect\\tags.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_pacing\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\narrative_pacing\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\output_size_controller\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\output_size_controller\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\personality_tracker\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\personality_tracker\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\post_writer_consistency_checker\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\post_writer_consistency_checker\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\commands\\rel_command.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\hooks\\background_processor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\hooks\\cleanup.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\hooks\\new_character_bootstrapper.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\hooks\\pre_prompt_bootstrapper.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\hooks\\prompt_injector.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\archetypes.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\change_extractor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\config.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\db_operations.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\initial_generator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\relevance.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\rolling_ledger.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\logic\\scoring.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\sockets\\hud_listener.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\relationship_tracker\\timeline\\bonds_provider.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\sprite_shading\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\sprite_shading\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\authoring\\encounter_facade_compiler.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\authoring\\encounter_facade_compiler.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\authoring\\encounter_generation.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\authoring\\encounter_generation.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\authoring\\encounter_script_compiler.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\authoring\\encounter_script_compiler.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\overlay\\ui_controller.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\audio_controller.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\combat_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\combat_scene_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounter_loader.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounter_schema.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\ability_showcase_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\basic_wave_clear_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\boss_duel_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\capture_zones_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\emitter_core_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\emitter_showcase_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\example_encounter.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\hazard_showcase_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\line_accel_sine_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone10_sequence_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone11_player_kits_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone12_status_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone13_pickups_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone14_arena_modifiers_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone15_render_feedback_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone16_audio_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone17_results_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone18_fairness_warning_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone18_invalid_refs_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone18_oversized_budget_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone18_valid_authoring_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone6_enemy_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone7_boss_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone8_hazards_objects_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\milestone9_objectives_fixture.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\projectile_showcase_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\protect_object_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\survive_timer_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\encounters\\weird_llm_showcase_example.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\enemy_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\entity_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\event_bus.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\input_controller.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\patterns\\pattern_registry.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\player_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\registries\\action_registry.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\registries\\behavior_registry.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\registries\\trigger_registry.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\renderer_layers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\result_builder.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\rng.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\sequence_runner.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\shooter_game_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\frontend\\runtime\\v1_capability_profile.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\logic.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\top_down_shooter_gameplay_interludes\\ui_scene_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\tts_core\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_alive_bg\\alive-bg-depth.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_alive_bg\\alive-bg-pipeline.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_alive_bg\\depth-worker.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_alive_bg\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_alive_bg\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_cinematographer\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_hud\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_hud\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+                                   {
+                                       "ruleId":  "no-undef",
+                                       "severity":  2,
+                                       "message":  "\u0027VFX_SETTINGS\u0027 is not defined.",
+                                       "line":  35,
+                                       "column":  68,
+                                       "messageId":  "undef",
+                                       "endLine":  35,
+                                       "endColumn":  80,
+                                       "suppressions":  [
+                                                            {
+                                                                "kind":  "directive",
+                                                                "justification":  ""
+                                                            }
+                                                        ]
+                                   }
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-catalog.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-catalog.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-constants.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-containers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-events.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-filters.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-helpers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+                                   {
+                                       "ruleId":  "no-undef",
+                                       "severity":  2,
+                                       "message":  "\u0027SHADER_VERT\u0027 is not defined.",
+                                       "line":  57,
+                                       "column":  53,
+                                       "messageId":  "undef",
+                                       "endLine":  57,
+                                       "endColumn":  64,
+                                       "suppressions":  [
+                                                            {
+                                                                "kind":  "directive",
+                                                                "justification":  ""
+                                                            }
+                                                        ]
+                                   }
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-intro.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-particles.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_pixijs_vfx\\vfx-tick.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_sfx\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\vn_sfx\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\form_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\interaction_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\map_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\state.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\ui.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\ui_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\editor\\utils.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\travel_takeover.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\ui_hud.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_location_tracker\\ui_timeline.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_simulator\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_simulator\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_simulator\\logic.test.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_state_tracker\\index.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\plugins\\world_state_tracker\\logic.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\renderer.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\scripts\\docs_coverage.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\scripts\\docs_indexer.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\scripts\\eslint.config.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\scripts\\launch_fablekin.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\titlebar.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\directives.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\drag_drop.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\file_actions.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\player_metadata.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\socket_handlers.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\state.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\ui_renderer.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\modules\\utils.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\content_manager\\renderer_content_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\docs\\renderer_docs.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\home\\renderer_home.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\libs\\plugin_bridge.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\libs\\premium_select.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\libs\\socket_bootstrap.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\log_viewer\\renderer_logs.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\memory_inspector\\renderer_memory.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\memory_inspector\\terminal_commands.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\plugin_manager\\renderer_plugin_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\project_selector\\renderer_project_selector.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\scene_history\\renderer_scene_history.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\scripts\\modals.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\scripts\\tooltips.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\settings_manager\\renderer_settings_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\timeline\\renderer_timeline.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\animated_webp_loader.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\elements.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\engine.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\intercept_actor_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\intercept_background_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\intercept_orchestrator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\modules\\audio_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\modules\\dialogue_orchestrator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\modules\\director_sync.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\modules\\generation_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\modules\\payload_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\modules\\status_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\modules\\ui_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_engine.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_game_over.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_plugin_runtime.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_renderer.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_spatial_stage.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_sprite_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_sprite_shadows.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_takeover_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\pixi_title_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\settings_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\socket_handler.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\spatial_stage_calibrator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\sprite_animator.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\sprite_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\state.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\transition_manager.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\ui_events.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\utils.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\vn_api.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\vn_ucp_compiler.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\js\\vn_ucp_dispatcher.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    },
+    {
+        "filePath":  "C:\\Users\\ineyv\\Documents\\Repos\\llmproj\\engine\\views\\vn_viewer\\renderer_vn.js",
+        "messages":  [
+
+                     ],
+        "suppressedMessages":  [
+
+                               ],
+        "errorCount":  0,
+        "fatalErrorCount":  0,
+        "warningCount":  0,
+        "fixableErrorCount":  0,
+        "fixableWarningCount":  0,
+        "usedDeprecatedRules":  [
+
+                                ]
+    }
+]

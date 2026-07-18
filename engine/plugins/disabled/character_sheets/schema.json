@@ -1,0 +1,190 @@
+{
+  "config": {
+    "naming_convention": "PYRAMID OF PERSONA",
+    "layer_prefix": "LAYER"
+  },
+  "fields": [
+    {
+      "id": "biography",
+      "predicate": "CHAR_SHEET:BIOGRAPHY",
+      "label": "HIGH-LEVEL SUMMARY",
+      "resolution": 1,
+      "instructions": "A concise overview of who the character is, their gender, their role in the world, and their general vibe. This should function as a 'quick start' for anyone to immediately understand the character’s essence.",
+      "use_as_brief": true,
+      "behavior": {
+        "immutable": true
+      }
+    },
+    {
+      "id": "physical_appearance",
+      "predicate": "CHAR_SHEET:PHYSICAL_APPEARANCE",
+      "label": "PHYSICAL APPEARANCE",
+      "priority": "hard",
+      "resolution": 1,
+      "instructions": "A summary containing every notable baseline physical trait of the character, including hair, eyes, height, build, and distinguishing marks. This is the immutable baseline; do not include temporary injuries, outfit changes, grooming changes, or newly discovered story-state details here. Those belong in APPEARANCE & OUTFIT CONTINUITY.",
+      "behavior": {
+        "immutable": true
+      }
+    },
+    {
+      "id": "expression_style",
+      "predicate": "CHAR_SHEET:EXPRESSION_STYLE",
+      "label": "THE EXPRESSION LAYER",
+      "resolution": 1,
+      "instructions": "Vocal & Speech Patterns (cadence, vocabulary, tics) and Physicality & Mannerisms (posture, demeanor, signature gestures, resting face).",
+      "behavior": {
+        "immutable": true
+      }
+    },
+    {
+      "id": "current_context",
+      "predicate": "CHAR_SHEET:CURRENT_CONTEXT",
+      "label": "CURRENT CONTEXT",
+      "resolution": 1,
+      "instructions": "A concise description of the character’s current whereabouts and immediate activity.",
+      "behavior": {
+        "managed_by": "world_location_tracker"
+      }
+    },
+    {
+      "id": "personality_profile",
+      "predicate": "CHAR_SHEET:PERSONALITY_PROFILE",
+      "label": "PERSONALITY BLUEPRINT",
+      "resolution": 2,
+      "instructions": "The character's primary personality traits and general disposition. For core characters, include a Big Five (OCEAN) profile and Mental Model.",
+      "behavior": {
+        "managed_by": "personality_tracker"
+      }
+    },
+    {
+      "id": "affinities_preferences",
+      "predicate": "CHAR_SHEET:AFFINITIES_PREFERENCES",
+      "label": "AFFINITIES & PREFERENCES",
+      "resolution": 2,
+      "instructions": "Track durable likes, dislikes, interests, comfort cues, aversions, and person-specific affinities that help portray this character consistently. Distinguish stated preferences (what the character claims to like or dislike), demonstrated interests (what repeated behavior shows), person-specific affinities using directional notes such as \"John -> Stella\", aversions or discomforts that reliably repel or unsettle them, and contradictions where stated claims differ from observed behavior. Keep entries concrete and grounded in evidence, and avoid treating one-off scene reactions as stable preferences. Clean examples: \"John claims to admire people with green eyes.\" \"John -> Stella: John likes how Stella speaks her mind without apologizing.\" \"Mira relaxes around dry humor and quiet competence.\" \"Talia says she dislikes praise, but visibly softens when it is specific and sincere.\"",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "knowledge",
+      "predicate": "CHAR_SHEET:KNOWLEDGE",
+      "label": "COMPETENCE AND KNOWLEDGE",
+      "resolution": 3,
+      "instructions": "1. What is the character a master of? 2. What are they specifically ignorant of? High tech? Magic? Politics? 3. Street Smarts VS Scientific Level knowledge - Is the character going to understand a complex scientific situation or a highly complex technical thing? But is the character smart none the less? Perhaps a character from an isolated fantasy village might not understand a complex scientific/techy/magical situation, but they might be smart enough to navigate and rationalize it in their own way.",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "social_connections",
+      "predicate": "CHAR_SHEET:SOCIAL_CONNECTIONS",
+      "label": "RELATIONSHIPS",
+      "resolution": 2,
+      "instructions": "List every known character connected to this character and clearly state the nature and current status of each relationship.",
+      "behavior": {
+        "managed_by": "relationship_tracker"
+      }
+    },
+    {
+      "id": "narrative_arc_status",
+      "predicate": "CHAR_SHEET:NARRATIVE_ARC",
+      "label": "CHARACTER ARC & STATE",
+      "resolution": 2,
+      "instructions": "Summarize the character’s emotional journey and story involvement so far.",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "background_history",
+      "predicate": "CHAR_SHEET:BACKGROUND_LORE",
+      "label": "BACKGROUND LORE",
+      "resolution": 2,
+      "instructions": "Create a detailed summary of the character’s personal history, upbringing, and all important lore-related events. Typically 300-1000 words.",
+      "behavior": {
+        "immutable": true
+      }
+    },
+    {
+      "id": "outfits_and_accessories",
+      "predicate": "CHAR_SHEET:OUTFITS_ACCESSORIES",
+      "label": "CLOTHES",
+      "resolution": 2,
+      "instructions": "List the character's default wardrobe, known owned outfits, articles of clothing, and accessories. This is the immutable wardrobe baseline; current outfit changes, temporary accessories, damage, stains, or story-state styling belong in APPEARANCE & OUTFIT CONTINUITY.",
+      "behavior": {
+        "immutable": true
+      }
+    },
+    {
+      "id": "appearance_continuity",
+      "predicate": "CHAR_SHEET:APPEARANCE_CONTINUITY",
+      "label": "APPEARANCE & OUTFIT CONTINUITY",
+      "resolution": 2,
+      "instructions": "Track story-learned or story-changed visual details that supplement, modify, or temporarily override the immutable baseline appearance and clothes layers. Preserve the exact specificity of the source: if the story names a specific body area, item, texture, style, speaker preference, target, or timeframe, keep that qualifier rather than broadening it into a generic appearance note. If a source distinguishes one localized feature from another, keep that distinction explicitly. Include persistent discovered physical details, current outfit/accessory changes, grooming changes, localized grooming details, injuries, scars, dirt, blood, wear, and other visual continuity. Do not invent subdetails such as sides, tips, scent, texture, color, styling, exact placement, or length unless the recent history directly states them or they already exist in this continuity layer. Distinguish persistent facts from temporary/current state. Do not restate the baseline unless the story changed or newly revealed something. Use objective visual continuity notes only. Do not write story prose, emotional interpretation, or scene choreography.",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "voice_samples",
+      "predicate": "CHAR_SHEET:VOICE_SAMPLES",
+      "label": "REAL VOICE LINE EXAMPLES",
+      "resolution": 2,
+      "instructions": "Provide up to six dialogue examples portraying different facets of their personality.",
+      "behavior": {
+        "immutable": true
+      }
+    },
+    {
+      "id": "core_motivation",
+      "predicate": "CHAR_SHEET:CORE_MOTIVATION",
+      "label": "THE CORE MOTIVATOR",
+      "resolution": 3,
+      "instructions": "Core Motivation Statement: 'Shaped by [Past Event], [Name]'s core drive is the conflict between [Need A] and [Desire B].' Plus Three Core Values (Moral Compass).",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "paradox_and_evolution",
+      "predicate": "CHAR_SHEET:PARADOX_EVOLUTION",
+      "label": "THE PARADOX & TRAJECTORY",
+      "resolution": 3,
+      "instructions": "Describe The Public Mask vs Private Reality. List 'Cracks in the Armor' (contextual triggers). Finally, provide The Evolutionary Arc.",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "intimacy_profile",
+      "predicate": "CHAR_SHEET:INTIMACY_PROFILE",
+      "label": "INTIMACY PROFILE",
+      "resolution": 3,
+      "instructions": "Romantic Dynamics, Relationship Paradigm, Attraction Catalysts, Intimacy Threshold, and Affection Style.",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "dynamic_growth_engine",
+      "predicate": "CHAR_SHEET:DYNAMIC_GROWTH",
+      "label": "DYNAMIC ENGINE",
+      "resolution": 3,
+      "instructions": "Behavior when regressing/under stress vs integrated/thriving. Negative vs Positive traits and growth actions.",
+      "behavior": {
+        "immutable": false
+      }
+    },
+    {
+      "id": "recent_echoes",
+      "predicate": "CHAR_SHEET:RECENT_ECHOES",
+      "label": "RECENT INNER THOUGHTS",
+      "resolution": 3,
+      "instructions": "Private introspections and inner monologues of the character.",
+      "behavior": {
+        "managed_by": "character_echoes"
+      }
+    }
+  ]
+}

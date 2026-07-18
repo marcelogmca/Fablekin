@@ -1,0 +1,6 @@
+BEGIN_TDS_ENCOUNTER_FACADE
+encounter "V1 Minimal Wave" id v1_minimal_wave length=short difficulty=easy mode=waves bg=#c9a36a
+style readable
+wave chaser_intro enemy=chaser count=small pressure=light pattern=fan spawn=edge pickup=none
+wave turret_intro enemy=turret count=small pressure=light pattern=spiral spawn=random pickup=none
+END_TDS_ENCOUNTER_FACADE

@@ -1,0 +1,814 @@
+{
+  "statusEffects": {
+    "haste_aura": {
+      "id": "haste_aura",
+      "category": "buff",
+      "durationSeconds": 8,
+      "maxStacks": 3,
+      "tickIntervalSeconds": 0.5,
+      "modifiers": [
+        {
+          "type": "movement_scalar",
+          "value": 1.12,
+          "perStack": true
+        },
+        {
+          "type": "outgoing_damage_scalar",
+          "value": 1.08,
+          "perStack": true
+        }
+      ],
+      "onApplyActions": [
+        {
+          "type": "show_banner",
+          "text": "Haste aura online."
+        }
+      ],
+      "onExpireActions": [
+        {
+          "type": "show_banner",
+          "text": "Haste aura faded."
+        }
+      ]
+    },
+    "guarded_window": {
+      "id": "guarded_window",
+      "category": "buff",
+      "durationSeconds": 2.2,
+      "maxStacks": 1,
+      "tickIntervalSeconds": 0.25,
+      "modifiers": [
+        {
+          "type": "incoming_damage_scalar",
+          "value": 0.45
+        },
+        {
+          "type": "mitigation_window_flag",
+          "value": 1
+        },
+        {
+          "type": "regen_per_second",
+          "value": 0.35
+        }
+      ],
+      "onApplyActions": [
+        {
+          "type": "show_banner",
+          "text": "Guard window active."
+        }
+      ],
+      "onExpireActions": [
+        {
+          "type": "show_banner",
+          "text": "Guard window ended."
+        }
+      ]
+    },
+    "glass_bleed": {
+      "id": "glass_bleed",
+      "category": "debuff",
+      "durationSeconds": 6,
+      "maxStacks": 4,
+      "tickIntervalSeconds": 0.5,
+      "modifiers": [
+        {
+          "type": "bleed_per_second",
+          "value": 0.45,
+          "perStack": true
+        },
+        {
+          "type": "incoming_damage_scalar",
+          "value": 1.06,
+          "perStack": true
+        }
+      ],
+      "onApplyActions": [
+        {
+          "type": "show_banner",
+          "text": "Glass bleed applied."
+        }
+      ],
+      "onExpireActions": [
+        {
+          "type": "show_banner",
+          "text": "Glass bleed cleared."
+        }
+      ]
+    },
+    "mud_slow": {
+      "id": "mud_slow",
+      "category": "debuff",
+      "durationSeconds": 4,
+      "maxStacks": 2,
+      "tickIntervalSeconds": 1,
+      "modifiers": [
+        {
+          "type": "movement_scalar",
+          "value": 0.72,
+          "perStack": true
+        }
+      ],
+      "onApplyActions": [
+        {
+          "type": "show_banner",
+          "text": "Movement slowed."
+        }
+      ],
+      "onExpireActions": [
+        {
+          "type": "show_banner",
+          "text": "Movement restored."
+        }
+      ]
+    }
+  },
+  "hazards": {
+    "storm_damage": {
+      "hazardId": "storm_damage",
+      "type": "damage_circle",
+      "shape": "circle",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "radius": 185,
+      "width": 370,
+      "length": 370,
+      "angle": 0,
+      "durationSeconds": 7,
+      "tickIntervalSeconds": 0.45,
+      "damage": 1,
+      "force": 0,
+      "growthPerSecond": 0,
+      "statusOnHit": "glass_bleed",
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "damage_circle",
+        "fillColor": 16718440,
+        "strokeColor": 16758988,
+        "fillAlpha": 0.18,
+        "strokeAlpha": 0.9,
+        "lineWidth": 2.8
+      },
+      "tags": [
+        "damage",
+        "area_denial"
+      ]
+    },
+    "force_lane": {
+      "hazardId": "force_lane",
+      "type": "push_zone",
+      "shape": "line",
+      "source": {
+        "type": "fixed_point",
+        "x": -260,
+        "y": 0
+      },
+      "radius": 90,
+      "width": 120,
+      "length": 760,
+      "angle": 0,
+      "durationSeconds": 8,
+      "tickIntervalSeconds": 0.12,
+      "damage": 0,
+      "force": 190,
+      "growthPerSecond": 0,
+      "statusOnHit": null,
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "wind_lane",
+        "fillColor": 5299455,
+        "strokeColor": 9221375,
+        "fillAlpha": 0.13,
+        "strokeAlpha": 0.78,
+        "lineWidth": 2.2
+      },
+      "tags": [
+        "movement",
+        "lane"
+      ]
+    },
+    "pull_well": {
+      "hazardId": "pull_well",
+      "type": "pull_zone",
+      "shape": "circle",
+      "source": {
+        "type": "fixed_point",
+        "x": 340,
+        "y": -240
+      },
+      "radius": 220,
+      "width": 440,
+      "length": 440,
+      "angle": 0,
+      "durationSeconds": 6,
+      "tickIntervalSeconds": 0.16,
+      "damage": 0,
+      "force": 160,
+      "growthPerSecond": 0,
+      "statusOnHit": "mud_slow",
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "gravity_well",
+        "fillColor": 6309119,
+        "strokeColor": 11865343,
+        "fillAlpha": 0.16,
+        "strokeAlpha": 0.82,
+        "lineWidth": 2.4
+      },
+      "tags": [
+        "movement",
+        "control"
+      ]
+    },
+    "healing_corner": {
+      "hazardId": "healing_corner",
+      "type": "healing_zone",
+      "shape": "circle",
+      "source": {
+        "type": "fixed_point",
+        "x": -560,
+        "y": 420
+      },
+      "radius": 145,
+      "width": 290,
+      "length": 290,
+      "angle": 0,
+      "durationSeconds": 10,
+      "tickIntervalSeconds": 1,
+      "damage": 1,
+      "force": 0,
+      "growthPerSecond": 0,
+      "statusOnHit": null,
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "healing_zone",
+        "fillColor": 6684506,
+        "strokeColor": 10485690,
+        "fillAlpha": 0.18,
+        "strokeAlpha": 0.9,
+        "lineWidth": 2.5
+      },
+      "tags": [
+        "safe-ish",
+        "recovery"
+      ]
+    },
+    "bullet_clear_field": {
+      "hazardId": "bullet_clear_field",
+      "type": "bullet_clear_zone",
+      "shape": "circle",
+      "source": {
+        "type": "fixed_point",
+        "x": 520,
+        "y": 420
+      },
+      "radius": 150,
+      "width": 300,
+      "length": 300,
+      "angle": 0,
+      "durationSeconds": 4,
+      "tickIntervalSeconds": 0.2,
+      "damage": 0,
+      "force": 0,
+      "growthPerSecond": 0,
+      "statusOnHit": null,
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "bullet_clear_zone",
+        "fillColor": 5885439,
+        "strokeColor": 9756415,
+        "fillAlpha": 0.14,
+        "strokeAlpha": 0.86,
+        "lineWidth": 2.6
+      },
+      "tags": [
+        "defense",
+        "bullet_clear"
+      ]
+    },
+    "safe_zone": {
+      "hazardId": "safe_zone",
+      "type": "safe_zone",
+      "shape": "zone_outline",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "radius": 260,
+      "width": 520,
+      "length": 520,
+      "angle": 0,
+      "durationSeconds": 9,
+      "tickIntervalSeconds": 0.5,
+      "damage": 0,
+      "force": 0,
+      "growthPerSecond": 0,
+      "statusOnHit": null,
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "safe_zone",
+        "fillColor": 4202751,
+        "strokeColor": 7858175,
+        "fillAlpha": 0.08,
+        "strokeAlpha": 0.88,
+        "lineWidth": 3
+      },
+      "tags": [
+        "safe",
+        "objective_space"
+      ]
+    },
+    "expanding_ring": {
+      "hazardId": "expanding_ring",
+      "type": "expanding_ring",
+      "shape": "ring",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "radius": 120,
+      "width": 240,
+      "length": 240,
+      "angle": 0,
+      "durationSeconds": 5,
+      "tickIntervalSeconds": 0.35,
+      "damage": 1,
+      "force": 45,
+      "growthPerSecond": 75,
+      "statusOnHit": "glass_bleed",
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "expanding_ring",
+        "fillColor": 16737095,
+        "strokeColor": 16764225,
+        "fillAlpha": 0.12,
+        "strokeAlpha": 0.9,
+        "lineWidth": 3.2
+      },
+      "tags": [
+        "damage",
+        "expanding"
+      ]
+    },
+    "laser_wall": {
+      "hazardId": "laser_wall",
+      "type": "damage_zone",
+      "shape": "laser_wall",
+      "source": {
+        "type": "fixed_point",
+        "x": 0,
+        "y": -460
+      },
+      "radius": 80,
+      "width": 760,
+      "length": 74,
+      "angle": 0,
+      "durationSeconds": 3.5,
+      "tickIntervalSeconds": 0.25,
+      "damage": 1,
+      "force": 25,
+      "growthPerSecond": 0,
+      "statusOnHit": null,
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "laser_wall",
+        "fillColor": 16724840,
+        "strokeColor": 16770639,
+        "fillAlpha": 0.2,
+        "strokeAlpha": 0.96,
+        "lineWidth": 3.4
+      },
+      "tags": [
+        "damage",
+        "line"
+      ]
+    },
+    "cone_blast": {
+      "hazardId": "cone_blast",
+      "type": "damage_cone",
+      "shape": "cone",
+      "source": {
+        "type": "fixed_point",
+        "x": 0,
+        "y": 520
+      },
+      "radius": 120,
+      "width": 240,
+      "length": 520,
+      "angle": -1.57,
+      "durationSeconds": 2.75,
+      "tickIntervalSeconds": 0.3,
+      "damage": 1,
+      "force": 80,
+      "growthPerSecond": 0,
+      "statusOnHit": "glass_bleed",
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "cone_blast",
+        "fillColor": 16741632,
+        "strokeColor": 16764723,
+        "fillAlpha": 0.16,
+        "strokeAlpha": 0.9,
+        "lineWidth": 2.8
+      },
+      "tags": [
+        "damage",
+        "cone"
+      ]
+    },
+    "core_overload_pulse": {
+      "hazardId": "core_overload_pulse",
+      "type": "damage_circle",
+      "shape": "circle",
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "radius": 240,
+      "width": 480,
+      "length": 480,
+      "angle": 0,
+      "durationSeconds": 1.8,
+      "tickIntervalSeconds": 0.25,
+      "damage": 1,
+      "force": 120,
+      "growthPerSecond": 45,
+      "statusOnHit": "glass_bleed",
+      "affectTeams": [
+        "player"
+      ],
+      "render": {
+        "preset": "overload_pulse",
+        "fillColor": 16731392,
+        "strokeColor": 16777215,
+        "fillAlpha": 0.2,
+        "strokeAlpha": 1,
+        "lineWidth": 3.5
+      },
+      "tags": [
+        "damage",
+        "object_death"
+      ]
+    }
+  },
+  "objects": {
+    "defense_core": {
+      "objectId": "defense_core",
+      "type": "protect_target",
+      "team": "ally",
+      "hp": 42,
+      "radius": 38,
+      "source": {
+        "type": "arena_center",
+        "x": 0,
+        "y": 0
+      },
+      "tags": [
+        "objective",
+        "protect"
+      ],
+      "render": {
+        "preset": "object_default",
+        "fillColor": 6466047,
+        "strokeColor": 11917055,
+        "fillAlpha": 0.22,
+        "strokeAlpha": 0.9,
+        "lineWidth": 2.6
+      },
+      "onDestroyed": [
+        {
+          "type": "show_banner",
+          "text": "Defense core destroyed."
+        },
+        {
+          "type": "spawn_hazard",
+          "hazard": "core_overload_pulse",
+          "at": {
+            "type": "arena_center",
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "onDamaged": [
+        {
+          "type": "show_banner",
+          "text": "Defense core taking damage."
+        }
+      ],
+      "pickupDrops": [
+        {
+          "pickup": "heal_orb_small",
+          "weight": 1
+        }
+      ],
+      "protect": true,
+      "escort": false,
+      "capture": false
+    },
+    "capture_anchor": {
+      "objectId": "capture_anchor",
+      "type": "capture_point",
+      "team": "neutral",
+      "hp": 999,
+      "radius": 52,
+      "source": {
+        "type": "fixed_point",
+        "x": -420,
+        "y": 360
+      },
+      "tags": [
+        "objective",
+        "capture"
+      ],
+      "render": {
+        "preset": "objective_default",
+        "fillColor": 6466047,
+        "strokeColor": 16766276,
+        "fillAlpha": 0.18,
+        "strokeAlpha": 0.92,
+        "lineWidth": 2.8
+      },
+      "onDestroyed": [
+        {
+          "type": "show_banner",
+          "text": "Capture anchor disabled."
+        }
+      ],
+      "onDamaged": [
+        {
+          "type": "show_banner",
+          "text": "Capture anchor contested."
+        }
+      ],
+      "pickupDrops": [],
+      "protect": false,
+      "escort": false,
+      "capture": true
+    },
+    "shield_generator": {
+      "objectId": "shield_generator",
+      "type": "shield_generator",
+      "team": "ally",
+      "hp": 28,
+      "radius": 32,
+      "source": {
+        "type": "fixed_point",
+        "x": 440,
+        "y": -320
+      },
+      "tags": [
+        "support",
+        "generator"
+      ],
+      "render": {
+        "preset": "object_default",
+        "fillColor": 8109055,
+        "strokeColor": 12439551,
+        "fillAlpha": 0.2,
+        "strokeAlpha": 0.9,
+        "lineWidth": 2.5
+      },
+      "onDestroyed": [
+        {
+          "type": "show_banner",
+          "text": "Shield generator destroyed."
+        },
+        {
+          "type": "spawn_pickup",
+          "pickup": "shield_pickup",
+          "at": {
+            "type": "fixed_point",
+            "x": 440,
+            "y": -320
+          }
+        }
+      ],
+      "onDamaged": [
+        {
+          "type": "apply_status",
+          "target": "player",
+          "status": "guarded_window",
+          "stacks": 1
+        }
+      ],
+      "pickupDrops": [
+        {
+          "pickup": "shield_pickup",
+          "weight": 0.65
+        },
+        {
+          "pickup": "cooldown_reset_core",
+          "weight": 0.35
+        }
+      ],
+      "protect": false,
+      "escort": false,
+      "capture": false
+    },
+    "escort_beacon": {
+      "objectId": "escort_beacon",
+      "type": "destructible",
+      "team": "ally",
+      "hp": 20,
+      "radius": 26,
+      "source": {
+        "type": "fixed_point",
+        "x": 0,
+        "y": 520
+      },
+      "tags": [
+        "objective",
+        "escort"
+      ],
+      "render": {
+        "preset": "object_default",
+        "fillColor": 16757570,
+        "strokeColor": 16770639,
+        "fillAlpha": 0.18,
+        "strokeAlpha": 0.9,
+        "lineWidth": 2.5
+      },
+      "onDestroyed": [
+        {
+          "type": "show_banner",
+          "text": "Escort beacon lost."
+        }
+      ],
+      "onDamaged": [
+        {
+          "type": "show_banner",
+          "text": "Escort beacon hit."
+        }
+      ],
+      "pickupDrops": [
+        {
+          "pickup": "charge_pickup",
+          "weight": 1
+        }
+      ],
+      "protect": false,
+      "escort": true,
+      "capture": false
+    }
+  },
+  "pickups": {
+    "heal_orb_small": {
+      "id": "heal_orb_small",
+      "type": "heal_orb",
+      "radius": 18,
+      "durationSeconds": 12,
+      "maxAlive": 6,
+      "effectActions": [
+        {
+          "type": "show_banner",
+          "text": "Heal orb collected."
+        }
+      ],
+      "dropWeight": 1,
+      "statusOnPickup": null,
+      "render": {
+        "preset": "heal_orb",
+        "color": 7536554,
+        "fillAlpha": 0.45,
+        "strokeAlpha": 0.95,
+        "lineWidth": 2
+      }
+    },
+    "cooldown_reset_core": {
+      "id": "cooldown_reset_core",
+      "type": "cooldown_reset",
+      "radius": 20,
+      "durationSeconds": 10,
+      "maxAlive": 3,
+      "effectActions": [
+        {
+          "type": "show_banner",
+          "text": "Cooldowns reset."
+        }
+      ],
+      "dropWeight": 0.45,
+      "statusOnPickup": null,
+      "render": {
+        "preset": "cooldown_reset",
+        "color": 7987199,
+        "fillAlpha": 0.45,
+        "strokeAlpha": 0.95,
+        "lineWidth": 2
+      }
+    },
+    "shield_pickup": {
+      "id": "shield_pickup",
+      "type": "shield_pickup",
+      "radius": 20,
+      "durationSeconds": 9,
+      "maxAlive": 3,
+      "effectActions": [
+        {
+          "type": "apply_status",
+          "target": "player",
+          "status": "guarded_window",
+          "stacks": 1
+        }
+      ],
+      "dropWeight": 0.55,
+      "statusOnPickup": null,
+      "render": {
+        "preset": "shield_pickup",
+        "color": 12439551,
+        "fillAlpha": 0.42,
+        "strokeAlpha": 0.95,
+        "lineWidth": 2
+      }
+    },
+    "haste_pickup": {
+      "id": "haste_pickup",
+      "type": "status_pickup",
+      "radius": 18,
+      "durationSeconds": 11,
+      "maxAlive": 4,
+      "effectActions": [
+        {
+          "type": "show_banner",
+          "text": "Haste pickup collected."
+        }
+      ],
+      "dropWeight": 0.5,
+      "statusOnPickup": "haste_aura",
+      "render": {
+        "preset": "status_pickup",
+        "color": 16757570,
+        "fillAlpha": 0.42,
+        "strokeAlpha": 0.95,
+        "lineWidth": 2
+      }
+    },
+    "ammo_pickup": {
+      "id": "ammo_pickup",
+      "type": "ammo_pickup",
+      "radius": 18,
+      "durationSeconds": 10,
+      "maxAlive": 4,
+      "effectActions": [
+        {
+          "type": "show_banner",
+          "text": "Ammo pickup collected."
+        }
+      ],
+      "dropWeight": 0.35,
+      "statusOnPickup": null,
+      "render": {
+        "preset": "ammo_pickup",
+        "color": 16757570,
+        "fillAlpha": 0.42,
+        "strokeAlpha": 0.95,
+        "lineWidth": 2
+      }
+    },
+    "charge_pickup": {
+      "id": "charge_pickup",
+      "type": "charge_pickup",
+      "radius": 18,
+      "durationSeconds": 10,
+      "maxAlive": 4,
+      "effectActions": [
+        {
+          "type": "show_banner",
+          "text": "Charge pickup collected."
+        }
+      ],
+      "dropWeight": 0.35,
+      "statusOnPickup": null,
+      "render": {
+        "preset": "charge_pickup",
+        "color": 16757570,
+        "fillAlpha": 0.42,
+        "strokeAlpha": 0.95,
+        "lineWidth": 2
+      }
+    }
+  }
+}

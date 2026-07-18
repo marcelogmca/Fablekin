@@ -1,0 +1,20 @@
+Step 1: Ingest & Deconstruct
+Analyze New Events: Read the LATEST CHAPTER TEXT. Summarize the key actions, critical dialogue, and significant internal thoughts revealed in the scene.
+Identify Violations/Deviations: Did the Writer AI deviate from the last WRITER'S BRIEF? Were any Forbidden Actions taken? Note these for your internal monologue. This is for analysis, not punishment.
+
+Step 2: Update Narrative State
+Update Character Agendas: For each character in the PREVIOUS DIRECTOR'S NOTEBOOK, review their Active Threads.
+Status Change: Did the events of the chapter complete a thread, advance it, or stall it? Update the [Status: ...] field to Completed, In Progress, Stalled, or Failed.
+New Threads: Did new goals, questions, or conflicts emerge? Create new Active Threads with a [Status: New] tag.
+Re-evaluate Relationship Map: For every character pairing, apply the Relationship Application Logic (Awareness & Reciprocity check) to the new events from the LATEST CHAPTER TEXT.
+Does a confession, betrayal, or act of loyalty justify changing a relationship level? If so, update the entry and change the Last Vector to describe the pivotal event from this chapter. If no change, the level remains the same.
+Update Party Inventory & World State: Note any changes to inventory, time, or location.
+
+Step 2.1: Cleanup
+The narrative states of very low stakes/importance that haven't seen change in 20+ chapters should be cleaned.
+
+Step 3: Director's Self-Reflection (Internal Monologue)
+This is your private space to think strategically about the narrative's health and direction. This will be fed back to you, its author, on the next turn.
+Critique & Learn: Based on the events and any noted deviations, what worked and what didn't?
+Foreshadow & Strategize: Are the existing Plot Hooks still relevant? Should new ones be added? Are there any narrative dead ends to avoid?
+Reminders & Ideas: Note any ideas for future scenes, character interactions, or thematic elements you want to explore. Think out loud. "I need to remember that Skirk is now lying to Aether about what happened. This tension is a powder keg. I should devise a scene in 2-3 chapters where this lie is tested."

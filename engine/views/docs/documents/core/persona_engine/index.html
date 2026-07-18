@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persona Engine | Plugin Architecture</title>
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --surface-color: #1a1a1a;
+            --accent: #b83b5e;
+            --accent-bg: rgba(184, 59, 94, 0.15);
+            --plugin-blue: #3b82f6;
+            --plugin-blue-bg: rgba(59, 130, 246, 0.15);
+            --emerald: #10b981;
+            --emerald-bg: rgba(16, 185, 129, 0.15);
+            --orange: #f97316;
+            --orange-bg: rgba(249, 115, 22, 0.15);
+            --purple: #a855f7;
+            --purple-bg: rgba(168, 85, 247, 0.15);
+            --zinc-700: #333;
+            --zinc-800: #222;
+            --zinc-900: #1a1a1a;
+            --text-zinc: #a0a0a0;
+            --text-white: #e0e0e0;
+            --code-yellow: #ffeb3b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Plugin Branding Badge */
+        .plugin-badge {
+            display: inline-block;
+            background: var(--plugin-blue-bg);
+            color: var(--plugin-blue);
+            border: 1px solid var(--plugin-blue);
+            padding: 2px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid var(--zinc-800);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-left h1 {
+            font-size: 2.2rem;
+            margin: 0;
+            color: var(--text-white);
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        .header-left p {
+            font-size: 0.85rem;
+            color: var(--text-zinc);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .version-info {
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: var(--text-zinc);
+            opacity: 0.5;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 2rem;
+            border-bottom: 1px solid var(--zinc-800);
+            overflow-x: auto;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-zinc);
+            padding: 1rem 0;
+            font-family: monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-btn:hover { color: var(--text-white); }
+        .nav-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Section Layout */
+        section {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+        section.active { display: block; }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        .card {
+            background: var(--zinc-900);
+            border: 1px solid var(--zinc-800);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            position: relative;
+        }
+
+        h2 { font-size: 1.5rem; margin: 0 0 1.5rem 0; color: var(--accent); }
+        h3 { font-size: 1.1rem; margin: 1.5rem 0 1rem 0; color: var(--text-white); }
+
+        p { margin-bottom: 1rem; color: var(--text-zinc); }
+
+        /* Plugin vs Core callouts */
+        .callout {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+        .callout.plugin { background: var(--plugin-blue-bg); border-left: 4px solid var(--plugin-blue); color: #93c5fd; }
+        .callout.core { background: var(--accent-bg); border-left: 4px solid var(--accent); color: #fda4af; }
+
+        /* Code display */
+        pre {
+            background: #000;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            color: var(--emerald);
+            overflow-x: auto;
+            border: 1px solid var(--zinc-800);
+        }
+
+        /* Trait bars */
+        .trait-row { margin-bottom: 0.75rem; }
+        .trait-info { display: flex; justify-content: space-between; font-size: 0.7rem; font-family: monospace; margin-bottom: 0.25rem; }
+        .trait-bar-bg { height: 4px; background: var(--zinc-800); border-radius: var(--radius-3xs, 2px); }
+        .trait-bar-fill { height: 100%; background: var(--accent); border-radius: var(--radius-3xs, 2px); }
+
+        /* Interactive Triage Demo */
+        .triage-demo {
+            border: 2px dashed var(--zinc-800);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            background: rgba(0,0,0,0.2);
+        }
+        .triage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--zinc-900);
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--zinc-800);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .triage-item:hover { background: var(--zinc-800); }
+        .triage-tag {
+            font-size: 0.6rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+        .tag-major { background: var(--emerald-bg); color: var(--emerald); border: 1px solid var(--emerald); }
+        .tag-minor { background: var(--zinc-800); color: var(--text-zinc); border: 1px solid var(--zinc-700); }
+
+        /* Social Graph */
+        .social-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+        .social-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--zinc-800);
+            padding: 1rem;
+            border-radius: var(--radius-round);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .avatar { width: 32px; height: 32px; border-radius: var(--radius-round); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <div class="plugin-badge">Subsystem Plugin</div>
+            <h1>Persona Engine</h1>
+            <p>Character Management Subsystem Architecture</p>
+        </div>
+        <div class="version-info">
+            PROJECT: DYNAMIC NARRATIVE ENGINE<br>
+            SUBSYSTEM: PERSONA_v4.2.0<br>
+            STATUS: INTEGRATED
+        </div>
+    </header>
+
+    <div class="callout plugin">
+        <strong>Technical Note:</strong> The Persona Engine is a high-level orchestration <strong>plugin</strong>. It interfaces with the core engine's turn-based sequence logic to inject multi-layered character state and psychological consistency.
+    </div>
+
+    <nav id="main-nav">
+        <button class="nav-btn active" data-section="overview">00_Overview</button>
+        <button class="nav-btn" data-section="classifier">01_Classifier</button>
+        <button class="nav-btn" data-section="sheets">02_Sheets</button>
+        <button class="nav-btn" data-section="personality">03_Personality</button>
+        <button class="nav-btn" data-section="relationship">04_Relationship</button>
+    </nav>
+
+    <main>
+        <!-- Overview -->
+        <section id="overview" class="active">
+            <div class="content-grid">
+                <div class="card">
+                    <h2>Modular Architecture</h2>
+                    <p>The Persona Engine replaces monolithic AI responses with four specialized plugins that handle character classification, static assets, internal psychology, and social dynamics separately.</p>
+                    <div class="callout core">
+                        <strong>Core Integration:</strong> These plugins hook into <code>HOOK_VN_BLOCKING_TASKS</code> to modify character data before the AI Director crafts the dialogue.
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 140px; padding: 1rem; border: 1px solid var(--zinc-800); border-radius: var(--radius-md);">
+                            <span style="font-size: 0.6rem; color: var(--emerald); font-weight: bold; font-family: monospace;">OPTIMIZATION</span>
+                            <p style="font-size: 0.75rem; margin: 0;">80% reduction in long-term token waste via TRIAGE.</p>
+                        </div>
+                        <div style="flex: 1; min-width: 140px; padding: 1rem; border: 1px solid var(--zinc-800); border-radius: var(--radius-md);">
+                            <span style="font-size: 0.6rem; color: var(--plugin-blue); font-weight: bold; font-family: monospace;">CONSISTENCY</span>
+                            <p style="font-size: 0.75rem; margin: 0;">O(1) historical context lookups using consolidated LEDGERS.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Fact Schema (Output)</h3>
+                    <p>Sample fact generated by the Relationship plugin:</p>
+                    <pre>
+{
+  "turn": 42,
+  "source": "cyno",
+  "predicate": "PERSONALITY_ESTEEM",
+  "val": 85,
+  "context": "Resolved the Akademiya dispute successfully."
+}</pre>
+                    <div style="margin-top: 1rem; font-size: 0.7rem; color: var(--text-zinc); font-style: italic;">
+                        All plugin modules write to a unified fact database that persists across turns.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Classifier -->
+        <section id="classifier">
+            <div class="content-grid">
+                <div class="card">
+                    <h2>01_Character Classifier</h2>
+                    <p>This is the gateway plugin. It performs <strong>importance triage</strong> to determine if a character deserves full psychological tracking or should be treated as transient noise.</p>
+                    
+                    <div class="callout plugin">
+                        <strong>Plugin Logic:</strong> Intercepts <code>NEW_CHAR_IDENTIFIED</code> event to perform a fast "Major/Minor" check using prompt heuristics.
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--emerald); margin-bottom: 1rem;">Triage Heuristics</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                <div class="tag-major triage-tag">MAJOR</div>
+                                <div style="font-size: 0.8rem; color: var(--text-zinc);">Named unique entities (e.g. "Cyno"). Full persistence enabled.</div>
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                                <div class="tag-minor triage-tag">MINOR</div>
+                                <div style="font-size: 0.8rem; color: var(--text-zinc);">Generic roles (e.g. "Soldier 1"). Minimal context overhead.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Interactive Triage Demo</h3>
+                    <p>Click items to toggle their narrative classification:</p>
+                    <div class="triage-demo">
+                        <div class="triage-item" onclick="toggleTriage(this)">
+                            <span>Cyno</span>
+                            <span class="triage-tag tag-major">MAJOR</span>
+                        </div>
+                        <div class="triage-item" onclick="toggleTriage(this)">
+                            <span>Researcher Tom</span>
+                            <span class="triage-tag tag-major">MAJOR</span>
+                        </div>
+                        <div class="triage-item" onclick="toggleTriage(this)">
+                            <span>Soldier A</span>
+                            <span class="triage-tag tag-minor">MINOR</span>
+                        </div>
+                        <div class="triage-item" onclick="toggleTriage(this)">
+                            <span>The Villager</span>
+                            <span class="triage-tag tag-minor">MINOR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sheets -->
+        <section id="sheets">
+            <div class="content-grid">
+                <div class="card">
+                    <h2>02_Character Sheets</h2>
+                    <p>Implements the <strong>"Pyramid of Persona"</strong>. Not every character needs a 4000-token biography.</p>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                        <div style="padding: 1rem; background: var(--zinc-800); border-radius: var(--radius-md);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <strong style="font-size: 0.7rem; color: var(--emerald);">01: PROTAGONIST</strong>
+                                <span style="font-size: 0.6rem; color: var(--text-zinc);">FULL DETAIL</span>
+                            </div>
+                            <p style="font-size: 0.75rem; margin: 0;">Maximum depth. Permanent context injection.</p>
+                        </div>
+                        <div style="padding: 1rem; background: var(--zinc-800); border-radius: var(--radius-md);">
+                            <strong style="font-size: 0.7rem; color: var(--plugin-blue);">02: CORE COMPANIONS</strong>
+                            <p style="font-size: 0.75rem; margin: 0.5rem 0 0 0;">L1-L9 layer visibility. Dynamic fact evolution.</p>
+                        </div>
+                        <div style="padding: 1rem; background: var(--zinc-800); border-radius: var(--radius-md); opacity: 0.5;">
+                            <strong style="font-size: 0.7rem; color: var(--text-zinc);">03: GUEST / MINOR</strong>
+                            <p style="font-size: 0.75rem; margin: 0.5rem 0 0 0;">Lite "Capsule" sheets only. Temporary tracking.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Layer Implementation</h3>
+                    <div class="callout plugin">
+                        <strong>Plugin Feature:</strong> Automatically generates "Evolution Patches" every Turn X to update Sheets without full rewriting.
+                    </div>
+                    <div style="padding: 1rem; background: var(--zinc-800); border-radius: var(--radius-md); font-family: monospace; font-size: 0.75rem;">
+                        <span style="color: var(--emerald);">// Layer 1: Identity</span><br>
+                        Name: Cyno<br>
+                        Gender: Male<br><br>
+                        <span style="color: var(--emerald);">// Layer 7: Psychology</span><br>
+                        Esteem: 85 (Consolidated)<br>
+                        Traits: [Justice, Puns, Strict]
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Personality -->
+        <section id="section-personality">
+            <div class="content-grid">
+                <div class="card">
+                    <h2>03_Personality Tracker</h2>
+                    <p>Uses <strong>Longitudinal Trait Vectors</strong> to model character growth. Characters aren't just lists of words; they are drifting points in multidimensional space.</p>
+                    <div class="callout plugin">
+                        <strong>Plugin Logic:</strong> Analyzes turn beats and updates vector floats. Every 5 turns, sums the beats into a "Historical Ledger" to save tokens.
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Active Personality Vector: Cyno</h3>
+                    <div class="trait-row">
+                        <div class="trait-info"><span>OPENNESS</span><span>72%</span></div>
+                        <div class="trait-bar-bg"><div class="trait-bar-fill" style="width: 72%;"></div></div>
+                    </div>
+                    <div class="trait-row">
+                        <div class="trait-info"><span>CONSCIENTIOUSNESS</span><span>92%</span></div>
+                        <div class="trait-bar-bg"><div class="trait-bar-fill" style="width: 92%;"></div></div>
+                    </div>
+                    <div class="trait-row">
+                        <div class="trait-info"><span>EXTRAVERSION</span><span>35%</span></div>
+                        <div class="trait-bar-bg"><div class="trait-bar-fill" style="width: 35%; background: var(--orange);"></div></div>
+                    </div>
+                    <div class="trait-row">
+                        <div class="trait-info"><span>AGREEABLENESS</span><span>57%</span></div>
+                        <div class="trait-bar-bg"><div class="trait-bar-fill" style="width: 57%;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Relationship -->
+        <section id="relationship">
+            <div class="card full-width">
+                <h2>04_Relationship Sub-Plugin</h2>
+                <div class="content-grid">
+                    <div>
+                        <p>Models social bonds using symmetrical social vectors. Instead of "likes you/dislikes you", the plugin tracks multi-axis status.</p>
+                        <div class="callout plugin">
+                            <strong>Dynamic Pacing:</strong> Bonds used "Difficulty Curves." Going from "Stranger" to "Friend" is easy; going from "Lover" to "Soulmate" requires major narrative milestones.
+                        </div>
+                    </div>
+                    <div class="social-grid">
+                        <div class="social-card">
+                            <div class="avatar" style="background: var(--emerald-bg); color: var(--emerald);">T</div>
+                            <div style="font-size: 0.75rem;">
+                                <strong>Tighnari</strong><br>
+                                <span style="font-size: 0.6rem; color: var(--emerald);">SOULMATES</span>
+                            </div>
+                        </div>
+                        <div class="social-card">
+                            <div class="avatar" style="background: var(--orange-bg); color: var(--orange);">A</div>
+                            <div style="font-size: 0.75rem;">
+                                <strong>Alhaitham</strong><br>
+                                <span style="font-size: 0.6rem; color: var(--orange);">RIVALS</span>
+                            </div>
+                        </div>
+                        <div class="social-card">
+                            <div class="avatar" style="background: var(--plugin-blue-bg); color: var(--plugin-blue);">C</div>
+                            <div style="font-size: 0.75rem;">
+                                <strong>Collei</strong><br>
+                                <span style="font-size: 0.6rem; color: var(--plugin-blue);">MENTEE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--zinc-800); display: flex; justify-content: space-between; font-family: monospace; font-size: 0.7rem; color: var(--text-zinc); opacity: 0.5;">
+        <span>CORE ARCHITECTURE VIEW v4.2</span>
+        <span>PERSONA ENGINE PLUGIN SUBSYSTEM</span>
+    </footer>
+
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sectionId = btn.getAttribute('data-section');
+                
+                // Update buttons
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update sections
+                document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+                
+                // Handle the sections (mapping common ones or specific IDs)
+                const target = document.getElementById(sectionId) || document.getElementById('section-' + sectionId);
+                if (target) target.classList.add('active');
+            });
+        });
+
+        // Triage Demo
+        function toggleTriage(el) {
+            const badge = el.querySelector('.triage-tag');
+            if (badge.classList.contains('tag-major')) {
+                badge.classList.remove('tag-major');
+                badge.classList.add('tag-minor');
+                badge.innerText = 'MINOR';
+            } else {
+                badge.classList.remove('tag-minor');
+                badge.classList.add('tag-major');
+                badge.innerText = 'MAJOR';
+            }
+        }
+    </script>
+</body>
+</html>

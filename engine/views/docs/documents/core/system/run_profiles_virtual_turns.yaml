@@ -1,0 +1,11 @@
+documented_files:
+  - path: engine/modules/turn_runner/run_profiles.js
+    hash: 7868222D83D83466145F54EB3012AFCA
+  - path: engine/modules/turn_runner/turn_runner.js
+    hash: 22AE8C597D7A300C773F06F00CDE7336
+  - path: engine/modules/vn_manager/vn_manager.js
+    hash: 290FABB1543C32821D95A0CBEA1987A4
+  - path: engine/modules/main_process/handlers/vn_handlers.js
+    hash: 25E73A0D0C674266417DF261DD8793D0
+  - path: engine/modules/plugin_manager/runtime/hook_executor.js
+    hash: CA5B2906D8C74BA0F923BFCF07DF5DD7

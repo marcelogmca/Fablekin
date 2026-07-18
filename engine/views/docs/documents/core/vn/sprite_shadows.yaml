@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/vn_viewer/js/pixi_sprite_shadows.js
+  - path: engine/views/vn_viewer/js/pixi_sprite_manager.js
+  - path: engine/modules/vn_manager/ucp_parser.js
+  - path: engine/modules/vn_manager/sequence_api.js

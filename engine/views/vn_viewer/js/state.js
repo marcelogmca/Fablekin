@@ -1,0 +1,134 @@
+export const state = {
+    currentIndex: 0,
+    turnHistory: [], // Stores sequence objects from previous turns
+    isGameOver: false,
+    gameOverConfig: null,
+    isFocused: true,
+    lastShownIndex: undefined,
+    autoPlay: false,
+    readingSpeed: 200,
+    charactersDisplayed: 0,
+    typewriterInterval: null,
+    progressInterval: null,
+    autoPlayTimeout: null,
+    autoPlayScheduleToken: 0,
+    isVoiceAudioPlaybackActive: false,
+    dialogueTransitionRequestID: null,
+    lastMessageRequestID: 0,
+    activeCharacters: {},
+    currentVN: null,
+    isAtTurnZero: false,
+    currentBackground: '',
+    currentCg: '',
+    currentAudio: null,
+    currentOst: null,
+    ostSilenceActive: false,
+    playerCharacterName: '',
+    navigation: { prev: null, next: null },
+    lastSwitchedPath: null,
+    pendingJumpIndex: null,
+    pendingJumpTurn: null,
+    pendingJumpSceneMode: null,
+    pendingJumpInterludeId: null,
+    chatDbSwitchToken: 0,
+    isAudioPlaying: false,
+    currentTalkingCharacter: null,
+    voicePlaybackToken: 0,
+    audioEndedPromiseResolver: null,
+    currentAudioEndedPromise: null,
+    activeAnimators: {},
+    emulatedTalkingTimeout: null,
+    lastSpriteNames: { left: null, center: null, right: null },
+    spriteMode: 'B',
+    notifications: new Map(),
+    notificationsExpanded: false,
+    isGenerationPhase: false,
+    activeGenerationRunId: null,
+    generationCancelRequested: false,
+    etaData: null,
+    pipelineManifest: null,
+    pipelineCurrentHookIndex: -1,
+    pipelinePhaseColors: null,
+    pendingOstResume: false,
+    pendingSfxResume: false,
+    pendingVoiceResume: false,
+    missingTtsCrcs: [],
+    interceptRuntime: {
+        descriptors: [],
+        statusByKey: {},
+        sessionResolved: {},
+        pluginState: {},
+        currentTurnNumber: null,
+        visualLocks: {
+            mainSpritesHideRunIds: {}
+        },
+        takeover: {
+            active: false,
+            runId: null,
+            pluginId: null,
+            interceptId: null,
+            checkpoint: null,
+            startedAt: null,
+            reason: null,
+            inputPassthrough: false,
+            keepVNPixiRuntimeDuringTakeover: false
+        }
+    },
+    vnSettings: {
+        audio: {
+            ost_volume: 0.5,
+            tts_volume: 0.5,
+            bgm_sfx_volume: 0.3,
+            sfx_volume: 0.5,
+            mute_audio_during_generation: true,
+            play_sound_on_ready: true
+        },
+        visuals: {
+            sprite_offset: 0,
+            dialogue_width: 100,
+            dialogue_height: 200,
+            toolbar_vertical_offset: 0,
+            panel_transparency: 0.75,
+            panel_blur: 10,
+            font_size_multiplier: 1.0,
+            sprite_size_multiplier: 1.0,
+            sprite_horizontal_padding: 0,
+            max_sprite_slots: 5,
+            foreground_background_blur_strength: 0,
+            write_speed: 30,
+            sprite_morph_method: 'motion_blend',
+            show_chapter_intro: true,
+            hide_main_sprites: false
+        },
+        interface: {
+            text_alignment: 'center',
+            auto_play_delay: 500,
+            show_controls: true,
+            show_music_player: false,
+            show_ost_popup: true,
+            show_dialogue_index_indicator: true,
+            plugin_manager_view_mode: 'grid',
+            blink_taskbar_on_ready: true
+        },
+        performance: {
+            max_fps: 60,
+            sprite_texture_direct_bitmap_loader: true
+        },
+        debug: {
+            director_mode: false,
+            feedback_mode: false,
+            debug_viewport: false,
+            show_system_console: false
+        }
+    },
+    logBuffer: []
+};
+
+export const runtime = {
+    statusStartTime: null,
+    statusTimerInterval: null,
+    saveStateTimeout: null,
+    saveSettingsTimeout: null,
+    musicPopupTimeout: null,
+    logBatchTimeout: null
+};

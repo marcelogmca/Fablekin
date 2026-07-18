@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/utils.js
+    hash: 404B7042455A539046379DD55626A56E
+  - path: engine/modules/content_manager/operations/cache_manager.js
+    hash: E320AD8AFCEE5BA8F086A29A9774B193

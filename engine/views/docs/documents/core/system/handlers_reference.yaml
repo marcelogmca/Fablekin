@@ -1,0 +1,25 @@
+documented_files:
+  - path: engine/modules/main_process/handlers/vn_handlers.js
+    hash: 25E73A0D0C674266417DF261DD8793D0
+  - path: engine/modules/main_process/handlers/ui_handlers.js
+    hash: 697AB33ACC79BC5442B9957BD5E68D0D
+  - path: engine/modules/main_process/handlers/settings_handlers.js
+    hash: 0DD280A8CAE3BED4D3035B2C7BA38958
+  - path: engine/modules/main_process/handlers/project_handlers_base.js
+    hash: 51DE02F2DD7B9C76D983446FE51850E8
+  - path: engine/modules/main_process/handlers/player_handlers.js
+    hash: 6313BEBBB31794D1A12149531BA66E50
+  - path: engine/modules/main_process/handlers/memory_handlers.js
+    hash: FE809359C91703EC76CF5316F5DBF34D
+  - path: engine/modules/main_process/handlers/log_handlers.js
+    hash: B21EB0E250D04DB6F285EB872045BB17
+  - path: engine/modules/main_process/handlers/file_handlers.js
+    hash: E9C971B506F6DBAC64A3C89A0FD09F7E
+  - path: engine/modules/main_process/handlers/chapter_handlers.js
+    hash: BA329B2BE7678A05D9DF9FD5901531E0
+  - path: engine/modules/main_process/handlers/scene_history_handlers.js
+    hash: 8E2DBD8B7356B7EE0F46C8BF98728115
+  - path: engine/modules/main_process/handlers/project_select_handler.js
+    hash: A35B444A41C4521E5D1B7D2D7DF82A86
+  - path: engine/modules/main_process/bootstrap/socket_frontend_injection.js
+    hash: D27AF5D4AD81D041D29BF03F0A5132A1

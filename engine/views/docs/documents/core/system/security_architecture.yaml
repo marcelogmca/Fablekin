@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/main_process/secure_storage.js
+    hash: 5087A5086994A5B74699DC3D93BB9787
+  - path: engine/modules/main_process/shared/path_guard.js
+    hash: 3B3A8B34EF67653B3B85A8DE11944170
+  - path: engine/modules/plugin_manager/runtime/tools_builder.js
+    hash: 242BED1DBC57C5D7BF7899305A2F29D5

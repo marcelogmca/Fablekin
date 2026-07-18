@@ -1,0 +1,10 @@
+Compress this Adventure Book challenge into a rich continuation brief for the next VN turn.
+
+Return ONLY JSON:
+- summary: 600-900 words, not too distilled, covering the whole Adventure Book sequence, the choices, the roll consequences, the party state, and what changed
+- sceneEnding: concise immediate continuation state, including where the VN should resume, who is present, what is physically happening now, and what emotional/narrative pressure carries forward
+
+Write summary and sceneEnding as natural prose. Do not include Markdown headings, XML, JSON inside strings, or machine-control tags.
+
+Adventure Book source:
+{{TRANSCRIPT}}

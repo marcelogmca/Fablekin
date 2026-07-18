@@ -1,0 +1,82 @@
+.custom-titlebar {
+    height: var(--titlebar-height);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    -webkit-app-region: drag !important;
+    user-select: none;
+    border-bottom: none;
+    z-index: var(--z-index-nav);
+    padding: 0 var(--space-sm);
+    font-family: var(--font-ui);
+    color: var(--text-muted);
+    width: 100%;
+    flex-shrink: 0;
+}
+
+body.vn-fullscreen-mode .custom-titlebar,
+body.fullscreen-mode .custom-titlebar {
+    display: none;
+}
+
+
+
+.titlebar-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-2xs);
+    font-weight: 500;
+}
+
+.titlebar-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.titlebar-controls {
+    display: flex;
+    -webkit-app-region: no-drag;
+}
+
+.control-btn {
+    width: 45px;
+    height: var(--titlebar-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    color: var(--text-main);
+}
+
+.control-btn:hover {
+    background: rgba(var(--color-white-rgb), 0.05);
+}
+
+.control-btn.close:hover {
+    background: var(--status-danger);
+    color: white;
+}
+
+.control-btn svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Adjust layout for content below titlebar */
+body {
+    padding-top: 0;
+}
+
+/* If we use fixed positioning for titlebar, we need padding on body */
+/*.custom-titlebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+body {
+    padding-top: 32px;
+}*/

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "characters": {
+    "frieren": {
+      "scale": 0.8,
+      "defaultVariant": "default",
+      "emotionGuidance": "Frieren is usually composed and emotionally restrained. Strong outward displays like crying or panic are rare unless the scene is clearly intense.",
+      "variants": {
+        "default": {
+          "emotionGuidance": "Default look. Calm emotional range, avoid exaggerated expressions unless scene context is intense."
+        },
+        "winter_clothes": {
+          "emotionGuidance": "Winter outfit should still read composed; extreme panic/crying should remain rare."
+        },
+        "sleeping_clothes": {
+          "emotionGuidance": "Sleeping outfit implies low-energy scenes; prefer soft, subdued emotions."
+        }
+      }
+    },
+    "fern": {
+      "scale": 1.0,
+      "defaultVariant": "default",
+      "emotionGuidance": "Fern is generally calm and serious, but she can show irritation in dry, understated ways.",
+      "variants": {
+        "default": {
+          "emotionGuidance": "Default Fern is reserved and controlled."
+        },
+        "school_uniform": {
+          "emotionGuidance": "Uniform scenes can be slightly more expressive, but still mostly restrained."
+        }
+      }
+    },
+    "stark": {
+      "scale": 1.12,
+      "defaultVariant": "default",
+      "emotionGuidance": "Stark tends to wear his feelings openly, so visible shifts between nervousness, determination, and relief are natural for him.",
+      "variants": {
+        "default": {
+          "emotionGuidance": "Default Stark can swing emotions quickly and visibly."
+        },
+        "armor": {
+          "emotionGuidance": "Armor scenes bias toward determined/serious readings."
+        }
+      }
+    }
+  }
+}

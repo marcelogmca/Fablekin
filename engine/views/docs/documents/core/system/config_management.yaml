@@ -1,0 +1,9 @@
+documented_files:
+  - path: engine/modules/config/project_config_store.js
+    hash: 98C155A93725C2B6D49257FA9B87428C
+  - path: engine/modules/config/global_settings_store.js
+    hash: A7D095689C2708D26FFDD9F453C99CE9
+  - path: engine/modules/config/core_folders.js
+    hash: 0E45BABB9D05A80F5CB86BAB6A2EF8F6
+  - path: engine/modules/config/core_directives.js
+    hash: DF79A51AB3B70D9F73FE6D85E6408165

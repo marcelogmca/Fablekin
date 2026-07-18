@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/views/plugin_manager/renderer_plugin_manager.js
+    hash: 39B1892E1A933755BBC4FBF683C1E4EA
+  - path: engine/views/scene_history/renderer_scene_history.js
+    hash: 981ECCE11BB851F0B74947AF9FC7D50E

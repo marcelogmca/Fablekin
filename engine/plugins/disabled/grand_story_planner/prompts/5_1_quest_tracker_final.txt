@@ -1,0 +1,39 @@
+# PHASE 5.1 FINAL OUTPUT: STORY OBJECTIVE OPERATIONS
+
+Return objective operations only, or exactly:
+
+NO CHANGES REQUIRED
+
+Do not call tools, do not continue, and do not include commentary, Markdown headings, bullets, explanations, or code fences.
+
+Allowed operation syntax:
+INSERT [QUEST-ID] | Deadline: N turns | Stakes: low/medium/high | Brief: short premise | Objective: actionable player-facing goal | AI: hidden constraints and guidance | Fail: consequence if missed | Success: reward if achieved
+UPDATE [QUEST-ID] | Deadline: N turns | Stakes: low/medium/high | Brief: short premise | Objective: actionable player-facing goal | AI: hidden constraints and guidance | Fail: consequence if missed | Success: reward if achieved
+DELETE [QUEST-ID]
+
+Rules:
+- Square brackets around every ID are mandatory.
+- Keep each complete operation on one physical line.
+- UPDATE and DELETE must use an exact available ID from the objective compiler context.
+- Deadline must be at least 3 turns for INSERT and UPDATE.
+- Stakes must be exactly one of: low, medium, high.
+- Brief, Objective, AI, Fail, and Success must all be present for INSERT and UPDATE.
+- Quest inventory policy is high priority: if Quest Tracker reports 0-1 active quests, default to 2-4 INSERTs; if it reports 2-3 active quests, add 1-2 only if distinct; if it reports 4+ active quests, mostly UPDATE/DELETE and avoid new clutter.
+- Prefer 2-4 quests when the Grand Plan has multiple actionable pressures. Only output one quest if only one meaningful pressure exists.
+- Stagger deadlines for multiple INSERTs: use varied horizons such as 3-5 turns, 6-9 turns, and 10-16 turns. Do not give several quests the same short deadline.
+- Fail and Success must be player-experienced consequences, not plot bookkeeping.
+- Write Fail and Success as future-facing Director/Writer instructions for scenes after resolution, not as summaries of plot state.
+- Every outcome must create a player-experienced delta: because the player succeeded or failed, the story now treats the player character differently in a way they can feel.
+- Fail must name who/what reacts, what the player visibly loses, how long it lasts or what repairs it, and how it resists cheap handwaving when applicable.
+- Success must name who/what rewards the player and what visible playable benefit appears that would not happen by default: NPC initiative, romance, trust, authority, shortcut, unlocked scene, better conditions, saved resources, information, future leniency, or a more generous future choice.
+- Fail should make the mistake hurt through bounded friction: relationship chill, NPC taking command, locked scenes, missed windows, extra cost, worse conditions, social embarrassment, delayed intimacy, or refusal to accept instant forgiveness.
+- Success should reward the player with playable affordance: NPC initiative, romance, trust, a shortcut, an unlocked scene, better conditions, saved resources, useful information, or a more generous future choice.
+- Treat examples as templates. Replace names, relationships, and pressures with the current story's actual cast.
+- Agency penalties are allowed when in-character and bounded. Example Fail: "A trusted companion is annoyed at the player character for 4 turns; she refuses easy affection, takes charge of travel decisions, and says 'Nope, you do as I say' until he repairs the mood through action."
+- Example Success: "Because the player character respected the timing, the companion initiates a private departure beat herself, treats patient approaches warmly for 3 turns, and lets him choose one detail of the road home."
+- Bad Fail: "The boutique scene loses its window." Good Fail: "The commissioned NPC closes the private fitting opportunity; the player can still collect the item, but no private styling scene or extra compliment is available, and the companion is quietly disappointed for 3 turns."
+- Bad Success: "The party leaves with the item." Good Success: "The companion is openly happy the player handled the errand cleanly; she initiates a warm private reward of her own before departure and gives the player more say in the next travel choice."
+- Avoid weak bookkeeping phrases unless tied to concrete player impact: "momentum," "natural window," "attention shifts," "forward motion," "arc continues," "scene proceeds," "plot advances."
+- Reject continuity-only successes. If Success merely says the scene proceeds, the arc continues, the mood improves, the party leaves, or the story feels lighter, rewrite it into a concrete reward or affordance the player would not otherwise get.
+- Prefer specific current-story names over "the party" when a character relationship or NPC obligation is involved.
+- If uncertain, return NO CHANGES REQUIRED.

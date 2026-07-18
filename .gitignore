@@ -1,0 +1,14 @@
+.agents
+node_modules/
+.npm-cache/
+engine/.runtime/
+workspace/.runtime/
+tools/Sprite_Generator/final_sprites/
+tools/Sprite_Generator/output_sprites/
+tools/Sprite_Generator/compressed_final_sprites/
+tools/Sprite_Generator/.env
+tools/Sprite_Generator/.venv/
+tools/Sprite_Generator/weights/
+workspace/projects/*
+!workspace/projects/exampleadventure/
+!workspace/projects/exampleadventure/**

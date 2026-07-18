@@ -1,0 +1,168 @@
+/* PixiJS Canvas */
+#vn-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+#cg-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 5;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1);
+}
+
+#cg-container.hidden {
+    opacity: 0;
+    transform: scale(1.05);
+    /* Slight zoom out when hidden for dynamic entrance */
+    pointer-events: none;
+}
+
+.cg-crossfade-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 6;
+    /* On top of the main container */
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sprites */
+.sprite {
+    position: absolute;
+    bottom: 0;
+    height: 60vh;
+    max-width: 30%;
+    min-width: 180px;
+    width: 22vw;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: visible;
+    transition: left 0.5s ease, right 0.5s ease, transform 0.3s ease;
+}
+
+.sprite-bg {
+    width: 100%;
+    height: 100%;
+    background-size: contain;   /* Use 'cover' if you want to fill the box, 'contain' to fit */
+    background-repeat: no-repeat;
+    background-position: bottom center;
+}
+
+/* Positioning for left, center, right sprites */
+.left-sprite {
+    left: 5%;
+    bottom: 0;
+}
+.center-sprite {
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+}
+.right-sprite {
+    left: 95%;
+    bottom: 0;
+    transform: translateX(-50%);
+}
+
+.sprite-layer-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    /* Ensure the container fits the flex layout of the parent .sprite */
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+/* Common style for all layers */
+.sprite-layer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    /* Proportional height based on width */
+    opacity: 0;
+    /* Hidden by default */
+    z-index: 1;
+}
+
+/* Div overlays (like shading) need to span the full sprite box height or we must be careful. 
+   However, since images are the primary content, we allow them to dictate height. */
+div.sprite-layer {
+    height: 100%;
+}
+
+/* Base layer is always at the bottom */
+.layer-base {
+    z-index: 1;
+    position: absolute;
+    /* Must match other layers to prevent render jiggle */
+    opacity: 1;
+    /* Visible by default */
+}
+
+.layer-blink {
+    z-index: 2;
+}
+
+.layer-talk {
+    z-index: 3;
+}
+
+.layer-talk-blink {
+    z-index: 4;
+}
+
+@keyframes slideDownFadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(5%) translateX(-50%);
+    }
+}
+
+@keyframes slideUpFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(5%) translateX(-50%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+    }
+}
+
+.sprite-enter-anim {
+    animation: slideUpFadeIn 0.5s ease-out forwards;
+}
+
+.sprite-exit-anim {
+    animation: slideDownFadeOut 0.3s ease forwards;
+    pointer-events: none;
+}

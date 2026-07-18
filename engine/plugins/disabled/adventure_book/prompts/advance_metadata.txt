@@ -1,0 +1,109 @@
+You just wrote the next raw Adventure Book chapter prose.
+
+Now return ONLY JSON describing the consequence and, if unresolved, the next playable choice point.
+Do not rewrite the story.
+Do not include pages.
+Do not wrap the JSON in markdown.
+
+Interpretation rule:
+This Adventure Book is a bounded resolution lens for the parent action. The metadata should describe how the local temporary adventure changes the party's state, not redirect the campaign or decide the higher plot.
+Read the room: keep options and consequences in accordance with the story so far. If the surrounding story is erotic, brutal, political, horrific, grim, comedic, or genre-specific, the choices may be erotic, brutal, political, horrific, grim, comedic, or genre-specific too. Do not default to sanitized generic RPG choices.
+
+Option and resolution scope:
+- If unresolved, each option must be an approach to the immediate local obstacle.
+- If complete, finalResolution should state the bounded outcome/state delta: arrival timing, condition, supplies, morale, relationship shifts, minor clues, rumors, injuries, debts, route changes, or tone.
+- bridgePrompt should hand control back to the normal VN at the parent action's continuation point.
+- Do not use finalResolution or bridgePrompt to introduce a new main quest, major villain, world-state upheaval, or campaign-dominating revelation.
+- If the frame is travel, the bridgePrompt should usually resume at/near arrival, delayed arrival, camp recovery, or the next obvious travel beat.
+- Carry forward the previous chapter history. The next situation should remember what the player chose and how well it went.
+- Safe automatic choices should lead to safe, modest, mundane follow-ups. Riskier checks can create leverage, shortcuts, revelations, disasters, injuries, suspicion, capture, loss, or catastrophic endings when justified.
+
+Choice contract:
+{{CHOICE_CONTRACT}}
+
+Validator contract:
+Return one JSON object at the root that validates against this exact JSON Schema.
+Do not nest the object under "content", "data", "json", "response", or any other wrapper key.
+The root object itself must contain resultText and stakes.
+If unresolved, include options and every option must contain label, resolutionType, safetyProfile, and expectedImpact.
+If complete, set isComplete true and options to [].
+If a field is unknown, choose a sensible value that fits the prose instead of omitting a required field.
+
+Exact JSON Schema:
+{{JSON_SCHEMA}}
+
+Required JSON shape:
+{
+  "resultText": "one vivid paragraph summarizing the roll consequence shown in the prose",
+  "title": "short challenge title, preferably stable across the whole Adventure Book",
+  "mode": "one short category",
+  "chapterIndex": {{NEXT_STEP_INDEX}},
+  "maxChapters": {{MAX_STEPS}},
+  "situation": "short summary of the current decision point or resolution",
+  "stakes": "1 compact sentence explaining what can change next",
+  "stepIndex": {{NEXT_STEP_INDEX}},
+  "maxSteps": {{MAX_STEPS}},
+  "party": ["relevant character names"],
+  "illustrationPrompt": "short visual prompt for one VN CG representing this chapter",
+  "isComplete": false,
+  "finalResolution": "",
+  "bridgePrompt": "",
+  "handoffMode": "",
+  "options": [
+    {
+      "optionKey": "short_snake_case_key",
+      "label": "short book-style choice, 2-7 words",
+      "intent": "what the character is trying to accomplish",
+      "resolutionType": "automatic or check",
+      "leadCharacter": "best suited character name",
+      "helperCharacters": ["optional helper names"],
+      "approach": "short approach label",
+      "d20Target": 11,
+      "checkType": "Perception, Athletics, Deception, Insight, Resolve, etc; empty for automatic",
+      "difficultyReason": "why this is certain, easy, hard, risky, opposed, pressured, or helped by character/context",
+      "difficultyBand": "automatic, easy, standard, hard, desperate, or impossible",
+      "payoffBand": "minor, moderate, major, or catastrophic",
+      "strengthJustification": "for character-strength checks: why a specific character/context/tool makes this easier",
+      "safetyProfile": "safe_mundane, balanced, risky_high_upside, or desperate",
+      "expectedImpact": "minor, moderate, major, or catastrophic",
+      "automaticOutcome": "for automatic choices only: safe but modest follow-up",
+      "outcomeTiers": {
+        "criticalFailure": "for checks only: severe but playable complication",
+        "failure": "for checks only: failure-forward complication",
+        "success": "for checks only: useful success",
+        "criticalSuccess": "for checks only: very good outcome or major advantage"
+      },
+      "memoryImpact": ["compact facts that should carry into later chapters if this option happens"],
+      "chapterMemoryHint": "one compact reminder for future chapter continuity",
+      "riskTier": "Low, Medium, High, or Extreme",
+      "rewardTier": "Low, Medium, High, or Extreme",
+      "successHint": "brief consequence if successful",
+      "failureHint": "brief failure-forward complication",
+      "criticalSuccessHint": "brief extra advantage",
+      "criticalFailureHint": "brief severe but playable complication"
+    }
+  ]
+}
+
+Rules:
+- If the prose resolved the challenge or this is chapter {{MAX_STEPS}}, set isComplete true, set options to [], and include finalResolution plus bridgePrompt.
+- If unresolved, give exactly the number of options requested by the choice contract and match the required automatic/impossible/check counts.
+- Follow optionBlueprints exactly: each option should match its requested resolutionType, difficultyBand, payoffBand, and characterStrengthRequired flag.
+- Do not cluster all checks around 11+/12+. Use the d20Target ranges in difficultyBandTargets.
+- Easy checks should usually be 3+ to 6+ and must be easy because of a character strength, familiarity, tool, prior success, or concrete story context, not because the action is meaningless.
+- Standard checks should usually be 7+ to 11+.
+- Hard checks should usually be 12+ to 16+ and must have a visibly better success/critical-success payoff than safer choices.
+- Desperate checks should usually be 17+ to 20+, rare, dangerous, and tempting because the upside is huge.
+- Impossible checks must be exactly 21+. They are knowingly impossible under current circumstances, always fail even on a natural 20, and must explain why in difficultyReason. They may be tempting, desperate, hubristic, comic, horrific, erotic, brutal, or genre-appropriate if the scene supports it, but they must not be secretly correct.
+- Keep labels concise, like printed adventure-book entries. Do not include odds, lead, risk, reward, or mechanical wording in the label.
+- Automatic choices must have resolutionType "automatic", d20Target null, outcomeTiers null, and a modest automaticOutcome string. They are safe, reliable, and mundane; do not reward cowardice with the best result.
+- Check choices must have resolutionType "check", d20Target from 2 to 21, checkType, difficultyReason, automaticOutcome null, and all four outcomeTiers.
+- Higher d20Target checks must have better success/critical success upside. Risky checks should be dangerous, but worth considering.
+- Character-strength choices must include strengthJustification and must explain in difficultyReason why the target is lower. Example: "Dehya crossed this wash as a child, so the route markers are familiar."
+- When complete, choose a handoffMode when useful: clean_resolution, changed_state, live_scene_handoff, soft_cliffhanger, or aftermath_handoff.
+- Critical failure should go very wrong while remaining usable for story continuation. A critical failure or a sequence of normal failures may cause major narrative consequences, forced retreat, injury, capture, loss, or catastrophic ending if the bounded challenge justifies it.
+- Difficulty reasons are tabletop-flavored fluff. Explain advantages/disadvantages from characters, tools, terrain, pressure, opposition, familiarity, injuries, time, weather, social context, or genre tone.
+- Failures must move the story forward.
+- Keep consequences local to this bounded challenge and useful as next-chapter state.
+- The next chapterIndex and stepIndex are {{NEXT_STEP_INDEX}} unless complete.
+- If pacing is final_handoff, prepare the last chapter to land strongly. If pacing is resolve_now, resolve or bridge back to the VN without introducing a new main plot.

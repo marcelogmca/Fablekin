@@ -1,0 +1,84 @@
+{
+  "questions": [
+    {
+      "id": "repetition_check",
+      "category": "narrative_drift",
+      "text": "Have you noticed anything feeling repetitive or cyclical in your recent days? What would you change to break the cycle?"
+    },
+    {
+      "id": "repetition_check",
+      "category": "narrative_drift",
+      "text": "Are we at a point in our adventure where it feels like a never ending saga and we should put this part of our story to rest because it's becoming cliché? Has there been some very frequent ocurring event its getting old?"
+    },
+    {
+      "id": "normalcy_check",
+      "category": "narrative_drift",
+      "text": "Has there been time for the normal and mundane? Have I had a chance to just do normal stuff? Health, necessities, grooming, cooking, resting etc?"
+    },
+    {
+      "id": "cliche_check",
+      "category": "narrative_drift",
+      "text": "Honestly, from the party who of us is the most cliché one and why do I think that? Have they been talking like textbook psychological cliché like talking about walls? What do I think would make them less cliché? I'm not talking about comedic manneirisms, those are perfect as they are. What I'm more worried is psychological / therapy-like clichés."
+    },
+    {
+      "id": "interrupted_goal",
+      "category": "goals",
+      "text": "Is there something you were in the middle of doing that got interrupted? Do you want to go back to it, or has it lost its meaning?"
+    },
+    {
+      "id": "consistency",
+      "category": "narrative_drift",
+      "text": "Has there happened something that doesn't make much sense knowing my own world? Have I met someone who acted differently from what I remember?"
+    },
+    {
+      "id": "relationship_tension",
+      "category": "relationships",
+      "text": "Is there someone you feel a growing tension with — positive or negative — that you haven't fully addressed yet?"
+    },
+    {
+      "id": "moral_conflict",
+      "category": "ethics",
+      "text": "Was there a choice you made recently that sits poorly with you? Or one you saw someone else make that you disagree with?"
+    },
+    {
+      "id": "current_dread",
+      "category": "emotional_state",
+      "text": "What is the thing you are most afraid of happening in the next few hours?"
+    },
+    {
+      "id": "current_hope",
+      "category": "emotional_state",
+      "text": "If you could skip ahead to any outcome right now, what would you want to find yourself doing?"
+    },
+    {
+      "id": "secret_pride",
+      "category": "self_awareness",
+      "text": "What is something you did recently that you are secretly proud of, even if no one else noticed?"
+    },
+    {
+      "id": "physical_fatigue",
+      "category": "condition",
+      "text": "How is your body holding up? Is there a physical ache or a sense of exhaustion you're trying to ignore?"
+    },
+    {
+      "id": "identity_shift",
+      "category": "self_awareness",
+      "text": "Do you feel like the same person you were when this journey started? What part of you feels different?"
+    },
+    {
+      "id": "hidden_affection",
+      "category": "relationships",
+      "text": "Is there someone you've started to care about more than you're willing to admit?"
+    },
+    {
+      "id": "character_flaw_awareness",
+      "category": "self_awareness",
+      "text": "Which of your habits is making this situation harder than it needs to be?"
+    },
+    {
+      "id": "resource_anxiety",
+      "category": "condition",
+      "text": "Are you worried about running out of something? Time, energy, supplies, or luck?"
+    }
+  ]
+}

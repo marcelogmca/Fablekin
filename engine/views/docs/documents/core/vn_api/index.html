@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VN Viewer API Reference</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; line-height: 1.6; color: #e0e0e0; background-color: #0f0f0f; max-width: 900px; margin: 0 auto; }
+        h1 { color: #b83b5e; }
+        h2 { color: #b83b5e; margin-top: 40px; }
+        .table-container { overflow-x: auto; margin: 20px 0; border: 1px solid #333; border-radius: var(--radius-md); }
+        table { width: 100%; border-collapse: collapse; background: #1a1a1a; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; }
+        th { background: #252525; color: #aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        code { color: #ffeb3b; background: rgba(255, 235, 59, 0.05); padding: 2px 4px; border-radius: var(--radius-sm); }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: var(--radius-round); font-size: 0.8rem; font-weight: bold; background: #333; color: #ccc; }
+        .tag.blue { background: rgba(33, 150, 243, 0.1); color: #2196f3; border: 1px solid rgba(33, 150, 243, 0.2); }
+        .tag.green { background: rgba(76, 175, 80, 0.1); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.2); }
+    </style>
+</head>
+<body>
+    <h1>VN Viewer API Reference</h1>
+    <p>The VN Viewer communicates with the backend and other views via <strong>Socket.io</strong> events. This reference list the most common events used for synchronization and UI control.</p>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Direction</th>
+                    <th>Payload</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>docs:open</code></td>
+                    <td><span class="tag blue">To View</span></td>
+                    <td><code>{ docId: string }</code></td>
+                    <td>Triggers the Docs tab and opens a specific document by ID.</td>
+                </tr>
+                <tr>
+                    <td><code>switch-tab</code></td>
+                    <td><span class="tag blue">To App</span></td>
+                    <td><code>{ tab: string }</code></td>
+                    <td>Switches the entire application to a specific tab.</td>
+                </tr>
+                <tr>
+                    <td><code>project-changed</code></td>
+                    <td><span class="tag green">From App</span></td>
+                    <td><code>{ projectName: string }</code></td>
+                    <td>Fired when the user switches projects.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Socket Namespace</h2>
+    <p>All communication happens on the runtime app socket endpoint passed via URL query parameters (localhost + dynamic port). Ensure your module or plugin reads those values instead of hardcoding a port.</p>
+</body>
+</html>

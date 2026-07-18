@@ -1,0 +1,7 @@
+BEGIN_TDS_ENCOUNTER_FACADE
+encounter "Glass Ambush" id glass_ambush length=medium difficulty=normal mode=boss
+style readable mobile_crossfire
+wave opening enemy=chaser count=small pressure=light pattern=fan spawn=edge
+wave pressure enemy=ranger count=medium pressure=medium pattern=line pickup=heal spawn=random
+boss glass_captain name="Glass Captain" deck=fan,radial,line pressure=medium phases=3 adds=light pickup=heal
+END_TDS_ENCOUNTER_FACADE

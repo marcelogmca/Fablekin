@@ -1,0 +1,13 @@
+documented_files:
+  - path: engine/themes/mint.css
+    hash: A67A65CDF9AF466B95661284437D2391
+  - path: engine/themes/dark_fantasy.css
+    hash: 139CA493A8ADB9B9857175DA1587F510
+  - path: engine/themes/cyberpunk.css
+    hash: D538C17E1E6CA2B106342AD4414DA7EF
+  - path: engine/themes/blueish_soft.css
+    hash: B9A9F102BF5149F8D73DAB4F9107F9DE
+  - path: engine/titlebar.js
+    hash: 180734C21552ED34807E1152BA91BE67
+  - path: engine/index.html
+    hash: 93C44874221EE89F6477D85CC401E44C

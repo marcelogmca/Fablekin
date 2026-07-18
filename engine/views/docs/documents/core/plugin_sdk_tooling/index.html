@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin SDK Tooling Reference</title>
+    <style>
+        :root {
+            --bg: #0b1116;
+            --panel: #101923;
+            --panel-2: #132030;
+            --border: #274059;
+            --text: #e7f2ff;
+            --muted: #9bb3cc;
+            --accent: #7bc4ff;
+            --accent-2: #8af0cb;
+            --mono: "Consolas", "Courier New", monospace;
+            --sans: "Segoe UI", "Trebuchet MS", sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: var(--sans);
+            background:
+                radial-gradient(circle at 10% -10%, rgba(123, 196, 255, 0.12), transparent 40%),
+                radial-gradient(circle at 120% 30%, rgba(138, 240, 203, 0.08), transparent 45%),
+                var(--bg);
+            color: var(--text);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        nav {
+            border-right: 1px solid var(--border);
+            background: rgba(9, 15, 22, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 24px 16px 28px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: auto;
+        }
+
+        nav h1 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            letter-spacing: 0.2px;
+        }
+
+        nav p {
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .toc {
+            display: grid;
+            gap: 8px;
+        }
+
+        .toc a {
+            color: var(--muted);
+            text-decoration: none;
+            padding: 8px 10px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            transition: 140ms ease;
+            font-size: 14px;
+        }
+
+        .toc a:hover {
+            color: var(--text);
+            background: rgba(123, 196, 255, 0.08);
+            border-color: rgba(123, 196, 255, 0.3);
+        }
+
+        main {
+            padding: 28px 36px 80px;
+            max-width: 1100px;
+        }
+
+        .hero {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: linear-gradient(140deg, rgba(123, 196, 255, 0.12), rgba(138, 240, 203, 0.04));
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+
+        .hero h2 {
+            margin: 0 0 8px;
+            font-size: 27px;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        section {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: linear-gradient(180deg, rgba(15, 25, 35, 0.92), rgba(10, 18, 27, 0.92));
+            padding: 20px 22px;
+            margin-top: 16px;
+        }
+
+        section h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        section p {
+            margin: 0 0 10px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .sub {
+            margin-top: 14px;
+            padding: 14px;
+            border: 1px solid rgba(123, 196, 255, 0.25);
+            border-radius: 12px;
+            background: rgba(19, 32, 48, 0.45);
+        }
+
+        .sub h4 {
+            margin: 0 0 8px;
+            color: var(--accent);
+            font-size: 15px;
+        }
+
+        pre {
+            margin: 8px 0 0;
+            padding: 12px;
+            border: 1px solid rgba(123, 196, 255, 0.35);
+            border-radius: 10px;
+            background: #08111a;
+            color: #d7eaff;
+            font-size: 12px;
+            overflow-x: auto;
+            font-family: var(--mono);
+            line-height: 1.4;
+        }
+
+        code {
+            font-family: var(--mono);
+            background: rgba(123, 196, 255, 0.12);
+            border: 1px solid rgba(123, 196, 255, 0.25);
+            padding: 1px 4px;
+            border-radius: 6px;
+            color: #c8ecff;
+        }
+
+        ul {
+            margin: 8px 0 0;
+            padding-left: 20px;
+            color: var(--muted);
+        }
+
+        li { margin: 6px 0; }
+
+        .callout {
+            margin-top: 14px;
+            padding: 12px;
+            border: 1px solid rgba(138, 240, 203, 0.35);
+            border-radius: 12px;
+            background: rgba(20, 45, 41, 0.35);
+            color: #d9fff3;
+        }
+
+        .callout strong {
+            color: var(--accent-2);
+        }
+
+        @media (max-width: 940px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            main {
+                padding: 20px 16px 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <nav>
+            <h1>Plugin SDK</h1>
+            <p>Backend tools and frontend integration map</p>
+            <div class="toc">
+                <a href="#overview">Overview</a>
+                <a href="#core-tools">Core Tool Groups</a>
+                <a href="#model-aliases">Model Aliases</a>
+                <a href="#state-coordination">State &amp; Coordination</a>
+                <a href="#frontend-tools">Frontend Integration</a>
+                <a href="#gui-intercepts">GUI Intercepts</a>
+                <a href="#file-viewers">Custom File Viewers</a>
+            </div>
+
+        </nav>
+
+        <main>
+            <div class="hero" id="overview">
+                <h2>Plugin Tooling Reference</h2>
+                <p>
+                    Every backend plugin callback receives <code>(context, tools)</code>. Start here to choose the
+                    correct SDK group, then use the focused guides and example plugins for complete implementations.
+                </p>
+            </div>
+
+            <section id="core-tools">
+                <h3>Core Tool Groups</h3>
+                <p>The <code>tools</code> object is grouped by responsibility. Prefer these APIs over direct access to engine internals.</p>
+                <ul>
+                    <li><code>tools.settings</code>: read and write plugin settings.</li>
+                    <li><code>tools.llm</code>, <code>tools.prompt</code>: alias-routed model calls and prompt contributions.</li>
+                    <li><code>tools.project</code>, <code>tools.assets</code>: sandboxed project files, selected files, and asset lookup.</li>
+                    <li><code>tools.pluginState</code>, <code>tools.facts</code>, <code>tools.memory</code>, <code>tools.vector</code>: plugin-owned state and retrieval.</li>
+                    <li><code>tools.turns</code>, <code>tools.sequence</code>, <code>tools.vn</code>, <code>tools.interludes</code>: timeline and VN output.</li>
+                    <li><code>tools.director</code>, <code>tools.directives</code>: mechanical capabilities, scene phases, and directive access.</li>
+                    <li><code>tools.plugins</code>: exported plugin API calls and manual hook execution.</li>
+                    <li><code>tools.jobs</code>, <code>tools.status</code>: tracked work, progress, cancellation, and user feedback.</li>
+                    <li><code>tools.gui</code>, <code>tools.socket</code>: frontend injection, intercept registration, and client events.</li>
+                    <li><code>tools.db</code>, <code>tools.network</code>: advanced storage and HTTP routes; use narrowly and validate all input.</li>
+                    <li><code>tools.logger</code>: scoped diagnostics without unstructured console output.</li>
+                </ul>
+            </section>
+
+            <section id="model-aliases">
+                <h3>Model Aliases</h3>
+                <p>
+                    LLM settings store only a global alias. The engine resolves its provider and concrete model at call time.
+                    Missing or invalid aliases are configuration errors; plugins must not add provider fallbacks.
+                </p>
+                <pre>settingsSchema: {
+  model_def: {
+    type: "select",
+    label: "Analysis Model",
+    options: "llm-aliases",
+    default: { model: "lowendmodel" }
+  }
+}
+
+const model = tools.settings.getSelf().model_def?.model;
+if (!model) throw new Error("Configure an Analysis Model first.");
+
+const response = await tools.llm.withSchema({
+  model,
+  messages,
+  params: { retries: 1, timeout: 30000 }
+}, resultSchema);</pre>
+                <p>See <a href="../plugin_dev/examples.md">Example: Prompt and LLM</a> for validation and prompt injection.</p>
+            </section>
+
+            <section id="state-coordination">
+                <h3>State and Plugin Coordination</h3>
+                <p>
+                    Use runtime state for process-local values, turn state for rewind-aware output, and facts for scoped timeline records.
+                    Expose stable async functions under <code>exports</code> when another plugin needs your capability.
+                </p>
+                <pre>const runtime = tools.pluginState.runtime({ cache: {} });
+const turnState = tools.pluginState.turn({ annotations: [] });
+
+const result = await tools.plugins.tryCall(
+  "optional_plugin",
+  "getGuidance",
+  [context.turnNumber],
+  { silent: true, fallback: null }
+);</pre>
+                <p>
+                    Declare required integrations in <code>dependencies</code> and optional integrations in
+                    <code>optionalDependencies</code>. See the <a href="../plugin_dev/examples.md">Plugin Example Catalog</a>
+                    for state, exports, and interoperability examples.
+                </p>
+            </section>
+
+            <section id="frontend-tools">
+                <h3>Frontend Integration</h3>
+                <p>
+                    Plugin views use <code>window.bridge</code> and namespaced socket events. VN frontend injections use
+                    <code>window.VN</code> and <code>VN.pixiPlugins</code>. Intercept payloads receive a run-scoped
+                    <code>bridge</code> with lifecycle cleanup, navigation, input, actor, and presentation helpers.
+                </p>
+                <pre>// Plugin view
+const result = await bridge.request("my_plugin:get-data", {});
+
+// Long-lived VN injection
+VN.pixiPlugins.register("my_plugin", runtime => {
+  runtime.onSocket("my_plugin:update", handleUpdate);
+  runtime.onDispose(cleanup);
+});</pre>
+            </section>
+
+            <section id="gui-intercepts">
+                <h3>GUI Intercepts</h3>
+                <p>
+                    Intercepts are checkpoint middleware that can pause or augment VN playback and submission.
+                    Register persisted or runtime descriptors with <code>tools.gui</code>, provide payload factories through
+                    <code>exports.guiIntercepts</code>, and clean up every timer and listener through <code>bridge.lifecycle</code>.
+                </p>
+                <div class="callout">
+                    The complete descriptor schema, checkpoints, replay policies, bridge methods, and lifecycle rules live in the
+                    <a href="../gui_intercept_sdk/index.html">GUI Intercept SDK</a>.
+                </div>
+            </section>
+
+            <section id="file-viewers">
+                <h3>Custom File Viewers</h3>
+                <p>
+                    Plugins can register custom viewers for specific file modes (e.g., custom lore formats, character profiles).
+                    This is handled via the <code>provideFileView</code> export.
+                </p>
+                <div class="sub">
+                    <h4>Registration</h4>
+                    <p>First, register a custom file mode during <code>HOOK_SYSTEM_BOOT</code> or <code>HOOK_PROJECT_LOADED</code>:</p>
+                    <pre>tools.project.registerFileMode("my-custom-mode", {
+  label: "My Custom Viewer",
+  description: "Structured files owned by this plugin.",
+  viewer: true,
+  schema: {
+    title: { type: "text", label: "Title" }
+  }
+});</pre>
+                </div>
+                <div class="sub">
+                    <h4>Implementation</h4>
+                    <p>Then, export <code>provideFileView</code> in your plugin manifest:</p>
+                    <pre>function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&amp;", "&amp;amp;")
+    .replaceAll("&lt;", "&amp;lt;")
+    .replaceAll("&gt;", "&amp;gt;")
+    .replaceAll('"', "&amp;quot;")
+    .replaceAll("'", "&amp;#039;");
+}
+
+module.exports = {
+  id: "my_viewer_plugin",
+  exports: {
+    async provideFileView(context, tools, { modeId, filePath }) {
+      if (modeId !== "my-custom-mode") return null;
+      try {
+        const data = JSON.parse(await tools.project.readFile(filePath));
+        return {
+          type: "html",
+          content: "&lt;h2&gt;" + escapeHtml(data.title || "Untitled") + "&lt;/h2&gt;"
+        };
+      } catch (error) {
+        tools.logger.warn(`Could not render custom file: ${error.message}`);
+        return { type: "text", content: "This file is missing or malformed." };
+      }
+    }
+  }
+};</pre>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

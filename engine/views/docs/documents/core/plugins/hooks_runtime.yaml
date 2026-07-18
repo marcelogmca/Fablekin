@@ -1,0 +1,7 @@
+documented_files:
+  - path: engine/modules/plugin_manager/runtime/hook_executor.js
+    hash: CA5B2906D8C74BA0F923BFCF07DF5DD7
+  - path: engine/modules/plugin_manager/plugin_manager.js
+    hash: 7ABFD1E5642622A4F1FB2B2A3D621E74
+  - path: engine/modules/plugin_manager/runtime/errors.js
+    hash: B92B7F617C58D44CEDC7B69772B2E2DA

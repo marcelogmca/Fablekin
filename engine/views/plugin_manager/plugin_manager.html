@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Plugin Manager</title>
+    <link rel="stylesheet" id="theme-link" href="../../themes/active/global.css">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../libs/plugin_preview_gallery.css">
+    <link rel="stylesheet" href="../libs/premium_select.css">
+    <meta charset="UTF-8">
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+    <script src="../scripts/tooltips.js"></script>
+    <script src="../scripts/modals.js"></script>
+    <script src="../libs/premium_select.js"></script>
+</head>
+
+<body class="themed-container">
+
+    <div class="manager-container">
+        <div class="header-with-actions">
+            <h1>Plugin Manager</h1>
+            <div class="header-actions">
+                <button id="restart-app-btn" class="btn-base btn-danger hidden" title="Restart Application to Apply Changes">⚠ Restart Now</button>
+                <button id="refresh-plugins-btn" class="btn-base btn-primary" title="Refresh plugins">↻ Refresh</button>
+                <div class="view-mode-selector" aria-label="Plugin view mode">
+                    <button class="btn-base btn-secondary view-mode-btn" type="button" data-view-mode="grid">Grid</button>
+                    <button class="btn-base btn-secondary view-mode-btn" type="button" data-view-mode="list">List</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="restart-banner" class="restart-banner hidden">
+            <span class="banner-icon">⚠️</span>
+            <span class="banner-text">Plugin changes detected. A restart is required to fully apply these changes and prevent system instability.</span>
+        </div>
+
+        <div class="filter-controls">
+            <div class="search-container">
+                <input type="text" id="plugin-search" placeholder="Search plugins by name, ID, author, or description..." class="search-input">
+                <button id="clear-search" class="clear-btn" title="Clear Search">×</button>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span class="filter-label">Status:</span>
+                    <div class="toggle-group" id="status-filters">
+                        <button class="toggle-item active" data-status="all">All</button>
+                        <button class="toggle-item" data-status="active">Active</button>
+                        <button class="toggle-item" data-status="disabled">Disabled</button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">Categories:</span>
+                    <div class="chip-container" id="category-filters">
+                        <button class="chip active" data-category="all">All</button>
+                        <!-- Categories will be injected here or hardcoded -->
+                        <button class="chip" data-category="Narrative">Narrative</button>
+                        <button class="chip" data-category="Characters">Characters</button>
+                        <button class="chip" data-category="World">World</button>
+                        <button class="chip" data-category="Gameplay">Gameplay</button>
+                        <button class="chip" data-category="Visual">Visual</button>
+                        <button class="chip" data-category="Audio">Audio</button>
+                        <button class="chip" data-category="Utility">Utility</button>
+                        <button class="chip" data-category="Uncategorized">Uncategorized</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="plugin-security-notice" role="note" aria-label="Plugin security notice">
+            <span class="plugin-security-icon" aria-hidden="true">!</span>
+            <p><strong>Security notice:</strong> Plugins can run code and access files on your computer. Only install plugins from sources you trust.</p>
+        </div>
+
+        <div id="plugin-list" class="plugin-list">
+            <!-- Plugins will be injected here -->
+        </div>
+
+        <div class="experimental-section">
+            <h2 id="experimental-header" class="experimental-title clickable-header">
+                <span class="toggle-icon">▼</span>
+                Developer & Reference Plugins
+            </h2>
+            <div id="test-plugin-list" class="plugin-list experimental-list">
+                <!-- Test plugins will be injected here -->
+            </div>
+        </div>
+
+        <!-- Hidden Modal Containers -->
+        <div id="modal-containers" style="display: none;">
+            <div id="settings-modal-content">
+                <div id="settings-form" class="settings-form">
+                    <!-- Dynamic form fields will be injected here -->
+                </div>
+                <div class="modal-buttons" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="save-settings" class="btn-base btn-primary">Save Settings</button>
+                    <button id="cancel-settings" class="btn-base btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="../libs/plugin_preview_gallery.js"></script>
+        <script src="renderer_plugin_manager.js"></script>
+</body>
+
+</html>

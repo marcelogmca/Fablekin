@@ -1,0 +1,43 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "main.js",
+    "renderer.js",
+    "titlebar.js",
+    "views/**/renderer*.js",
+    "views/**/js/**/*.js",
+    "plugins/**/index.js",
+    "plugins/**/logic.js",
+    "modules/**/*.js"
+  ],
+  "project": [
+    "**/*.{js,cjs,mjs}"
+  ],
+  "ignore": [
+    "node_modules/**",
+    "reports/**",
+    "vendor/**",
+    "views/libs/**/*.min.js",
+    "plugins/**/dist/**",
+    "plugins/**",
+    "plugins/disabled/**",
+    "views/docs/docs_index.js",
+    "views/libs/plugin_bridge.js",
+    "views/libs/premium_select.js",
+    "views/memory_inspector/terminal_commands.js",
+    "views/scripts/modals.js",
+    "views/scripts/tooltips.js",
+    "views/libs/jsontree/jsonTree.js",
+    "eslint.config.js",
+    "views/libs/socket_bootstrap.js",
+    "views/content_manager/modules/state.js",
+    "views/content_manager/modules/ui_renderer.js",
+    "views/content_manager/modules/file_actions.js",
+    "scripts/eslint.config.js",
+    "scripts/launch_fablekin.js"
+  ],
+  "ignoreDependencies": [
+    "@xterm/addon-fit",
+    "@xterm/xterm"
+  ]
+}

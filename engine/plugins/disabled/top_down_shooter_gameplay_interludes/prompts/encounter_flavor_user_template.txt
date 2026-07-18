@@ -1,0 +1,22 @@
+Scene context:
+{{SCENE_CONTEXT}}
+
+Part 1 - Canon data:
+{{CANON_CONTEXT}}
+
+Part 3 - Narrative history (balanced):
+{{BALANCED_HISTORY_CONTEXT}}
+
+Relevant lore context:
+{{LORE_CONTEXT}}
+
+Party / prominent character names:
+{{CHARACTER_NAMES_JSON}}
+
+Compiled encounter summary:
+{{COMPILED_SUMMARY_JSON}}
+
+Return exactly one JSON object in this format:
+{{FLAVOR_RESPONSE_SCHEMA_JSON}}
+
+Allowed event ids: {{FLAVOR_EVENT_IDS_CSV}}

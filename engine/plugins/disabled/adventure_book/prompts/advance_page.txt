@@ -1,0 +1,48 @@
+Continue the Adventure Book as raw prose.
+
+Write ONLY raw prose.
+Do not return JSON.
+Do not return XML.
+Do not use markdown headings, bullet lists, option lists, stat blocks, or page labels.
+
+Core intent:
+The Adventure Book is a temporary zoom-in on the parent narrative action, like a tabletop RPG travel/skill-challenge vignette. It is NOT a new main plot, not a replacement scene direction, and not a direct continuation that solves the whole VN chapter by itself.
+
+You are still inside the same bounded scope established by the first Adventure Book chapter. Continue resolving that temporary challenge and its repercussions. Do not escalate into a larger plot just because a roll happened.
+
+Important transformation rule:
+The previous message contains the previous chapter prose, selected option, and roll as SOURCE MATERIAL. It is not prose to repeat, summarize, or rewrite. Do not produce a carbon copy of the previous chapter. Start from the selected option and roll, then create the next NEW consequence or complication inside the same bounded temporary adventure.
+
+Scope contract:
+- Preserve the parent action and its obvious destination/goal.
+- Zoom in; do not zoom out.
+- Do not abandon, redirect, or supersede the parent action.
+- Do not introduce a new main quest, major villain, world-state upheaval, or plot revelation that dominates the campaign.
+- Do not decide the entire higher plot.
+- Do not permanently remove party members or make irreversible major consequences unless the existing context already made that plausible.
+- Consequences should be local, stateful, and useful for the next normal VN chapter: time, condition, resources, morale, relationships, minor clues, rumors, injuries, debts, supplies, route changes, or arrival tone.
+- If the frame is a journey, investigation, infiltration, survival scene, ruin approach, social obstacle, or decoding task, the Adventure Book should determine how that frame concludes, not replace it with a new frame.
+- Read the room. Match the tone, genre, stakes, intimacy, brutality, politics, comedy, horror, or erotic charge of the story so far when the context supports it. Do not default to sanitized generic RPG material.
+
+Write the next chapter as one continuous story scene:
+- Around 600 words. Aim for 500-750 words unless this is the final resolving chapter and it naturally needs to be tighter.
+- Start by showing the concrete consequence of the chosen option and roll.
+- Include character dialogue where natural.
+- Failure must move the story forward with a playable complication.
+- Critical success grants an extra advantage or discovery.
+- Critical failure creates a severe but playable complication.
+- Automatic/certain choices should produce safe, modest, mundane progress rather than the best possible outcome.
+- Risky check choices should honor their outcome tier: high target successes can be very good, and critical failures can be genuinely severe when the story supports it.
+- Continue the same challenge as a repercussion of the previous chapter.
+- Keep the repercussion inside the same parent action and bounded temporary adventure.
+- End at a clear new cliffhanger/decision point unless the challenge is fully resolved.
+- If this is the final chapter, resolve the challenge cleanly and leave a hook for the normal VN to continue.
+- Do not write the choices.
+
+This next chapter is chapter {{NEXT_STEP_INDEX}} of at most {{MAX_STEPS}} Adventure Book chapters.
+If chapter {{NEXT_STEP_INDEX}} is the maximum chapter, strongly prefer resolving the challenge by the end of this prose.
+
+Chapter pacing contract:
+{{PACING_CONTRACT}}
+
+Use the pacing contract to decide whether this prose should escalate, narrow, resolve, or prepare a normal VN handoff. If there is only one chapter left after this, aim the scene toward a strong final beat. If this is the final chapter, either resolve cleanly or leave the characters in an immediate handoff state the VN can pick up from, such as changed arrival, live danger, aftermath, or a soft cliffhanger.

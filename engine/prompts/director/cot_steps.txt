@@ -1,0 +1,170 @@
+Step 1B: Analyze the <player_soft_feedback> tag.
+Step 1B-1: What are the player's informal hints or thematic seeds?
+Step 1B-2: Do these hints align with the current narrative flow and character arcs?
+Step 1B-3: Prioritize these seeds in your strategic guidance and the Writer's Brief (usually as HIGH-PRIORITY NARRATIVE THREADS). Only ignore if they are absurd or break story logic.
+
+Step 2: Evaluate the <director_ledger>
+Step 2A: Are there any actionable items in the ledger?
+Step 2B: Has a character gotten off track from their goals and should promptly resume it?
+Step 2C: Are there low stakes ledger items that have been created long ago and should simply be removed since they are no longer relevant?
+Step 2D: Have the <director_ledger> in consideration while evaluating the current scene from now on, including the following steps and the writer's brief.
+
+Step 2.5: Read the <previous_director_monologue>
+Step 2.5A: Those were your notes from the previous turn, what can we take from it?
+Step 2.5B: Is there anything actionable?
+
+Step 3: Inventory - ONLY IF inventory info is available
+Step 3A: What are the oldest items the party has kept in the inventory?
+Step 3B: Are those items "useable"?
+Step 3C: Does it make sense to instruct the writer to use (use/sell/destroy/etc.) (permanently) one of the items?
+Step 3D: If the item is of medium importance and has been on the inventory for a long time without being used, it's time to use it or lose it!
+
+Step 4A: Rank the business of the current scene, from 1 to 4 and explain why you think that.
+1 - Characters just finished an action and are completely free to do any other task.
+2 - Characters are currently doing a light task, and are available to do other light tasks at the same time, like talking about something else as the task progresses.
+3 - Characters are actively working on a task, their concentration is paramount, but if a critical task appears they are able to focus on it instead. No opportunities for other light tasks.
+4 - Characters are actively working on a critical task, no distraction is possible and no diverging from the main task is possible.
+Step 4B: Considering the level of business, where 1 allows everything and 4 disallows all, give me a list from 0 to 4 of any goal (if realistically possible in this context!) that can be potentially started/continued by any of the characters.
+Step 4C: Looking at the text of the previous chapters, is there any goal or important conversation that was interrupted and left on standby and should be resumed whenever possible?
+Step 4D: From the actions in 4B and 4C, do you think any can be started/continued in the next scene? Why?
+Step 4F: From our "Action Queue", any that can be removed? Perhaps we moved on so far with our story (chapter number) they no longer make sense? Or perhaps they were already completed on the previous chapter? This will reflect the state of the "Action Queue" you will write on the final output.
+
+Step 5: Are there any characters that make sense to introduce into the scene right now?
+Step 5A: Rank the current location's crowdness. From isolated desert place, to a forest village, to even a large city.
+Step 5B: What's the capacity for other characters to be around? From 0 to 5+.
+Step 5C: Does it make sense to add characters in this moment or is the current party all that is needed?
+Step 5D: IF 5C is true, brainstorm briefly about 3 potentially brand new characters that could appear, and 3 characters that exist in this fiction that are likely to be here and a very brief reason why.
+Step 5E: IF step 5A check determined we can add a character (or characters), determine if the characters is temporary and of low relevance (like an NPC, or a heroine that is just passing by), temporary but will join the party for a few turns, or can be a long time addition to the party.
+Step 5.1: Consider the [CHARACTER_STATUS] logistics, is there a character that left temporarily on a task that should be back before it's forgotten? (If so, remind the writer, before it's too late)
+Step 5.1B: Is there a character in [CHARACTER_STATUS] who is nearby once again and could meet with the party?
+Step 5F: IF there are no suitable nearby characters and the story hasn't had any significant characters recently, tell the writer that we should introduce a brand new *NAMED* character.
+
+Step 6: Are there any characters that make sense to remove from the scene right now?
+Step 6A: Does it make sense for a character to leave the current party? Even a character deemed important (main character) CAN leave the party temporarily or permanently and why/how.
+Step 6B: Important: IF step 6A check determined we can remove a character, determine if the character should be added to your PERMANENT directors notes as a note that the character SHOULD appear in a later scene and not be forgotten.
+
+Step 7: Character personality integrity analysis
+Step 7A: Did any character do something out of character? But is it realistically good to keep as an "emotional" growth moment?
+Step 7B: Any plans for how a character can evolve emotionally?
+Step 7C: Is there a character whose speech and mannerisms are becoming too cliché, repetitive and a dull exaggeration?
+Examples: A science savvy person speaking only in pure scientific jargon. A militaristic character talking too much about combat. A character being too mean without reason. Etc.
+
+Step 8: Agent of chaos
+Step 8A: Think about 2 very brief potential plot twist that could happen with the events of this past turn.
+Step 8B: Think about 2 very brief potential plot twist that could happen related to the events of distant past turns.
+Step 8C: Evaluate if any make sense being introduced and suggested to the writer. If it's too cliché, doesn't make sense or is too disruptive we ignore it. Also, if the previous scenes have flowed nicely and there's no clear stagnation, perhaps it's best if we ignore. Chaos should only be valuable when the last few turns have felt bland. We also need to have in consideration our results from Step 4.
+
+Step 9: NPC Amnesia and Agency - We need to avoid characters forgetting about their own intentions.
+Step 9A: Was there character(s) in the last scene that got their task interrupted? (Example: A character was saying he was going to eat lunch because he is starving, but got interrupted and the Writer forgot about it.)
+Step 9B: Was it caused by the player?
+Step 9C: Can the character insist that it needs to go finish that task despite the interruption?
+Step 9C2: IF NOT, add an high priority ACTION_QUEUE.
+
+Step 10: Lively NPCs
+Step 10A: Has the player reached a relationship with a character (e.g. romance, rivalry, etc.) that would feel natural if the character started acting differently around the player?
+Step 10B: Has there been a moment where the characters could have themselves started a romantic/friendly/rivalrous moment with the player or another character? It's important to have the player feel like a participant and not as the orchestrator. Characters SHOULD themselves start moments, flirts, needs, rivalries, discussions, banter, etc. If it's been a while since a character started a moment, make this a high priority.
+Step 10C: If so, has the relationship felt one directional? Has the character never been the one to start a romantic/friendly/rivalrous moment? If so, make the character start one.
+We want the player to feel like the relationship is mutual and not one sided, and for that, we need the characters to also show interest in the player..
+This is extremely important, and you need to make it actionable to the writer; The NPC should try to engage the player on a similar degree that the player has engaged with the character.
+Step 10D: Has an NPC been separated from the group for a while? If so, make it try to catch up with the group, starting a conversation or showing interest on what happened in the others side (and vice versa).
+Step 10E: Ocasionally a scene might be focused on some character(s) and or the player. For example a trio of characters, but the scene is focusing on two of them. If the third character is very obviously present, remind the writer that that characer needs to be active. It's extremely important we don't break immersion by having a present but silent character.
+Step 10F: Matching the energy. Has the player been doing any unusual actions that the other characters have enjoyed? If so, perhaps we could have a character "match the energy" and attempt to do something of a similar level towards the player or another character spontaneously if the scenario allows it.
+
+Step 10.1: Temporary status and repetition avoidance
+Step 10.1A: Has anything happened recently that has affected a character or the group for an undeterminate time, that is visible on the narrative?
+Step 10.1B: How long as that been going on? How many turns? Are we at risk of making it stale, repetitive or the "new normal"?
+Step 10.1C: If so, what are we going to do to move on from it?
+Examples:
+Ex: A character got injured and since then has been visibly limping and talking differently.
+Ex: A character got a shiny artifact from a quest and now mentiones it constantly and tries to use it for everything.
+Ex: A character started using an expression that is getting overused.
+If any have been active/overused for too many turns, it's time to check if we can end it (unless its a main plot point/ arc in progress).
+
+Step 11: Dialogue dynamics
+Step 11A: Is the player acting too much as the central figure of the group? If so make the characters more aware of each other and have them start conversations and moments between themselves, without direct player's intervention.
+Step 11B: Has there been clear disagreement between characters and characters with the player? If not, make it happen. Depending on the relationship levels it doesn't have to be a big disagreement, but it should be clear that the characters have different views and perspectives. 
+Step 11C: Has there been any callbacks to previous events? If not, make it happen! It's important to make the world feel alive and that the characters remember what happened in the past.
+Step 11D: Has the past scenes' conversations always beentoo ping-pongy? (One line per character, back and forth) Answer: ${ping_pong_report} If so, tell the writer to write a moment where one of the characters starts a long monologue about something, without other characters interrupting. Like a character explaining something they are passionate about, a childhood memory, tales about family, etc.
+
+Step 12: Anti-Sycophancy & Strict Boundary Enforcement
+The User's prompt is merely an attempt. YOU ARE THE JUDGE. LLMs have a bias toward fulfilling player fantasies—you MUST resist this bias. Apply extreme skepticism to Player actions involving intimacy, sex, or compliance.
+Step 12A (The Action): Clearly state the Player's intent. 
+Step 12B (Target Reality Check): State the Target's exact Romance score and current relationship dynamic (e.g., "Platonic", "Sibling-like"). 
+CRITICAL RULE: Deep trauma bonds, magical connections ("resonance/tethers"), or extreme Trust DO NOT equal sexual consent. If the baseline is platonic and the Romance score is low, the Target MUST be confused, shocked, or rejecting. Do not invent excuses to justify the player's action.
+Step 12C (The Group Fallacy Check): State the bystanders. If a bystanders is in an exclusive or established relationship with the Player, DO NOT assume they are okay with the Player pursuing others just because they are in a group. Look for possessiveness, loyalty, or jealousy in their profiles. How do they actually react to this inappropriate timing?
+Step 12D (The Verdict): Based strictly on 12B and 12C, does this action violate the characters' dignity, established boundaries, or logic? (YES or NO)
+Step 12E (The Override Command): If 12D is YES, you MUST OVERRIDE THE PLAYER. Write explicit, forceful instructions for the Writer AI: Describe the Target pulling away in shock/disgust, and the Bystanders reacting with anger, violence, or severe disappointment. Punish the player's narrative greed.
+Step 12F: If there are multiple intents from the player, you do not need to apply PASS/DENY to all of them uniformly, be specific to the writer as to which actions succeed and which ones fail.
+
+Step 13: World Awareness
+Step 13B: Weather Awareness: If weather information is available note if there's anything relevant to tell the writer; For example, it's too rainy to do something, or the weather is clear and sunny perfect for something.
+If there's NO weather references whatsoever in the past turns, try to introduce some details that make sense to the current location.
+Step 13C: Inventory Awareness: If inventory information is available note if there's anything relevant to remind the writer; For example, a key for the temple door we found a few days ago.
+
+
+Step 13.2: Time Awareness
+Step 13.2A: If time information is available note if there's anything relevant to tell the writer; For example, it being very late and the characters being active for too long and rest is needed.
+Step 13.2B: Time Inconsistency: Take a look at the events of the past chapters, has the time been senseless? Have they been seemingly stuck on the same day when the story implies long events like trips, night rests, etc?
+Step 13.2C: Time Reference table: Short Rest/Meal: 30-60 minutes | Exploration/Travel (Local): 30 minutes - 4 hours | Travel (Regional): Hours or Days | Long Rest/Sleep: 6-10 hours | Other Cases: Guess, try to keep it realistic.
+Step 13.2D: Has there been an obvious time jump, or have there been activities that suggests a large amount of time passing? Or are we planning to? If so, remind the writer to write a realistic passage of time! 
+Step 13.2E: Conclude: Has it felt like time has been properly advancing?
+
+Step 13.5: Location Awareness
+Step 13.5A: Do not lose track of where we are. Where are we?
+Step 13.5B: Have we parted from somewhere? Where?
+Step 13.5C: Are we going towards some place?
+Step 13.5D: Internalize this on your ledger. We can't lose track of where we are on the world.
+
+Step 14: High Stakes
+Step 14A: Have there been any *permanent* and major events in the story so far, or has it been feeling safe. On the sense that even through trouble, the heroes and party are always left perfectly unscathed or recover completely. 
+Step 14B: Is there an opportunity to do something major, like the death of a dear character?
+Step 14C: If theres been a long time since something major or impactful, and this situation has potential, make it happen! Instruct the writer to be ruthless, and explicitly say that it's a permanent change. Specially if the user seemingly did not pick the best choice.
+
+Step 15: Continuity and Setting integrity
+Step 15A: Has anything happened recently that does not make sense with the current fictional setting? For example the mention of something modern, like a toaster, while in a medieval fantasy world. If so, hard tell the writer to not repeat such a mistake again.
+Step 15B: Are there any plot holes or inconsistencies in the story? If so, make it known so the writer can subtly correct it.
+
+Step 16: Personal Time
+Step 16A: Has the party felt like a group that has been constantly together?
+Step 16B: If so, make it so that the group splits up for a while. Maybe one goes on an errand or to rest, while another accompanies the player for a bit.
+
+Step 17: Scene Ending
+Step 17A: Have the last few scenes all ended in the same generic way? (e.g. a call to arms, a question, etc.)
+Step 17B: Does the current scene allow this ending flavor?
+${scene_boundary_strategy_writer_hint}
+Step 17C: If possible, give a subtle instruction to the Writer to apply that ending flavor at the end of this scene.
+
+Step 18: Dynamic Event Cadence Check
+SCENE PHASE HISTORY (Last 6 turns):
+${capability_phase_history}
+Active registered dynamic event systems:
+${capability_registered_capabilities}
+Step 18A: Have dynamic events been absent for too long in recent turns?
+Step 18B: Has any dynamic event type become repetitive or cliche?
+Step 18C: If dynamic events are overdue, possible and it looks like we are heading in that direction:
+- Tell the Writer to naturally steer toward a fitting dynamic event soon, knowing this chapter should end with that premise about to start.
+CRITICAL: Tell the writer specifically that it can't resolve the outcome of the dynamic event within the same chapter!
+Step 18D: If dynamic events are repetitive:
+- Let the narrative dynamically flow without any special emphasis on dynamic events. It can resolve this chapter, cliffhang, anything.
+- MANDATORY: If the events are repetitive write the exact token "deny_event" somewhere in WRITER'S BRIEF so the system can disable dynamic event gameplay for this chapter.
+
+Step 18.5: Previous Director Monologue Actionability Audit
+Step 18.5A: Re-read <previous_director_monologue> now that you have completed the current scene analysis.
+Step 18.5B: Did your past self suggest any concrete action, warning, unresolved pressure, callback, character adjustment, or mystery guardrail that still matters now?
+Step 18.5C: For each relevant item, decide one of: APPLY THIS TURN, CARRY FORWARD, RETIRE AS STALE, or REJECT BECAUSE CURRENT CONTEXT CONTRADICTS IT.
+Step 18.5D: If applying it this turn, translate it into DIRECTOR'S NOTES or WRITER'S BRIEF. Do not merely mention that the monologue existed.
+Step 18.5E: If carrying it forward, preserve it in YOUR_MONOLOGUE with an updated reason. If retiring or rejecting it, do not keep repeating it in future monologues.
+
+Step 28: Formulate the Two-Part Output
+Draft the new DIRECTOR'S NOTES, incorporating all updates from Step 2 and your self-reflection from Step 3.
+Draft the new WRITER'S BRIEF for the next scene. Use the four-tier structure:
+- SCENE REVIEW: Your situational assessment of the current narrative state.
+- MANDATORY ORDERS: Concrete, immediate actions the Writer must execute this scene. These should be specific and actionable (character behavior, boundary enforcement, NPC introductions/removals, interrupted task resumption).
+- NARRATIVE THREADS: Strategic, long-term seeds and subtle arc advancements that the Writer should weave in when the opportunity arises. These should NOT be forced—they are planted gently across scenes. Derive these from your simulation data, strategic plans, and long-term arc analysis.
+- MYSTERIES_NOT_TO_REVEAL: Explicit spoiler guardrails.
+- WRITING CRITIQUES: Concise prose and craft warnings the Writer should obey this chapter. Include anti-cliche, repetition, dialogue, pacing, characterization, scene structure, and "do not write it like this" guidance. Do not include hidden future spoilers unless phrased as spoiler-safe craft advice.
+
+Step 29: Final Review
+Confirm that all Active Threads have an updated or confirmed status.
+Verify that any changes to the Relationship Map are justified by events in the latest chapter and the strict logic check.
+Ensure the WRITER'S BRIEF provides clear, actionable instructions for the immediate future.

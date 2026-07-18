@@ -1,0 +1,5 @@
+documented_files:
+  - path: engine/modules/plugin_manager/plugin_manager.js
+    hash: 2DA23F16A7484AA8C95B7230F94BE178
+  - path: engine/modules/plugin_manager/runtime/loader.js
+    hash: AD800BAC0C1AE766FD41F50836CA9DC7

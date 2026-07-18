@@ -1,0 +1,134 @@
+/* Premium Dropdown Component Styles */
+/* Standardizing selects across the application using a custom UI component */
+
+.premium-select-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    user-select: none;
+    font-size: var(--font-sm);
+    font-family: var(--font-ui);
+}
+
+.premium-select-container.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.premium-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-xs) var(--space-sm);
+    background-color: var(--bg-surface-1);
+    border: var(--border-thin);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-main);
+    min-height: 40px;
+    color: var(--text-main);
+}
+
+.premium-select-trigger:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--glow-primary);
+    background-color: var(--bg-surface-hover);
+}
+
+.premium-select-container.open .premium-select-trigger {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: var(--color-primary);
+    background-color: var(--bg-surface-2);
+}
+
+.premium-select-trigger .arrow {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+    opacity: 0.7;
+}
+
+.premium-select-container.open .arrow {
+    transform: rotate(180deg);
+}
+
+.premium-options-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-surface-2);
+    border: 1px solid var(--color-primary);
+    border-top: none;
+    border-bottom-left-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+    z-index: 1000;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: premiumSelectFadeIn 0.2s ease-out;
+}
+
+@keyframes premiumSelectFadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.premium-select-container.open .premium-options-list {
+    display: block;
+}
+
+.premium-option {
+    padding: var(--space-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border-left: 3px solid transparent;
+}
+
+.premium-option:hover {
+    background-color: var(--bg-surface-hover);
+    padding-left: calc(var(--space-sm) + 4px);
+}
+
+.premium-option.selected {
+    background-color: var(--color-primary-dim);
+    border-left-color: var(--color-primary);
+}
+
+.premium-option-label {
+    font-weight: 700;
+    display: block;
+    color: var(--text-main);
+}
+
+.premium-option-desc {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: 2px;
+}
+
+.premium-dropdown-separator {
+    padding: var(--space-xs) var(--space-sm) 4px var(--space-sm);
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-top: 1px solid var(--divider-color);
+    background-color: rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* Scrollbar for options list */
+.premium-options-list::-webkit-scrollbar {
+    width: 6px;
+}
+.premium-options-list::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 10px;
+}
+.premium-options-list::-webkit-scrollbar-track {
+    background: transparent;
+}

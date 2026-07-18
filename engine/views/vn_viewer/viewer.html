@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Novel Chatbot</title>
+    <link rel="stylesheet" href="../../vendor/fonts/noto_sans.css">
+    <link rel="stylesheet" id="theme-link" href="../../themes/active/global.css">
+
+    <link rel="stylesheet" href="style.css">
+    <!-- Load Socket.IO client first, as the next script depends on it -->
+    <!-- Localized Vendor Dependencies -->
+    <script src="../../vendor/js/socket.io.min.js"></script>
+    <script src="../libs/socket_bootstrap.js"></script>
+    <script src="../../vendor/js/pixi.min.js"></script>
+    <script src="../../vendor/js/pixi-filters.min.js"></script>
+    <!-- PixiJS Plugin Lifecycle Runtime (must load before plugin injection) -->
+    <script src="./js/pixi_plugin_runtime.js"></script>
+    <script src="../../vendor/js/gsap.min.js"></script>
+    <script src="../../vendor/js/PixiPlugin.min.js"></script>
+    <script src="../scripts/tooltips.js"></script>
+    <script src="../scripts/modals.js"></script>
+</head>
+
+<body>
+    <div id="main-layout-wrapper">
+        <div id="vn-hud-slot"></div>
+
+        <div id="vn-main-content">
+            <div id="game-container" data-vn-scene-presentation="fallback">
+                <!-- PixiJS WebGL Canvas -->
+                <canvas id="vn-canvas"></canvas>
+
+                <div id="fullscreen-btn" class="overlay-control-btn" title="Toggle Fullscreen">
+                    <i>⛶</i>
+                </div>
+                <div id="prologue-overlay" class="hidden">
+                    <div class="prologue-header">Prologue</div>
+                    <div id="prologue-content"></div>
+                    <div class="prologue-footer">Type your first message below to begin...</div>
+                </div>
+                <div id="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+
+                <!-- Navigation Overlays -->
+                <div id="prev-chapter-nav" class="nav-card hidden">
+                    <div class="nav-badge">Previous Chapter</div>
+                    <div class="nav-thumbnail"></div>
+                    <div class="nav-info">
+                        <div class="nav-title"></div>
+                    </div>
+                </div>
+
+                <div id="next-chapter-nav" class="nav-card hidden">
+                    <div class="nav-badge">Next Chapter</div>
+                    <div class="nav-thumbnail"></div>
+                    <div class="nav-info">
+                        <div class="nav-title"></div>
+                    </div>
+                </div>
+
+                <div id="status-notification-container">
+                    <div id="status-notification-stack"></div>
+                    <div id="status-notification-grouper" class="hidden">
+                        <span class="grouper-icon">📋</span>
+                        <span id="notification-count">0 Notifications</span>
+                    </div>
+                    <!-- Notifications will be dynamically added here -->
+                </div>
+
+                <div id="toggle-controls-btn" title="Toggle Immersive UI">
+                    <i>⪢</i>
+                </div>
+
+                <div id="dialogue-container">
+                    <div id="character-name"></div>
+                    <div id="name-line"></div>
+                    <div id="dialogue-text"></div>
+
+                    <div id="dialogue-index-indicator" title="Current Sequence Index">0</div>
+
+                    <div id="controls">
+                        <div class="control-btn" id="start-btn" title="Go to first dialogue">
+                            <i class="vn-transport-icon vn-transport-first" aria-hidden="true"></i>
+                        </div>
+                        <div class="control-btn" id="prev-btn" title="Previous message">
+                            <i class="vn-transport-icon vn-transport-previous" aria-hidden="true"></i>
+                        </div>
+                        <div class="control-btn" id="auto-btn" title="Toggle auto-play">
+                            <i class="vn-transport-icon vn-transport-auto" aria-hidden="true"></i>
+                        </div>
+                        <div class="control-btn" id="next-btn" title="Next message">
+                            <i class="vn-transport-icon vn-transport-next" aria-hidden="true"></i>
+                        </div>
+                        <div class="control-btn" id="skip-btn" title="Skip to last dialogue">
+                            <i class="vn-transport-icon vn-transport-last" aria-hidden="true"></i>
+                        </div>
+                        <div class="control-btn" id="log-btn" title="View history">
+                            <i>≡</i>
+                        </div>
+                        <div class="control-btn" id="vn-settings-btn" title="VN Settings">
+                            <i>⚙</i>
+                        </div>
+                        <div class="control-btn" id="music-player-btn" title="Toggle Music Player">
+                            <i>♫</i>
+                        </div>
+                    </div>
+
+                    <div id="mini-music-player" class="minimized">
+                        <div id="music-info">
+                            <div id="music-song-name">No OST Playing</div>
+                            <div id="music-time-display">0:00 / 0:00</div>
+                        </div>
+                        <div id="music-progress-container">
+                            <div id="music-progress-fill"></div>
+                        </div>
+                        <div id="music-controls">
+                            <div id="music-play-pause-btn" class="music-btn">
+                                <i>⏸</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="user-input-container">
+                    <div id="inputs-frame">
+                        <div id="director-toggle-lip" class="director-lip"></div>
+                        <textarea id="director-message"
+                            placeholder="Director Directive (High Priority)...&#10;Use this to highly influence the next scene.&#10;Will override/disable the AI director."
+                            rows="3"></textarea>
+                        <textarea id="user-message" placeholder="What will you do?" rows="3"></textarea>
+                        <textarea id="feedback-message"
+                            placeholder="Do you have soft feedback to guide the narrative? Write it here, it won't disable the director but it will be taken into consideration"
+                            rows="3"></textarea>
+                        <div id="feedback-toggle-lip" class="feedback-lip"></div>
+                    </div>
+                    <div id="user-input-actions">
+                        <div id="input-hint" class="input-hint-icon"
+                            title="Write the dialogue or actions of your character here. Generally, you can use *asterisks* to convey actions.">
+                            ?</div>
+                        <button id="send-message">Send</button>
+                        <button id="undo-message">Undo</button>
+                    </div>
+                    <div id="interlude-return-panel" class="hidden">
+                        <div id="interlude-return-title">Interlude Complete</div>
+                        <div id="interlude-return-text">This side scene does not accept direct input. Return to the main chapter to continue.</div>
+                        <button id="interlude-return-btn" type="button">Return to Main Chapter</button>
+                    </div>
+                </div>
+                <div id="log-container">
+                    <div id="log-header">
+                        <h2>Dialogue History</h2>
+                        <button id="close-log" title="Close History">×</button>
+                    </div>
+                    <div id="log-messages">
+                        <!-- Log messages will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player" style="display:none;" loop></audio>
+    <audio id="voice-player" style="display:none;"></audio>
+
+    <div id="unified-status-popup" style="display:none;">
+        <div id="unified-status-popup-content">
+            <h3 id="unified-status-popup-title">Generating Narrative</h3>
+            <div id="unified-status-popup-timer">
+                <span id="unified-status-elapsed-time">0s</span>
+            </div>
+            <div id="pipeline-progress-bar" class="hidden">
+                <div id="pipeline-phases-container">
+                    <!-- Phase segments dynamically injected -->
+                </div>
+                <div id="pipeline-cursor">
+                    <span id="pipeline-cursor-icon">▼</span>
+                </div>
+                <div id="pipeline-label">
+                    <span id="pipeline-label-icon"></span>
+                    <span id="pipeline-label-name"></span>
+                </div>
+            </div>
+            <div id="unified-status-task-list">
+                <!-- Tasks will be injected here dynamically -->
+            </div>
+            <div id="unified-status-console-toggle" class="console-toggle">
+                <span>Show System Logs</span>
+                <i class="toggle-icon">▼</i>
+            </div>
+            <div id="unified-status-console" class="hidden">
+                <!-- System logs will be batched here -->
+            </div>
+            <button id="cancel-generation-btn" type="button">Cancel</button>
+        </div>
+    </div>
+
+    <div id="vn-settings-content" style="display: none;">
+        <div class="settings-group-title">Audio Settings</div>
+        <div class="setting-item">
+            <label for="ost-volume-slider">OST Volume <span id="ost-volume-value"
+                    class="setting-value">50%</span></label>
+            <input type="range" id="ost-volume-slider" min="0" max="1" step="0.01">
+        </div>
+        <div class="setting-item">
+            <label for="tts-volume-slider">TTS Volume <span id="tts-volume-value"
+                    class="setting-value">50%</span></label>
+            <input type="range" id="tts-volume-slider" min="0" max="1" step="0.01">
+        </div>
+        <div class="setting-item">
+            <label for="rerequest-missing-tts-btn">Missing Voice Lines <span id="missing-tts-count"
+                    class="setting-value">0</span></label>
+            <button id="rerequest-missing-tts-btn" class="setting-input" disabled>
+                Re-request Missing Voice Lines
+            </button>
+        </div>
+        <div class="setting-item">
+            <label for="bgm-sfx-volume-slider">Ambient SFX <span id="bgm-sfx-volume-value"
+                    class="setting-value">30%</span></label>
+            <input type="range" id="bgm-sfx-volume-slider" min="0" max="1" step="0.01">
+        </div>
+        <div class="setting-item">
+            <label for="sfx-volume-slider">SFX Volume <span id="sfx-volume-value"
+                    class="setting-value">50%</span></label>
+            <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01">
+        </div>
+
+        <div class="settings-group-title">Visuals & HUD</div>
+        <div class="setting-item">
+            <label for="sprite-offset-slider">Character Sprite Vertical Offset <span id="sprite-offset-value"
+                    class="setting-value">0px</span></label>
+            <input type="range" id="sprite-offset-slider" min="-1000" max="1000" step="1">
+        </div>
+        <div class="setting-item">
+            <label for="sprite-size-multiplier-slider">Sprite Scale <span id="sprite-size-multiplier-value"
+                    class="setting-value">1.0x</span></label>
+            <input type="range" id="sprite-size-multiplier-slider" min="0.1" max="5.0" step="0.05">
+        </div>
+        <div class="setting-item">
+            <label for="sprite-horizontal-padding-slider">Sprite Horizontal Padding <span
+                    id="sprite-horizontal-padding-value" class="setting-value">0%</span></label>
+            <input type="range" id="sprite-horizontal-padding-slider" min="0" max="40" step="1">
+        </div>
+        <div class="setting-item">
+            <label for="foreground-background-blur-slider">Foreground Background Blur <span
+                    id="foreground-background-blur-value" class="setting-value">0px</span></label>
+            <input type="range" id="foreground-background-blur-slider" min="0" max="20" step="0.5">
+        </div>
+        <div class="setting-item">
+            <label for="dialogue-width-slider">Dialogue Width <span id="dialogue-width-value"
+                    class="setting-value">100%</span></label>
+            <input type="range" id="dialogue-width-slider" min="45" max="100" step="1">
+        </div>
+        <div class="setting-item">
+            <label for="dialogue-height-slider">Dialogue Box Height <span id="dialogue-height-value"
+                    class="setting-value">200px</span></label>
+            <input type="range" id="dialogue-height-slider" min="140" max="420" step="5">
+        </div>
+        <div class="setting-item">
+            <label for="toolbar-vertical-offset-slider">Toolbar Vertical Position <span id="toolbar-vertical-offset-value"
+                    class="setting-value">0%</span></label>
+            <input type="range" id="toolbar-vertical-offset-slider" min="0" max="300" step="1">
+        </div>
+        <div class="setting-item">
+            <label for="panel-transparency-slider">Panel Opacity <span id="panel-transparency-value"
+                    class="setting-value">75%</span></label>
+            <input type="range" id="panel-transparency-slider" min="0" max="1" step="0.01">
+        </div>
+        <div class="setting-item">
+            <label for="panel-blur-slider">Panel Surface Blur <span id="panel-blur-value"
+                    class="setting-value">10px</span></label>
+            <input type="range" id="panel-blur-slider" min="0" max="50" step="1">
+        </div>
+        <div class="setting-item">
+            <label for="font-size-slider">Font Scale <span id="font-size-value"
+                    class="setting-value">1.0x</span></label>
+            <input type="range" id="font-size-slider" min="0.5" max="2" step="0.05">
+        </div>
+        <div class="setting-item">
+            <label for="modal-overlay-opacity-slider">Settings Panel Background Transparency <span
+                    id="modal-overlay-opacity-value" class="setting-value">40%</span></label>
+            <input type="range" id="modal-overlay-opacity-slider" min="0" max="1" step="0.01">
+        </div>
+        <div class="setting-item">
+            <label for="text-alignment-select">Text Alignment</label>
+            <select id="text-alignment-select" class="setting-input">
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <label for="sprite-morph-method-select">Character Sprite Morphing Effect</label>
+            <select id="sprite-morph-method-select" class="setting-input">
+                <option value="motion_blend">Motion Blend</option>
+                <option value="cross_fade">Cross Fade</option>
+                <option value="none">None (Instant)</option>
+            </select>
+        </div>
+
+        <div class="settings-group-title">Gameplay & Behavior</div>
+        <div class="setting-item">
+            <label for="write-speed-slider">Text Speed <span id="write-speed-value"
+                    class="setting-value">30ms</span></label>
+            <input type="range" id="write-speed-slider" min="1" max="100" step="1">
+        </div>
+        <div class="setting-item">
+            <label for="auto-play-delay-slider">Auto-Play Delay <span id="auto-play-delay-value"
+                    class="setting-value">500ms</span></label>
+            <input type="range" id="auto-play-delay-slider" min="0" max="5000" step="50">
+        </div>
+
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="show-chapter-intro-checkbox">
+                <span class="checkbox-label">Show Chapter Intro Titles</span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="show-dialogue-index-indicator-checkbox">
+                <span class="checkbox-label">Show Progress Indicator</span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="ost-popup-checkbox">
+                <span class="checkbox-label">OST Change Popups</span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="mute-audio-during-generation-checkbox">
+                <span class="checkbox-label">Mute audio during generation</span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="play-sound-on-ready-checkbox">
+                <span class="checkbox-label">Sound cue when ready</span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="blink-taskbar-on-ready-checkbox">
+                <span class="checkbox-label">Blink taskbar when ready</span>
+            </label>
+        </div>
+
+        <div class="settings-group-title">Debug & Camera</div>
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="hide-main-sprites-checkbox">
+                <span class="checkbox-label">Hide Main Sprites</span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label class="checkbox-container">
+                <input type="checkbox" id="debug-viewport-checkbox">
+                <span class="checkbox-label">Debug Viewport (Zoom/Pan)</span>
+            </label>
+        </div>
+        <div class="setting-item">
+            <label for="spatial-stage-mode-select">Spatial Stage override</label>
+            <select id="spatial-stage-mode-select" class="setting-input">
+                <option value="default">Default (auto by background)</option>
+                <option value="off">Force VN mode</option>
+                <option value="on">Force Stage mode</option>
+            </select>
+        </div>
+
+        <div class="setting-item debug-controls">
+            <div class="debug-button-row">
+                <button id="debug-zoom-smooth-btn" class="setting-input">Zoom
+                    Random (Smooth)</button>
+                <button id="debug-zoom-instant-btn" class="setting-input">Zoom
+                    Random (Instant)</button>
+            </div>
+            <button id="debug-camera-clear-btn" class="setting-input">Clear
+                Camera (Debug)</button>
+            <button id="stage-calibrator-btn" class="setting-input">Stage
+                Calibrator</button>
+        </div>
+    </div>
+
+
+    <div id="plugin-overlay" class="hidden"></div>
+    <!--
+      All inline script logic has been moved to renderer_vn.js.
+      This file is now only responsible for the HTML structure.
+    -->
+    <script type="module" src="./renderer_vn.js"></script>
+</body>
+
+</html>

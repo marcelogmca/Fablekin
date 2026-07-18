@@ -1,0 +1,35 @@
+{
+  "corners": [
+    {
+      "x": 736.374297560307,
+      "y": 857.0760733621162
+    },
+    {
+      "x": 1315.5556126644735,
+      "y": 871.1111610814145
+    },
+    {
+      "x": 1650.5263157894735,
+      "y": 1080.7017758018092
+    },
+    {
+      "x": 424.795350191886,
+      "y": 1073.2164242393092
+    }
+  ],
+  "perspective_scale_far": 0.35,
+  "perspective_scale_nearby": 0.71,
+  "shadow": {
+    "enabled": true,
+    "angle_mode": "split_x",
+    "angle_degrees": -71,
+    "angle_degrees_left": -31,
+    "angle_degrees_right": -148,
+    "strength": 0.4,
+    "length": 0.5,
+    "blur": 4,
+    "tint_enabled": false,
+    "tint_color": "#000000",
+    "tint_strength": 0
+  }
+}

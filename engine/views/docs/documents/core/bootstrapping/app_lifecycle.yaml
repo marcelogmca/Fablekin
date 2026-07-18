@@ -1,0 +1,11 @@
+documented_files:
+  - path: engine/main.js
+    hash: BA41F12AA14FB14E2002A01A2D8DF978
+  - path: engine/renderer.js
+    hash: D6110CF3E6AF2E326CAB554EBD1E2BA8
+  - path: engine/modules/main_process/bootstrap/app_startup.js
+    hash: 0E08EA83E99A26AC5C4C58F472628B5F
+  - path: engine/modules/main_process/bootstrap/window_manager.js
+    hash: DAB62F573F107882532DE2B62EA2F8BB
+  - path: engine/modules/main_process/bootstrap/socket_runtime.js
+    hash: 1FA71CB47568E3F3B439345CDF89C4EE

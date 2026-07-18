@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fablekin</title>
+    <link rel="stylesheet" id="theme-link" href="themes/active/global.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="titlebar.css">
+    <meta charset="UTF-8">
+    <script src="./vendor/js/socket.io.min.js"></script>
+    <script src="./views/libs/socket_bootstrap.js"></script>
+    <script src="titlebar.js"></script>
+</head>
+
+<body>
+    <div class="custom-titlebar">
+        <div class="titlebar-content">
+            <img src="icon.png" class="titlebar-icon">
+            <span>Fablekin</span>
+        </div>
+        <div class="titlebar-controls">
+            <div class="control-btn" id="window-minimize">
+                <svg viewBox="0 0 10 1">
+                    <path d="M0 0h10v1H0z" fill="currentColor" />
+                </svg>
+            </div>
+            <div class="control-btn" id="window-maximize">
+                <svg viewBox="0 0 10 10">
+                    <path d="M0 0v10h10V0H0zm9 9H1V1h8v8z" fill="currentColor" />
+                </svg>
+            </div>
+            <div class="control-btn close" id="window-close">
+                <svg viewBox="0 0 10 10">
+                    <path d="M10 1L9 0 5 4 1 0 0 1l4 4-4 4 1 1 4-4 4 4 1-1-4-4z" fill="currentColor" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="tabs">
+        <div class="tab-group" data-group="home">
+            <button class="tab-btn active" data-tab="home">Home</button>
+        </div>
+        <div class="tab-group-divider"></div>
+        <div class="tab-group" data-group="content">
+            <button class="tab-btn" data-tab="content_manager">Content Manager</button>
+        </div>
+        <div class="tab-group-divider"></div>
+        <div class="tab-group" data-group="narrative">
+            <button class="tab-btn" data-tab="viewer">Viewer</button>
+            <button class="tab-btn" data-tab="scene-history">Scene History</button>
+            <button class="tab-btn" data-tab="timeline">Timeline</button>
+        </div>
+        <div class="tab-group-divider"></div>
+        <div class="tab-group" data-group="system">
+            <button class="tab-btn" data-tab="logs">Logs Inspector</button>
+            <button class="tab-btn" data-tab="memory">Console</button>
+        </div>
+        <div class="tab-group-divider" id="plugin-tabs-separator" style="display: none;"></div>
+        <div class="tab-group" data-group="extensions">
+            <button class="tab-btn" data-tab="plugins">Plugins</button>
+            <div id="plugin-tabs-container" style="display: inline-block;"></div>
+        </div>
+        <div class="tab-group-divider"></div>
+        <div class="tab-group" data-group="help">
+            <button class="tab-btn" data-tab="docs">Docs</button>
+            <button class="tab-btn" data-tab="settings_manager">Settings</button>
+        </div>
+        <button id="switch-project-btn" class="tab-btn exit-btn" title="Exit to Project Selector">⇄ Switch
+            Project</button>
+    </div>
+    <div id="tab-content">
+        <div id="home-tab" class="tab-pane active">
+            <webview id="home-iframe" data-base-src="views/home/home.html"
+                style="width:100%;height:100%;border:none;"></webview>
+        </div>
+        <div id="content_manager-tab" class="tab-pane">
+            <webview id="content_manager-iframe" data-base-src="views/content_manager/content_manager.html"
+                style="width:100%;height:100%;border:none;"></webview>
+        </div>
+        <div id="viewer-tab" class="tab-pane">
+            <webview id="viewer-iframe" data-base-src="views/vn_viewer/viewer.html"
+                style="width:100%;height:100%;border:none;">
+            </webview>
+        </div>
+        <div id="memory-tab" class="tab-pane">
+            <webview id="memory-iframe" data-base-src="views/memory_inspector/inspector.html"
+                style="width:100%;height:100%;border:none;"></webview>
+        </div>
+        <div id="logs-tab" class="tab-pane">
+            <webview id="logs-iframe" data-base-src="views/log_viewer/logs.html"
+                style="width:100%;height:100%;border:none;">
+            </webview>
+        </div>
+        <div id="scene-history-tab" class="tab-pane">
+            <webview id="scene-history-iframe" data-base-src="views/scene_history/scene_history.html"
+                style="width:100%;height:100%;border:none;"></webview>
+        </div>
+        <div id="timeline-tab" class="tab-pane">
+            <webview id="timeline-iframe" data-base-src="views/timeline/timeline.html"
+                style="width:100%;height:100%;border:none;"></webview>
+        </div>
+        <div id="plugins-tab" class="tab-pane">
+            <webview id="plugins-iframe" data-base-src="views/plugin_manager/plugin_manager.html"
+                style="width:100%;height:100%;border:none;"></webview>
+        </div>
+        <div id="docs-tab" class="tab-pane">
+            <webview id="docs-iframe" data-base-src="views/docs/docs.html" style="width:100%;height:100%;border:none;">
+            </webview>
+        </div>
+        <div id="settings_manager-tab" class="tab-pane">
+            <webview id="settings_manager-iframe" data-base-src="views/settings_manager/settings_manager.html"
+                style="width:100%;height:100%;border:none;"></webview>
+        </div>
+    </div>
+    <script src="renderer.js"></script>
+
+    <!-- Global Story Script trust warning -->
+    <div id="security-warning-modal" class="modal-overlay hidden" style="z-index: 99999;">
+        <div class="modal-content" style="max-width: 600px; border: 2px solid #b83b5e;">
+            <div class="modal-header" style="background-color: #b83b5e; color: white;">
+                <h2>⚠️ Review Story Script</h2>
+            </div>
+            <div class="modal-body">
+                <p>This adventure includes custom <strong>Story Script</strong> code. It can add visual effects,
+                    interface elements, and story-specific mechanics.</p>
+
+                <p style="color: #ffaaaa; font-weight: bold;">Security Warning:</p>
+                <p>Only trust code you have reviewed or received from a reputable author. A trusted script may affect
+                    your local system.</p>
+
+                <!-- The Script List -->
+                <div id="unapproved-scripts-list"
+                    style="margin: 15px 0; max-height: 150px; overflow-y: auto; background: rgba(30,30,30,0.8); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.9em; color: #ffeb3b; border: 1px solid rgba(255,255,255,0.1);">
+                    <!-- Script list injected here -->
+                    <br>/* example_mod.js */<br>/* custom_vfx.js */
+                </div>
+
+                <p style="font-size: 0.9em; color: #ccc; margin-bottom: 20px;">You will review one new or changed
+                    script at a time. <strong>Safe Mode</strong> disables Story Scripts for this session; the story can
+                    still run without its custom logic.</p>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="security-btn-safe-mode" class="modal-btn secondary"
+                        style="flex: 1; background-color: #2c3e50; border: 1px solid #34495e;">Play in Safe
+                        Mode</button>
+                    <button id="security-btn-trust" class="modal-btn primary"
+                        style="flex: 1; background-color: #b83b5e; font-weight: bold;">Trust This Script</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Preview Modal -->
+    <div id="script-preview-modal" class="modal-overlay hidden" style="z-index: 200000 !important;">
+        <div class="modal-content" style="width: 80%; max-width: 900px; height: 80%; border: 1px solid #b83b5e;">
+            <div class="modal-header"
+                style="background-color: #b83b5e; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="preview-modal-title">Script Preview</h2>
+                <button id="close-preview-btn" class="modal-btn"
+                    style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0;">&times;</button>
+            </div>
+            <div class="modal-body"
+                style="flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 0;">
+                <div id="script-preview-security-box" class="security-scan-box hidden">
+                    <div class="security-scan-header">
+                        <span>🛡️ Security Scan Information</span>
+                    </div>
+                    <div id="security-scan-findings" class="security-scan-list">
+                        <!-- Findings will be injected here -->
+                    </div>
+                </div>
+                <pre id="script-preview-code"
+                    style="flex: 1; margin: 0; padding: 20px; overflow-y: auto; background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; white-space: pre-wrap; word-break: break-all;"></pre>
+            </div>
+            <div class="modal-footer"
+                style="padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); text-align: right;">
+                <button id="close-preview-footer-btn" class="modal-btn secondary">Close Preview</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

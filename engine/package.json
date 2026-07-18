@@ -1,0 +1,43 @@
+{
+    "name": "Fablekin",
+    "version": "1.0.0",
+    "main": "main.js",
+    "scripts": {
+        "start": "cd .. && electron engine/main.js",
+        "docs:coverage": "node scripts/docs_coverage.js",
+        "docs:index": "node scripts/docs_indexer.js",
+        "docs:all": "npm run docs:coverage && npm run docs:index"
+    },
+    "dependencies": {
+        "@lancedb/lancedb": "0.12.0",
+        "@langchain/anthropic": "0.3.26",
+        "@langchain/core": "0.3.72",
+        "@langchain/google-genai": "0.2.16",
+        "@langchain/ollama": "0.2.4",
+        "@langchain/openai": "0.6.9",
+        "@langchain/textsplitters": "0.1.0",
+        "@xterm/addon-fit": "0.11.0",
+        "@xterm/xterm": "6.0.0",
+        "axios": "1.8.4",
+        "chalk": "4.1.2",
+        "crc-32": "1.2.2",
+        "dotenv": "16.5.0",
+        "electron": "28.3.3",
+        "electron-window-state": "5.0.3",
+        "express": "5.1.0",
+        "ffmpeg-static": "5.3.0",
+        "fuzzysort": "3.1.0",
+        "gender-detection-from-name": "1.11.4",
+        "glob": "10.0.0",
+        "js-levenshtein": "1.1.6",
+        "js-yaml": "4.1.1",
+        "json5": "2.2.3",
+        "jsonrepair": "3.13.2",
+        "sharp": "0.34.5",
+        "socket.io": "4.8.1",
+        "socket.io-client": "4.8.1",
+        "sqlite": "5.1.1",
+        "sqlite3": "5.1.7",
+        "string-similarity": "4.0.4"
+    }
+}
