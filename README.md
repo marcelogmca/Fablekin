@@ -45,17 +45,16 @@ Fablekin makes a different trade. A turn is treated as a production pipeline, an
 
 There are many things Fablekin attempts to solve:
 - Characters have constant amnesia and have no will. I want a character to be busy looking for their lost sword, and if the user says "Let's go to the Inn to drink beer" I want the character to say "Woah there, first, we find my sword!"
-- Everything should be design around multi-character support. Characters should retain short and long term goals, temporarily leave the party to take care of errands, etc. without any player interaction. The world should happen by itself.
-- The user should not feel like a god (optional). If the party is fighting a dragon, saying "I take out my flaming sword and defeat it with one strike" should elicit a reaction from the party "Are you drunk? You have no falming sword! Run!".
-- Not having to tinker with thousands of settings or build a super intricate lore book. I want to be able to take a large wiki article and dump it into Fablekin and tell it to handle it automatically.
-- Memory should be managed while keeping chronological sense - no random RAG chunks and hoping the AI understands those pieces. [+Memory LoD +characters keep core memories attached, meaning even if the story grows too far and older chapters get compressed, characters will never forget their core memories]
-- I want to drag & drop a few images and songs into a folder and have the system read the files and understand them by itself, and generate an entire visual novel without days spent tinkering.
-- I don't want it to feel like a prettified chat frontend. This is not a chat front end, this is a full fledged PIXIJS visual novel.
-- I want the experience to feel like watching a sequel of our favourite fiction.
-- I want text to speech that is actually emotive - each dialogue goes through an emotion extractor so modern TTS systems can do the right tone for each situation, no monotone talking.
-- I want the system to not write bland stories. I want it to come up with genuinely interesting stories, and plan short and long term - and be self aware, identifying pitfalls of boring and cliché narratives.
-- I want the entire system to be moddable like skyrim, theres not a single thing that can't be modded - from the generation pipeline, to the interface to the visual novel rendering.
-
+- The user should not feel like a god. If the party is fighting a dragon, saying "I take out my flaming sword and defeat it with one strike" should elicit a reaction from the party "Are you drunk? You have no falming sword! Run!". I want to feel like i'm participating, not directing.
+- Everything should be designed around multi-character support. Characters should retain short and long term goals, temporarily leave the party to take care of errands and overall feel like they have their own agency.
+- Not having to tinker with thousands of settings or build a super intricate lore book. I want to be able to take a large wiki article and dump it into a text box and tell it to handle it.
+- Memory should be managed while keeping chronological sense - no random RAG chunks and hoping the AI understands those pieces. Characters keep core memories attached, meaning even if the story grows too far and older chapters get compressed, characters will never forget their core memories.
+- I want to drag & drop a few images and songs into a folder and have the system read the files and understand them by itself with zero configuration. Forest.jpg? Nice, we'll use it as background when we are in a forest. Spooky.mp3? Use it when we are in the haunted forest.
+- I don't want it to feel like a prettified chat frontend. This is not a chat front end, this is a full fledged, real time rendered PIXIJS visual novel.
+- I want the experience to feel like watching a sequel of our favourite fiction in high quality Visual Format.
+- I want text to speech that is actually emotive - each dialogue goes through an emotion extractor so modern TTS systems can do the right tone for each situation, no monotone talking. I was able to get some genuinely impressive voice acting just by having the system understand the emotional state of each dialogue line.
+- I want the system to not write bland stories. I want it to come up with genuinely interesting stories, and plan short and long term.
+- I want the entire system to be moddable like skyrim, theres not a single thing that can't be modded, from the generation pipeline, to the interface and the visual novel rendering. 
 
 <p align="center">
   <img src="engine/views/home/media/readme/separator.png" alt="" width="100%">
