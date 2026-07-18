@@ -531,6 +531,18 @@ body {
     margin-top: var(--space-md);
 }
 
+.power-screenshot-frame {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    min-height: clamp(240px, 36vw, 640px);
+    aspect-ratio: 16 / 9;
+    margin-top: var(--space-md);
+    border: 1px dashed rgba(var(--color-primary-rgb), 0.32);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(var(--color-primary-rgb), 0.12), transparent 50%), var(--bg-overlay-med);
+}
+
 .tutorial-grid {
     display: grid;
     grid-template-columns: 1fr;

@@ -1,0 +1,265 @@
+[2026-07-18T16:47:57.938Z] [Main] [Startup] Projects root ensured at: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects
+[2026-07-18T16:47:58.045Z] [Main] [Lifecycle] >>> >>> Initializing PluginManager at startup...
+[2026-07-18T16:47:58.045Z] [PluginManager] [] Repository sandbox root set to: C:\Users\ineyv\Documents\Repos\Fablekin
+[2026-07-18T16:47:58.086Z] [SecureStorage] [] System initialized.
+[2026-07-18T16:47:58.086Z] [Settings] [] Patched NANO_GPT_API_KEY into settings from SecureStorage.
+[2026-07-18T16:47:58.090Z] [Main] [LogRetention] Log retention cleanup complete. Days=30, deleted=0, errors=0.
+[2026-07-18T16:47:58.152Z] [PluginManager] [] Initialization complete. Loaded 0 active and 48 disabled plugins.
+[2026-07-18T16:47:58.152Z] [PluginManager] [] Scanning core documentation in: C:\Users\ineyv\Documents\Repos\Fablekin\engine\views\docs\documents\core
+[2026-07-18T16:47:58.201Z] [PluginManager] []   - Automatically registered 92 core documentation items.
+[2026-07-18T16:47:58.202Z] [ScriptSecurity] [] Loaded 16 approved script hashes.
+[2026-07-18T16:47:58.202Z] [Main] [Lifecycle] PluginManager initialized at startup. <<< <<<
+[2026-07-18T16:47:58.207Z] [Main] [SocketIO] Socket.io server running on http://127.0.0.1:56641
+[2026-07-18T16:47:58.209Z] [PluginManager] [HOOK_SYSTEM_BOOT] >>> >>> Executing hook: 'HOOK_SYSTEM_BOOT'
+[2026-07-18T16:47:58.209Z] [PluginManager] [HOOK_SYSTEM_BOOT] No listeners found for hook 'HOOK_SYSTEM_BOOT'. <<< <<<
+[2026-07-18T16:47:58.208Z] [Main] [Lifecycle] Timeline module initialized.
+[2026-07-18T16:47:58.282Z] [Main] [Startup] Electron window initialized
+[2026-07-18T16:47:58.208Z] [Timeline] [] Initialized.
+[2026-07-18T16:47:58.510Z] [Main] [Startup] Launcher readiness signaled: C:\Users\ineyv\AppData\Local\Temp\fablekin-launch\ready-39976-1784393277106-d9cb3c83df07f.json
+[2026-07-18T16:47:58.520Z] [Main] [SocketIO] Socket connected ["wxA5hTVJNfN_-nhkAAAB"]
+[2026-07-18T16:47:58.520Z] [Main] [Plugins] Socket wxA5hTVJNfN_-nhkAAAB (view: hud) - cache miss, executing HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:58.520Z] [PluginManager] [HOOK_FRONTEND_INJECTION] >>> >>> Executing hook: 'HOOK_FRONTEND_INJECTION'
+[2026-07-18T16:47:58.520Z] [PluginManager] [HOOK_FRONTEND_INJECTION] No listeners found for hook 'HOOK_FRONTEND_INJECTION'. <<< <<<
+[2026-07-18T16:47:58.521Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:58.524Z] [Main] [SocketIO] Event received: get-all-projects [null]
+[2026-07-18T16:47:58.530Z] [Main] [SocketIO] Emitting response: get-all-projects-response ["{ ... }"]
+[2026-07-18T16:47:59.259Z] [Main] [SocketIO] Event received: select-project ["{ ... }"]
+[2026-07-18T16:47:59.259Z] [VectorStoreManager] [Lifecycle] Setting active project root: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure
+[2026-07-18T16:47:59.260Z] [Main] [ProjectMgmt] >>> >>> Project selection started ["C:\\Users\\ineyv\\Documents\\Repos\\Fablekin\\workspace\\projects\\exampleadventure"]
+[2026-07-18T16:47:59.364Z] [Main] [SocketIO] Socket connected ["txtkn1Is5puzGdIpAAAD"]
+[2026-07-18T16:47:59.364Z] [Main] [Plugins] Socket txtkn1Is5puzGdIpAAAD (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.364Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.552Z] [Main] [SocketIO] Socket connected ["hgOZnh_rHLDemkJbAAAI"]
+[2026-07-18T16:47:59.552Z] [Main] [Plugins] Socket hgOZnh_rHLDemkJbAAAI (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.552Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.558Z] [Main] [SocketIO] Socket connected ["V6s9ihtTVHbcUXZsAAAJ"]
+[2026-07-18T16:47:59.558Z] [Main] [Plugins] Socket V6s9ihtTVHbcUXZsAAAJ (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.560Z] [Main] [Plugins] Socket 9lM3tL5NYs7Ymc3gAAAL (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.560Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.558Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.559Z] [Main] [SocketIO] Socket connected ["9lM3tL5NYs7Ymc3gAAAL"]
+[2026-07-18T16:47:59.564Z] [Main] [SocketIO] Socket connected ["11EzX3yRpiLycvDQAAAN"]
+[2026-07-18T16:47:59.564Z] [Main] [Plugins] Socket 11EzX3yRpiLycvDQAAAN (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.564Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.576Z] [Main] [SocketIO] Socket connected ["eIygEbqTqj85NT8HAAAR"]
+[2026-07-18T16:47:59.576Z] [Main] [Plugins] Socket eIygEbqTqj85NT8HAAAR (view: timeline) - cache miss, executing HOOK_FRONTEND_TIMELINE_INJECTION
+[2026-07-18T16:47:59.576Z] [PluginManager] [HOOK_FRONTEND_TIMELINE_INJECTION] No listeners found for hook 'HOOK_FRONTEND_TIMELINE_INJECTION'. <<< <<<
+[2026-07-18T16:47:59.584Z] [Main] [SocketIO] Socket connected ["8CeozTY1HRVgqMLfAAAS"]
+[2026-07-18T16:47:59.576Z] [PluginManager] [HOOK_FRONTEND_TIMELINE_INJECTION] >>> >>> Executing hook: 'HOOK_FRONTEND_TIMELINE_INJECTION'
+[2026-07-18T16:47:59.585Z] [Main] [Plugins] Socket 8CeozTY1HRVgqMLfAAAS (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.577Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.585Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.586Z] [Main] [SocketIO] Socket connected ["Gwxu1SF8kSJ4aCAfAAAT"]
+[2026-07-18T16:47:59.586Z] [Main] [Plugins] Socket Gwxu1SF8kSJ4aCAfAAAT (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.586Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.593Z] [Main] [SocketIO] Socket connected ["z_3Z5IFMv24VGSNNAAAU"]
+[2026-07-18T16:47:59.593Z] [Main] [Plugins] Socket z_3Z5IFMv24VGSNNAAAU (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.593Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.594Z] [Main] [SocketIO] Event received: register-view ["{ ... }"]
+[2026-07-18T16:47:59.594Z] [Main] [SocketIO] View 'content_manager' (Plugin: core) registered with socket hgOZnh_rHLDemkJbAAAI
+[2026-07-18T16:47:59.600Z] [Main] [SocketIO] Socket connected ["zTNm0jJkZW_T6f1CAAAV"]
+[2026-07-18T16:47:59.600Z] [Main] [Plugins] Socket zTNm0jJkZW_T6f1CAAAV (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.600Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.602Z] [Main] [SocketIO] Event received: get-current-project-name [null]
+[2026-07-18T16:47:59.603Z] [Main] [ProjectOperations] Get current project name requested: exampleadventure
+[2026-07-18T16:47:59.603Z] [Main] [SocketIO] Emitting response: get-current-project-name-response ["{ ... }"]
+[2026-07-18T16:47:59.604Z] [Main] [SocketIO] Event received: get-home-setup-data ["{ ... }"]
+[2026-07-18T16:47:59.635Z] [Main] [SocketIO] Event received: get-scene-history-data [null]
+[2026-07-18T16:47:59.635Z] [Main] [SceneHistory] Request received for scene history data.
+[2026-07-18T16:47:59.636Z] [Main] [SocketIO] Emitting response: get-scene-history-data-response ["{ ... }"]
+[2026-07-18T16:47:59.636Z] [Main] [SocketIO] Event received: get-model-pricing [null]
+[2026-07-18T16:47:59.636Z] [Main] [SocketIO] Emitting response: get-model-pricing-response ["{ ... }"]
+[2026-07-18T16:47:59.644Z] [Main] [LogInspector] Get all logs requested for project: exampleadventure
+[2026-07-18T16:47:59.644Z] [Main] [SocketIO] Event received: get-all-logs ["{ ... }"]
+[2026-07-18T16:47:59.647Z] [Timeline] [Refresh] >>> >>> Refreshing timeline skeletons (get-timeline-data)...
+[2026-07-18T16:47:59.646Z] [Main] [SocketIO] Event received: get-timeline-data [null]
+[2026-07-18T16:47:59.646Z] [Main] [Timeline] Timeline data requested.
+[2026-07-18T16:47:59.647Z] [Timeline] [RefreshTiming] chapterManager.getChapterMetadata: 0ms
+[2026-07-18T16:47:59.647Z] [Timeline] [Refresh] No turns found. Emitting empty timeline. <<< <<<
+[2026-07-18T16:47:59.647Z] [Timeline] [Cache] Timeline provider cache initialized for unknown.
+[2026-07-18T16:47:59.648Z] [Main] [SocketIO] Event received: get-global-settings ["{ ... }"]
+[2026-07-18T16:47:59.663Z] [Main] [SocketIO] Forwarding unhandled event: docs:req-index
+[2026-07-18T16:47:59.664Z] [PluginManager] [] Docs index requested. Sending 92 dynamic items.
+[2026-07-18T16:47:59.664Z] [Main] [SocketIO] Event received: get-available-themes [null]
+[2026-07-18T16:47:59.666Z] [Main] [SocketIO] Event received: get-project-advanced-mode ["{ ... }"]
+[2026-07-18T16:47:59.667Z] [Main] [SocketIO] Event received: get-plugins ["{ ... }"]
+[2026-07-18T16:47:59.670Z] [Main] [SocketIO] Sending 48 plugins metadata to client.
+[2026-07-18T16:47:59.674Z] [Main] [SocketIO] Event received: get-provider-secrets [null]
+[2026-07-18T16:47:59.675Z] [Main] [SocketIO] Event received: get-plugins ["{ ... }"]
+[2026-07-18T16:47:59.676Z] [Main] [SocketIO] Event received: get-core-folders ["{ ... }"]
+[2026-07-18T16:47:59.676Z] [Main] [SocketIO] Emitting response: get-core-folders-response ["{ ... }"]
+[2026-07-18T16:47:59.680Z] [Main] [SocketIO] Sending 48 plugins metadata to client.
+[2026-07-18T16:47:59.686Z] [Main] [SocketIO] Event received: get-global-settings [null]
+[2026-07-18T16:47:59.690Z] [Main] [SocketIO] Event received: get-project-directives ["{ ... }"]
+[2026-07-18T16:47:59.692Z] [Main] [SocketIO] Event received: get-project-notes ["{ ... }"]
+[2026-07-18T16:47:59.695Z] [Main] [SocketIO] Socket connected ["K3ZsJDA83oypk7w1AAAX"]
+[2026-07-18T16:47:59.695Z] [Main] [Plugins] Socket K3ZsJDA83oypk7w1AAAX (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.695Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.702Z] [Main] [SocketIO] Emitting response: get-all-logs-response ["{ ... }"]
+[2026-07-18T16:47:59.707Z] [Express] [] GET /plugins/disabled/adventure_book/screenshot1.webp
+[2026-07-18T16:47:59.708Z] [Express] [] GET /plugins/disabled/arc_cinematics/screenshot1.webp
+[2026-07-18T16:47:59.711Z] [Express] [] GET /plugins/disabled/camp_rest_interludes/screenshot1.webp
+[2026-07-18T16:47:59.719Z] [Express] [] GET /plugins/disabled/cg_generator/screenshot1.webp
+[2026-07-18T16:47:59.721Z] [Express] [] GET /plugins/disabled/character_sheets/screenshot1.webp
+[2026-07-18T16:47:59.723Z] [Express] [] GET /plugins/disabled/output_size_controller/screenshot1.webp
+[2026-07-18T16:47:59.725Z] [Express] [] GET /plugins/disabled/quest_tracker/screenshot1.webp
+[2026-07-18T16:47:59.727Z] [Express] [] GET /plugins/disabled/relationship_tracker/screenshot1.webp
+[2026-07-18T16:47:59.728Z] [Express] [] GET /plugins/disabled/sprite_shading/screenshot1.webp
+[2026-07-18T16:47:59.731Z] [Express] [] GET /plugins/disabled/vn_pixijs_vfx/screenshot1.webp
+[2026-07-18T16:47:59.732Z] [Express] [] GET /plugins/disabled/world_location_tracker/screenshot1.webp
+[2026-07-18T16:47:59.734Z] [Express] [] GET /plugins/disabled/world_state_tracker/screenshot1.webp
+[2026-07-18T16:47:59.736Z] [Main] [SocketIO] Forwarding unhandled event: memory-system-log-buffer-request ["{ ... }"]
+[2026-07-18T16:47:59.740Z] [Main] [SocketIO] Event received: get-global-settings ["{ ... }"]
+[2026-07-18T16:47:59.831Z] [Main] [SocketIO] Socket connected ["yP62ImIL28YNpaoFAAAZ"]
+[2026-07-18T16:47:59.832Z] [Main] [Plugins] Socket yP62ImIL28YNpaoFAAAZ (view: hud) - cache hit, skipping hook execution for HOOK_FRONTEND_INJECTION
+[2026-07-18T16:47:59.832Z] [Main] [SocketIO] [State Restoration] No activeChatPathGlobal set.
+[2026-07-18T16:47:59.848Z] [Main] [SocketIO] Event received: get-player-metadata ["{ ... }"]
+[2026-07-18T16:47:59.854Z] [ConfigManager] [Persistence] Configuration saved to: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\exampleadventure.config
+[2026-07-18T16:47:59.854Z] [Main] [SocketIO] Emitting response: get-player-metadata-response ["{ ... }"]
+[2026-07-18T16:47:59.861Z] [Main] [SocketIO] Event received: get-vn-settings ["{ ... }"]
+[2026-07-18T16:47:59.861Z] [Main] [SocketIO] Emitting response: get-vn-settings-response ["{ ... }"]
+[2026-07-18T16:47:59.862Z] [DirProcessor] [Lifecycle] >>> >>> Starting directory processing: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure
+[2026-07-18T16:47:59.862Z] [DirProcessor] [Query] >>> >>> Reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure (Depth: 0)
+[2026-07-18T16:47:59.867Z] [DirProcessor] [Query] Processing entry: 1_Directives, Mode: not-included, Order: 100
+[2026-07-18T16:47:59.867Z] [DirProcessor] [Query] >>> >>> Reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\1_Directives (Depth: 1)
+[2026-07-18T16:47:59.869Z] [DirProcessor] [Query] Processing entry: directives.md, Mode: full, Order: 100
+[2026-07-18T16:47:59.870Z] [DirProcessor] [Query] Processing entry: output size.md, Mode: full, Order: 200
+[2026-07-18T16:47:59.873Z] [DirProcessor] [Query] Processing entry: story genre.md, Mode: full, Order: 150
+[2026-07-18T16:47:59.874Z] [DirProcessor] [Query] Finished reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\1_Directives <<< <<<
+[2026-07-18T16:47:59.874Z] [DirProcessor] [Query] Processing entry: 2_Lore_Book, Mode: not-included, Order: 200
+[2026-07-18T16:47:59.875Z] [DirProcessor] [Query] >>> >>> Reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\2_Lore_Book (Depth: 1)
+[2026-07-18T16:47:59.876Z] [DirProcessor] [Query] Processing entry: Ingrid.md, Mode: full, Order: 100
+[2026-07-18T16:47:59.878Z] [DirProcessor] [Query] Processing entry: Intro.md, Mode: intro, Order: 600
+[2026-07-18T16:47:59.879Z] [DirProcessor] [Query] Processing entry: Laios.md, Mode: full, Order: 200
+[2026-07-18T16:47:59.882Z] [DirProcessor] [Query] Processing entry: Party Dynamics.md, Mode: full, Order: 400
+[2026-07-18T16:47:59.885Z] [DirProcessor] [Query] Processing entry: Srava.md, Mode: full, Order: 300
+[2026-07-18T16:47:59.886Z] [DirProcessor] [Query] Processing entry: World Lore.md, Mode: full, Order: 500
+[2026-07-18T16:47:59.888Z] [DirProcessor] [Query] Processing entry: World.world, Mode: not-included, Order: 700
+[2026-07-18T16:47:59.888Z] [DirProcessor] [Query] >>> >>> Reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\2_Lore_Book\World.world (Depth: 2)
+[2026-07-18T16:47:59.888Z] [DirProcessor] [Query] Stopping at depth 2 for: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\2_Lore_Book\World.world
+[2026-07-18T16:47:59.888Z] [DirProcessor] [Query] Finished reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\2_Lore_Book <<< <<<
+[2026-07-18T16:47:59.888Z] [DirProcessor] [Query] Processing entry: 3_Chronicles, Mode: not-included, Order: 300
+[2026-07-18T16:47:59.889Z] [DirProcessor] [Query] >>> >>> Reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles (Depth: 1)
+[2026-07-18T16:47:59.890Z] [DirProcessor] [Query] Processing entry: Save 1.db, Mode: chat, Order: 100
+[2026-07-18T16:47:59.891Z] [DirProcessor] [Query] Finished reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles <<< <<<
+[2026-07-18T16:47:59.891Z] [DirProcessor] [Query] Processing entry: 4_Important, Mode: not-included, Order: 400
+[2026-07-18T16:47:59.891Z] [DirProcessor] [Query] >>> >>> Reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\4_Important (Depth: 1)
+[2026-07-18T16:47:59.892Z] [DirProcessor] [Query] Finished reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\4_Important <<< <<<
+[2026-07-18T16:47:59.892Z] [DirProcessor] [Query] Excluding system directory: assets
+[2026-07-18T16:47:59.892Z] [DirProcessor] [Query] Processing entry: assets, Mode: not-included, Order: 500
+[2026-07-18T16:47:59.892Z] [DirProcessor] [Query] Processing entry: exampleadventure.config, Mode: not-included, Order: 600
+[2026-07-18T16:47:59.893Z] [DirProcessor] [Query] Processing entry: exampleadventure.db, Mode: not-included, Order: 700
+[2026-07-18T16:47:59.892Z] [DirProcessor] [Query] Excluding project config file: exampleadventure.config
+[2026-07-18T16:47:59.893Z] [DirProcessor] [Query] Excluding project DB file: exampleadventure.db
+[2026-07-18T16:47:59.893Z] [DirProcessor] [Query] Finished reading directory: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure <<< <<<
+[2026-07-18T16:47:59.893Z] [DirProcessor] [Lifecycle] Directory processing completed <<< <<<
+[2026-07-18T16:47:59.893Z] [Main] [ProjectMgmt] Broadcasting project-changed event for: exampleadventure
+[2026-07-18T16:47:59.899Z] [StaticDataManager] [Lifecycle] >>> >>> Opened static database: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\exampleadventure.db
+[2026-07-18T16:47:59.902Z] [StaticDataManager] [Lifecycle] Database initialization for exampleadventure successful. <<< <<<
+[2026-07-18T16:47:59.903Z] [Main] [Database] StaticDataManager initialized for project: exampleadventure
+[2026-07-18T16:47:59.903Z] [PluginManager] [] Active project root set to: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure
+[2026-07-18T16:47:59.903Z] [Main] [ProjectMgmt] PluginManager updated for project: exampleadventure. Root: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure
+[2026-07-18T16:47:59.903Z] [PluginManager] [HOOK_PROJECT_LOADED] >>> >>> Executing hook: 'HOOK_PROJECT_LOADED'
+[2026-07-18T16:47:59.903Z] [PluginManager] [HOOK_PROJECT_LOADED] Hook 'HOOK_PROJECT_LOADED': Found 1 listeners
+[2026-07-18T16:47:59.903Z] [PluginManager] [HOOK_PROJECT_LOADED:P999] >>> >>> Executing priority group 999 (1 listeners)
+[2026-07-18T16:47:59.903Z] [PluginManager] [HOOK_PROJECT_LOADED:P999:core_story_scripts:Seq] >>> >>> Running sequential listener
+[2026-07-18T16:47:59.907Z] [PluginManager] [] Scanning for Story Scripts...
+[2026-07-18T16:47:59.914Z] [PluginManager] [] No Story Scripts found.
+[2026-07-18T16:47:59.915Z] [PluginManager] [HOOK_PROJECT_LOADED:P999:core_story_scripts:Seq] Finished sequential listener <<< <<<
+[2026-07-18T16:47:59.915Z] [PluginManager] [HOOK_PROJECT_LOADED] Executing hook: 'HOOK_PROJECT_LOADED' <<< <<<
+[2026-07-18T16:47:59.915Z] [PluginManager] [HOOK_PROJECT_LOADED:P999] Finished priority group 999 <<< <<<
+[2026-07-18T16:47:59.915Z] [Main] [Plugins] Frontend injection cache invalidated.
+[2026-07-18T16:47:59.915Z] [Main] [ProjectMgmt] Loaded player character data: "Talion" (from config)
+[2026-07-18T16:47:59.915Z] [Main] [ProjectMgmt] Initializing FactManager for project: exampleadventure
+[2026-07-18T16:47:59.915Z] [Main] [ProjectMgmt] FactManager initialized for project: exampleadventure
+[2026-07-18T16:47:59.915Z] [Main] [SocketIO] Emitting response: project-ready ["{ ... }"]
+[2026-07-18T16:47:59.915Z] [Main] [ProjectOperations] [State Restoration] Auto-initializing active chat DB: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db
+[2026-07-18T16:47:59.916Z] [ChapterMgmt] [Lifecycle] >>> >>> init called for chat DB full path: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db
+[2026-07-18T16:47:59.916Z] [ChapterMgmt] [Lifecycle] Derived project root: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure
+[2026-07-18T16:47:59.918Z] [ChapterMgmt] [Database] Initializing database at path: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db
+[2026-07-18T16:47:59.919Z] [ChapterMgmt] [Database] Database connection established: true
+[2026-07-18T16:47:59.924Z] [ChapterMgmt] [Lifecycle] Database initialized successfully for project: exampleadventure <<< <<<
+[2026-07-18T16:47:59.925Z] [Main] [ProjectOperations] [State Restoration] Broadcasting chat-db-switched. Path: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db, State: {"turnNumber":1,"dialogueIndex":30,"sceneMode":"mainline","interludeId":null,"storageTurnKey":"1"}
+[2026-07-18T16:47:59.925Z] [Main] [ProjectOperations] Initializing FactManager for project: exampleadventure with DB: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db
+[2026-07-18T16:47:59.925Z] [FactManager] [Lifecycle] >>> >>> init called for chat DB full path: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db
+[2026-07-18T16:47:59.927Z] [Main] [SocketIO] Event received: get-scene-history-data [null]
+[2026-07-18T16:47:59.927Z] [Main] [SceneHistory] Request received for scene history data.
+[2026-07-18T16:47:59.928Z] [Main] [SocketIO] Event received: get-player-metadata ["{ ... }"]
+[2026-07-18T16:47:59.929Z] [Main] [SocketIO] Event received: get-timeline-data [null]
+[2026-07-18T16:47:59.929Z] [Main] [Timeline] Timeline data requested.
+[2026-07-18T16:47:59.929Z] [Timeline] [Refresh] >>> >>> Refreshing timeline skeletons (get-timeline-data)...
+[2026-07-18T16:47:59.930Z] [Main] [SocketIO] Event received: get-project-directives ["{ ... }"]
+[2026-07-18T16:47:59.930Z] [Main] [SocketIO] Event received: get-player-metadata [null]
+[2026-07-18T16:47:59.931Z] [Main] [SocketIO] Event received: execute-frontend-hook ["{ ... }"]
+[2026-07-18T16:47:59.931Z] [PluginManager] [HOOK_CONTENT_MANAGER_GUI_READY] >>> >>> Executing hook: 'HOOK_CONTENT_MANAGER_GUI_READY'
+[2026-07-18T16:47:59.931Z] [Main] [Plugins] Frontend requested hook execution: HOOK_CONTENT_MANAGER_GUI_READY
+[2026-07-18T16:47:59.931Z] [PluginManager] [HOOK_CONTENT_MANAGER_GUI_READY] No listeners found for hook 'HOOK_CONTENT_MANAGER_GUI_READY'. <<< <<<
+[2026-07-18T16:47:59.931Z] [Main] [SocketIO] Event received: get-project-notes ["{ ... }"]
+[2026-07-18T16:47:59.932Z] [Main] [SocketIO] Emitting response: execute-frontend-hook-response ["{ ... }"]
+[2026-07-18T16:47:59.932Z] [FactManager] [Database] Initializing database at path: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db
+[2026-07-18T16:47:59.941Z] [Express] [] POST /plugins/tts_core/cancel-all
+[2026-07-18T16:47:59.942Z] [FactManager] [Database] Database connection established: true
+[2026-07-18T16:47:59.943Z] [Main] [SocketIO] Emitting response: get-scene-history-data-response ["{ ... }"]
+[2026-07-18T16:47:59.943Z] [Timeline] [RefreshTiming] chapterManager.getChapterMetadata: 14ms
+[2026-07-18T16:47:59.944Z] [Timeline] [Cache] Timeline provider cache initialized for C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db.
+[2026-07-18T16:47:59.944Z] [Timeline] [Refresh] Emitting timeline skeletons: 1 turns. <<< <<<
+[2026-07-18T16:47:59.944Z] [Timeline] [RefreshTiming] Skeleton payload total 15ms.
+[2026-07-18T16:47:59.947Z] [Main] [SocketIO] Event received: play-historical-turn ["{ ... }"]
+[2026-07-18T16:47:59.948Z] [Main] [VNOperations] >>> >>> playHistoricalTurn requested for turn 1
+[2026-07-18T16:47:59.950Z] [FactManager] [Lifecycle] Database initialized successfully for project: exampleadventure <<< <<<
+[2026-07-18T16:47:59.951Z] [PluginManager] [HOOK_CHAT_DB_INITIALIZED] >>> >>> Executing hook: 'HOOK_CHAT_DB_INITIALIZED'
+[2026-07-18T16:47:59.951Z] [PluginManager] [HOOK_CHAT_DB_INITIALIZED] Hook 'HOOK_CHAT_DB_INITIALIZED': Found 1 listeners
+[2026-07-18T16:47:59.951Z] [PluginManager] [HOOK_CHAT_DB_INITIALIZED:P999] >>> >>> Executing priority group 999 (1 listeners)
+[2026-07-18T16:47:59.951Z] [PluginManager] [HOOK_CHAT_DB_INITIALIZED:P999:core_story_scripts_reload:Seq] >>> >>> Running sequential listener
+[2026-07-18T16:47:59.951Z] [PluginManager] [] Scanning for Story Scripts...
+[2026-07-18T16:47:59.956Z] [Main] [SocketIO] Emitting response: get-player-metadata-response ["{ ... }"]
+[2026-07-18T16:47:59.957Z] [Main] [SocketIO] Emitting response: get-player-metadata-response ["{ ... }"]
+[2026-07-18T16:47:59.959Z] [PluginManager] [] No Story Scripts found.
+[2026-07-18T16:47:59.959Z] [PluginManager] [HOOK_CHAT_DB_INITIALIZED:P999:core_story_scripts_reload:Seq] Finished sequential listener <<< <<<
+[2026-07-18T16:47:59.959Z] [Main] [ProjectOperations] [State Restoration] HOOK_CHAT_DB_INITIALIZED complete for: C:\Users\ineyv\Documents\Repos\Fablekin\workspace\projects\exampleadventure\3_Chronicles\Save 1.db
+[2026-07-18T16:47:59.959Z] [Main] [ProjectMgmt] Project selection complete <<< <<<
+[2026-07-18T16:47:59.959Z] [PluginManager] [HOOK_CHAT_DB_INITIALIZED:P999] Finished priority group 999 <<< <<<
+[2026-07-18T16:47:59.959Z] [PluginManager] [HOOK_CHAT_DB_INITIALIZED] Executing hook: 'HOOK_CHAT_DB_INITIALIZED' <<< <<<
+[2026-07-18T16:47:59.965Z] [PluginManager] [HOOK_VN_EMIT_TURN] >>> >>> Executing hook: 'HOOK_VN_EMIT_TURN'
+[2026-07-18T16:47:59.965Z] [PluginManager] [HOOK_VN_EMIT_TURN] No listeners found for hook 'HOOK_VN_EMIT_TURN'. <<< <<<
+[2026-07-18T16:47:59.969Z] [Main] [SocketIO] Emitting response: play-historical-turn-response ["{ ... }"]
+[2026-07-18T16:47:59.973Z] [Main] [VNOperations] Historical turn 1 sent to viewer. <<< <<<
+[2026-07-18T16:48:00.293Z] [Main] [SocketIO] Event received: get-timeline-range-data ["{ ... }"]
+[2026-07-18T16:48:00.294Z] [Main] [Timeline] Timeline range data requested. ["{ ... }"]
+[2026-07-18T16:48:00.296Z] [Express] [] POST /plugins/tts_core/missing-current-turn
+[2026-07-18T16:48:00.297Z] [Timeline] [RangeTiming] chapterManager.getChapterMetadata: 3ms
+[2026-07-18T16:48:00.297Z] [Timeline] [RangeHydration] >>> >>> Hydrating timeline rows 0-0 (1 turns).
+[2026-07-18T16:48:00.298Z] [Timeline] [RangeHydration] Emitting hydrated timeline rows 0-0. <<< <<<
+[2026-07-18T16:48:00.298Z] [Timeline] [RangeHydration] Cache hits=0, misses=0, total=4ms.
+[2026-07-18T16:48:00.298Z] [Timeline] [RangeDiagnostics] Hydration diagnostics request=timeline_range_1784393280293_1 rows=1 slowRows=0 slowProviderCalls=0 total=4ms concurrency=row2/provider3
+[2026-07-18T16:48:00.318Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:00.981Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:01.472Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:01.603Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:01.964Z] [Main] [SocketIO] Event received: execute-frontend-hook ["{ ... }"]
+[2026-07-18T16:48:01.965Z] [Main] [Plugins] Frontend requested hook execution: HOOK_VN_GUI_READY
+[2026-07-18T16:48:01.965Z] [PluginManager] [HOOK_VN_GUI_READY] >>> >>> Executing hook: 'HOOK_VN_GUI_READY'
+[2026-07-18T16:48:01.965Z] [PluginManager] [HOOK_VN_GUI_READY] No listeners found for hook 'HOOK_VN_GUI_READY'. <<< <<<
+[2026-07-18T16:48:01.966Z] [Main] [SocketIO] Emitting response: execute-frontend-hook-response ["{ ... }"]
+[2026-07-18T16:48:01.966Z] [Timeline] [Refresh] >>> >>> Refreshing timeline skeletons...
+[2026-07-18T16:48:01.967Z] [Timeline] [RefreshTiming] chapterManager.getChapterMetadata: 1ms
+[2026-07-18T16:48:01.968Z] [Timeline] [Refresh] Emitting timeline skeletons: 1 turns. <<< <<<
+[2026-07-18T16:48:01.968Z] [Timeline] [RefreshTiming] Skeleton payload total 2ms.
+[2026-07-18T16:48:02.124Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:02.294Z] [Main] [SocketIO] Event received: get-timeline-range-data ["{ ... }"]
+[2026-07-18T16:48:02.294Z] [Main] [Timeline] Timeline range data requested. ["{ ... }"]
+[2026-07-18T16:48:02.295Z] [Timeline] [RangeTiming] chapterManager.getChapterMetadata: 1ms
+[2026-07-18T16:48:02.296Z] [Timeline] [RangeHydration] >>> >>> Hydrating timeline rows 0-0 (1 turns).
+[2026-07-18T16:48:02.296Z] [Timeline] [RangeHydration] Emitting hydrated timeline rows 0-0. <<< <<<
+[2026-07-18T16:48:02.296Z] [Timeline] [RangeDiagnostics] Hydration diagnostics request=timeline_range_1784393282293_2 rows=1 slowRows=0 slowProviderCalls=0 total=2ms concurrency=row2/provider3
+[2026-07-18T16:48:02.296Z] [Timeline] [RangeHydration] Cache hits=0, misses=0, total=2ms.
+[2026-07-18T16:48:02.301Z] [Express] [] POST /plugins/tts_core/missing-current-turn
+[2026-07-18T16:48:02.719Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:03.227Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:03.786Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:04.398Z] [Main] [SocketIO] Event received: sprite-opaque-bounds:get ["{ ... }"]
+[2026-07-18T16:48:04.504Z] [FactManager] [Lifecycle] >>> >>> Closing database connection.
+[2026-07-18T16:48:04.517Z] [StaticDataManager] [Lifecycle] Static database closed.
+[2026-07-18T16:48:04.517Z] [FactManager] [Lifecycle] Database connection closed. <<< <<<
+[2026-07-18T16:48:04.517Z] [ChapterMgmt] [Lifecycle] >>> >>> Closing database connection.
+[2026-07-18T16:48:04.531Z] [ChapterMgmt] [Lifecycle] Database connection closed. <<< <<<

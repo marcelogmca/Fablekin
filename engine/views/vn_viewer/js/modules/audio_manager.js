@@ -99,6 +99,10 @@ export function playAudio(src, filename) {
         return;
     }
 
+    if (!state.isViewerTabActive) {
+        state.pendingOstResume = true;
+    }
+
     if (state.pendingOstResume) {
         state.currentOst = normalizedFile;
         elements.audioPlayer.src = absoluteSrc;

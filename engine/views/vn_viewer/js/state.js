@@ -4,6 +4,7 @@ export const state = {
     isGameOver: false,
     gameOverConfig: null,
     isFocused: true,
+    isViewerTabActive: false,
     lastShownIndex: undefined,
     autoPlay: false,
     readingSpeed: 200,

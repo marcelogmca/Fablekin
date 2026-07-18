@@ -168,6 +168,20 @@ socket.on('get-global-settings-response', (response) => {
  */
 function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
+    const viewerWebview = document.getElementById('viewer-iframe');
+
+    function notifyViewerTabActivity(isActive) {
+        if (!viewerWebview || typeof viewerWebview.executeJavaScript !== 'function') return;
+        const script = `window.__fablekinViewerTabActive = ${isActive === true}; window.dispatchEvent(new CustomEvent('fablekin:viewer-tab-activity', { detail: { isActive: window.__fablekinViewerTabActive } }));`;
+        viewerWebview.executeJavaScript(script).catch(() => {
+            // The dom-ready listener below will synchronize once the guest is available.
+        });
+    }
+
+    viewerWebview?.addEventListener('dom-ready', () => {
+        notifyViewerTabActivity(document.getElementById('viewer-tab')?.classList.contains('active') === true);
+    });
+
     function attachTabListener(btn) {
         btn.addEventListener('click', function () {
             // Remove active from all buttons (including dynamically added ones)
@@ -183,6 +197,7 @@ function initializeTabs() {
             }
 
             localStorage.setItem('activeTab', btn.dataset.tab);
+            notifyViewerTabActivity(btn.dataset.tab === 'viewer');
         });
     }
 
@@ -198,6 +213,8 @@ function initializeTabs() {
             tabToActivate.click();
         }
     }
+
+    notifyViewerTabActivity(document.getElementById('viewer-tab')?.classList.contains('active') === true);
 
     // Handle Switch Project button
     const switchProjectBtn = document.getElementById('switch-project-btn');

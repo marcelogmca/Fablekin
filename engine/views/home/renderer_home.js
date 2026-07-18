@@ -378,21 +378,21 @@ function renderPowerLevels() {
                     'Text Adventure',
                     'Writer only. The cheapest and cleanest first test: Fablekin as a strong long-form text adventure engine.',
                     ['~1m generation', '~5-10m reading', '~$0.015 / scene'],
-                    ['Writer-only scene screenshot'],
+                    { src: 'media/screenshots/text_only_mode.webp', alt: 'Fablekin running in writer-only text adventure mode', placeholder: 'Writer-only scene screenshot' },
                     false
                 )}
                 ${renderPowerShowcase(
                     'Native Fablekin',
                     'The recommended default: scene direction, VN presentation, character emotions, animated sprites, backgrounds, music, and continuity helpers.',
                     ['~3-4m generation', '~5-10m reading', '~$0.025 / scene'],
-                    ['Rendered VN scene', 'Character emotion and sprite presentation', 'Timeline or scene-history view'],
+                    { src: 'media/screenshots/core_mode.webp', alt: 'Fablekin native visual novel mode with characters and scene presentation', placeholder: 'Native Fablekin scene screenshot' },
                     true
                 )}
                 ${renderPowerShowcase(
                     'Plugin Heavy',
                     'The big toy box: voice, cinematography, character sheets, relationship tracking, personality tracking, SFX, VFX, shaders, gameplay systems, CG scenes, and more.',
                     ['~5m+ generation', '~10-15m with TTS/autoplay', '~$0.04-$0.20+ / scene'],
-                    ['Cinematic VN moment', 'Plugin HUD or gameplay overlay', 'Shader/VFX/CG showcase'],
+                    { src: 'media/screenshots/plugins_mode.webp', alt: 'Fablekin plugin-heavy mode with cinematic effects and character presentation', placeholder: 'Plugin-heavy scene screenshot' },
                     false
                 )}
             </div>
@@ -847,7 +847,7 @@ function renderScreenshotSlip(src, alt, placeholder) {
     `;
 }
 
-function renderPowerShowcase(title, body, estimates, placeholders, isDefault = false) {
+function renderPowerShowcase(title, body, estimates, screenshot, isDefault = false) {
     return `
         <article class="power-showcase ${isDefault ? 'recommended' : ''}">
             <div class="power-card-header">
@@ -858,8 +858,9 @@ function renderPowerShowcase(title, body, estimates, placeholders, isDefault = f
             <div class="estimate-list">
                 ${estimates.map(estimate => `<span>${escapeHtml(estimate)}</span>`).join('')}
             </div>
-            <div class="screenshot-grid">
-                ${placeholders.map(placeholder => `<div class="screenshot-placeholder">${escapeHtml(placeholder)}</div>`).join('')}
+            <div class="power-screenshot-frame">
+                <img class="tutorial-media" src="${escapeHtml(screenshot.src)}" alt="${escapeHtml(screenshot.alt)}" loading="lazy" decoding="async">
+                <div class="tutorial-media-placeholder">${escapeHtml(screenshot.placeholder)}</div>
             </div>
         </article>
     `;

@@ -211,8 +211,8 @@
       }
     },
     "socket_host": "127.0.0.1",
-    "socket_port": 61818,
-    "socket_url": "http://127.0.0.1:61818",
+    "socket_port": 58272,
+    "socket_url": "http://127.0.0.1:58272",
     "llm_routing": {
       "aliases": {
         "lowendmodel": {
@@ -586,7 +586,7 @@
   "visual_novel": {
     "settings": {
       "audio": {
-        "ost_volume": 0.47,
+        "ost_volume": 0.3,
         "tts_volume": 0.61,
         "bgm_sfx_volume": 0.15,
         "sfx_volume": 0.23,

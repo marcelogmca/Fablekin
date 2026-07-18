@@ -342,6 +342,26 @@ export function initSocketHandlers(socket) {
 
     let focusStabilizerTimeout = null;
 
+    function resumePendingOstIfAllowed() {
+        if (!state.isFocused || !state.isViewerTabActive || !state.pendingOstResume) return;
+
+        state.pendingOstResume = false;
+        if (elements.audioPlayer && elements.audioPlayer.paused && elements.audioPlayer.src) {
+            elements.audioPlayer.play().then(() => {
+                if (elements.musicPlayPauseBtn) elements.musicPlayPauseBtn.innerHTML = '<i>⏸</i>';
+            }).catch(e => debugError('OST resume on Viewer activation fail', e));
+        }
+    }
+
+    window.addEventListener('fablekin:viewer-tab-activity', (event) => {
+        state.isViewerTabActive = event.detail?.isActive === true;
+        if (state.isViewerTabActive) resumePendingOstIfAllowed();
+    });
+    if (typeof window.__fablekinViewerTabActive === 'boolean') {
+        state.isViewerTabActive = window.__fablekinViewerTabActive;
+        if (state.isViewerTabActive) resumePendingOstIfAllowed();
+    }
+
     socket.on('window-focus-changed', (data) => {
         console.log('[VN Focus] Received window-focus-changed:', data.isFocused);
         state.isFocused = data.isFocused;
@@ -354,14 +374,7 @@ export function initSocketHandlers(socket) {
             focusStabilizerTimeout = setTimeout(() => {
                 // Verify window is STILL focused after the grace period
                 if (state.isFocused) {
-                    if (state.pendingOstResume) {
-                        state.pendingOstResume = false;
-                        if (elements.audioPlayer && elements.audioPlayer.paused && elements.audioPlayer.src) {
-                            elements.audioPlayer.play().then(() => {
-                                if (elements.musicPlayPauseBtn) elements.musicPlayPauseBtn.innerHTML = '<i>⏸</i>';
-                            }).catch(e => debugError('OST resume on focus fail', e));
-                        }
-                    }
+                    resumePendingOstIfAllowed();
                     if (state.pendingSfxResume) {
                         state.pendingSfxResume = false;
                         window.dispatchEvent(new CustomEvent('audio:unmute-generation'));

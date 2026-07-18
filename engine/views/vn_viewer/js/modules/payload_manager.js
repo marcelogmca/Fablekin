@@ -388,7 +388,7 @@ function handleGenerationOutcome(wasGen = false) {
     if (state.vnSettings.audio?.play_sound_on_ready) playReadySound();
     if (state.vnSettings.interface?.blink_taskbar_on_ready) window.socket.emit('vn:blink-taskbar');
     if (state.vnSettings.audio?.mute_audio_during_generation) {
-        if (state.isFocused) {
+        if (state.isFocused && state.isViewerTabActive) {
             window.dispatchEvent(new CustomEvent('audio:unmute-generation'));
             if (elements.audioPlayer?.paused && elements.audioPlayer.src) elements.audioPlayer.play().catch(e => debugError('OST resume fail', e));
         } else {
