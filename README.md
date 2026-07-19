@@ -92,6 +92,10 @@ Those records can then evolve with the story. Depending on the plugins you enabl
 
 This is not intended to make your existing character work disposable: descriptions, examples, scenario notes, personality details, and setting ties are valuable input. The main migration caveat is that application-specific macros or executable card extensions do not automatically translate into Fablekin behavior.
 
+<p align="center">
+  <img src="engine/views/home/media/readme/separator.png" alt="" width="100%">
+</p>
+
 ## What makes it different
 
 ### Memory is a system, not a larger prompt
