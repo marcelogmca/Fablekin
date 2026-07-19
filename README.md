@@ -6,6 +6,7 @@
 ### A narrative simulation engine for long-form adventures and animated visual novel rendering
 
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-2f80ed)](#getting-started)
+[![Linux & macOS: Expected to work](https://img.shields.io/badge/Linux%20%26%20macOS-expected%20to%20work-lightgrey)](#getting-started)
 [![Runtime: Electron](https://img.shields.io/badge/runtime-Electron-47848f)](engine/package.json)
 [![Version: 1.0.0](https://img.shields.io/badge/version-1.0.0-d6ad4c)](engine/package.json)
 
