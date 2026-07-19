@@ -211,8 +211,8 @@
       }
     },
     "socket_host": "127.0.0.1",
-    "socket_port": 58272,
-    "socket_url": "http://127.0.0.1:58272",
+    "socket_port": 56266,
+    "socket_url": "http://127.0.0.1:56266",
     "llm_routing": {
       "aliases": {
         "lowendmodel": {
@@ -325,7 +325,7 @@
       },
       "model": "highendmodel",
       "chapters_to_review": 1,
-      "enabled": true,
+      "enabled": false,
       "direct_plugins_enabled": false,
       "enable_scene_boundary_strategy": true,
       "retries": 0,
@@ -619,7 +619,7 @@
         "show_music_player": false,
         "show_ost_popup": true,
         "show_dialogue_index_indicator": true,
-        "plugin_manager_view_mode": "showcase",
+        "plugin_manager_view_mode": "list",
         "blink_taskbar_on_ready": true,
         "settings_popout_transparency": 1,
         "modal_overlay_opacity": 0,
@@ -728,6 +728,30 @@
           "world_environment": true,
           "world_status": true,
           "inventory": true
+        }
+      },
+      "plugins": {
+        "sprite_shading": {
+          "enable_blurred_edge": false,
+          "blurred_edge_blur": 5,
+          "blurred_edge_opacity": 1,
+          "enable_ambient_lighting": true,
+          "ambient_lighting_opacity": 0.2,
+          "ambient_lighting_saturation": 200,
+          "enable_shadow_shading": true,
+          "shadow_shading_opacity": 0.25,
+          "shadow_shading_contrast": 1000,
+          "shadow_offset_x": 30,
+          "shadow_offset_y": 30,
+          "enable_outline": false,
+          "outline_thickness": 1,
+          "outline_color": "#000000",
+          "outline_color_matching": true,
+          "enable_debug_pips": false,
+          "enable_breathing": true,
+          "breathing_intensity": 0.003,
+          "breathing_speed": 6,
+          "breathing_randomness": 40
         }
       }
     }

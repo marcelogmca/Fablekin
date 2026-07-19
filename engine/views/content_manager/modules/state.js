@@ -25,8 +25,8 @@ socket.emitReceive = function (eventName, data) {
 export const NATIVE_MODES = {
   'none': { label: 'Not included', description: 'File will not be sent to the AI context.' },
   'full': { label: 'Full content', description: 'Sends the entire verbatim text of the file to the AI. Sent every single turn.', backgroundColor: '#2d5a27', color: '#ffffff' },
-  'summary': { label: 'Summarized', description: 'Sends a condensed AI-generated summary of the file to save context. Sent every single turn.', backgroundColor: '#8a6d1a', color: '#ffffff', isAdvanced: true },
-  'auto': { label: 'Auto (RAG)', description: 'Breaks down the file and uses RAG to pull only the most relevant snippets. It\'s like an automated lore book.', backgroundColor: '#1a4a8a', color: '#ffffff', isAdvanced: true },
+  'summary': { label: 'Summarized', description: 'Sends a condensed AI-generated summary of the file to save context. Sent every single turn.', backgroundColor: '#8a6d1a', color: '#ffffff' },
+  'auto': { label: 'Auto (RAG)', description: 'Breaks down the file and uses RAG to pull only the most relevant snippets. It\'s like an automated lore book.', backgroundColor: '#1a4a8a', color: '#ffffff' },
   'intro': { label: 'Intro / Prologue', description: 'Sets the stage for the adventure. This file is only sent during Turn 1 to initialize the story. It will be permanently recorded as part of the first turn\'s interaction.', backgroundColor: '#d4af37', color: '#ffffff' },
   'chat': { label: 'Chat history', description: 'Designates this file as the active narrative history. Only one chat file allowed.', backgroundColor: '#6a1a8a', color: '#ffffff', isAdvanced: true },
   'auto-included': { label: 'Auto Included', description: 'This file is automatically managed by a plugin and its position in the tree does not matter.', backgroundColor: '#444444', color: '#bbbbbb' },

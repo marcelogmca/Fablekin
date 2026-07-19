@@ -144,7 +144,17 @@ export function initializeSocketHandlers(socket) {
 
   socket.on('create-new-file-response', ({ success, directory }) => { if (success) applyDirectoryStructure(directory); });
   socket.on('create-new-chat-db-response', ({ success, directory }) => { if (success) applyDirectoryStructure(directory); });
-  socket.on('delete-file-response', ({ success, directory }) => { if (success) applyDirectoryStructure(directory); });
+  socket.on('delete-file-response', ({ success, directory, error, locked }) => {
+    if (success) {
+      applyDirectoryStructure(directory);
+      return;
+    }
+
+    const message = locked
+      ? 'The file is still open by another process. Close any external database tools and try again; if it remains locked, restart Fablekin and delete it before reopening the file.'
+      : (error || 'The file could not be deleted.');
+    Modals.alert(locked ? 'File Is In Use' : 'Delete Failed', message, { variant: locked ? 'warning' : 'danger' });
+  });
   socket.on('rename-file-response', async ({ success, directory, needsRestart }) => {
     if (success) {
       if (needsRestart) {

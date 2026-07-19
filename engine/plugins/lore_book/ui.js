@@ -44,7 +44,10 @@
             debugWarn("Tried to emit '" + eventName + "' without an active socket.");
             return false;
         }
-        debugLog("Emitting '" + eventName + "'.", payload);
+        const debugPayload = payload && payload.importData
+            ? { ...payload, importData: '[lorebook payload omitted]' }
+            : payload;
+        debugLog("Emitting '" + eventName + "'.", debugPayload);
         SOCKET.emit(eventName, payload);
         return true;
     }
@@ -72,9 +75,19 @@
         selected:   null,   // currently selected entry (id)
         dirty:      false,  // unsaved changes in editor
         keywords:   [],     // live keyword list for current entry
+        secondaryKeywords: [],
+        bookSettings: {
+            token_budget: null,
+            default_scan_depth: null,
+            scan_depth_unit: 'chapters',
+            recursive_scanning: true,
+        },
         search:     '',
         sort:       'priority',
         catFilter:  '__all__',
+        pendingImport: null,
+        pendingImportName: '',
+        applySourceSettings: true,
     };
 
     // ── DOM refs ───────────────────────────────────────
@@ -96,12 +109,20 @@
         name:       $('lb-name'),
         tagWrap:    $('lb-tag-wrap'),
         kwInput:    $('lb-kw-input'),
+        secondaryTagWrap: $('lb-secondary-tag-wrap'),
+        secondaryKwInput: $('lb-secondary-kw-input'),
         content:    $('lb-content'),
         tokenCount: $('lb-token-count'),
         priority:   $('lb-priority'),
         priorityV:  $('lb-priority-val'),
         category:   $('lb-category'),
         scanDepth:  $('lb-scan-depth'),
+        scanDepthUnit: $('lb-scan-depth-unit'),
+        position:   $('lb-position'),
+        selectiveLogic: $('lb-selective-logic'),
+        probability: $('lb-probability'),
+        recursionDelay: $('lb-recursion-delay'),
+        diagnostic: $('lb-diagnostic'),
         comment:    $('lb-comment'),
         saveStatus: $('lb-save-status'),
         saveBtn:    $('lb-save-btn'),
@@ -114,11 +135,23 @@
         togCase:     $('lb-tog-case'),
         togWord:     $('lb-tog-word'),
         togRegex:    $('lb-tog-regex'),
+        togSelective: $('lb-tog-selective'),
+        togProbability: $('lb-tog-probability'),
+        togExcludeRecursion: $('lb-tog-exclude-recursion'),
+        togPreventRecursion: $('lb-tog-prevent-recursion'),
+        togIgnoreBudget: $('lb-tog-ignore-budget'),
+        togIncludeName: $('lb-tog-include-name'),
         cbEnabled:   $('lb-enabled'),
         cbConstant:  $('lb-constant'),
         cbCase:      $('lb-case-sensitive'),
         cbWord:      $('lb-whole-word'),
         cbRegex:     $('lb-use-regex'),
+        cbSelective: $('lb-selective'),
+        cbProbability: $('lb-use-probability'),
+        cbExcludeRecursion: $('lb-exclude-recursion'),
+        cbPreventRecursion: $('lb-prevent-recursion'),
+        cbIgnoreBudget: $('lb-ignore-budget'),
+        cbIncludeName: $('lb-include-name'),
     };
 
     if (HOST_CONTAINER) {
@@ -157,6 +190,252 @@
         if (tone === 'err') el.status.classList.add('lb-status-err');
     }
 
+    function addImportStat(container, value, label, tone) {
+        const stat = document.createElement('div');
+        stat.className = 'lb-import-stat' + (tone ? ` lb-import-stat-${tone}` : '');
+        const number = document.createElement('strong');
+        number.textContent = String(value);
+        const caption = document.createElement('span');
+        caption.textContent = label;
+        stat.append(number, caption);
+        container.appendChild(stat);
+    }
+
+    function hasImportWarnings(report) {
+        return report.skippedEntries > 0 || report.disabledEntries > 0 ||
+            (report.warnings || []).some(item => (item.severity || 'warning') === 'warning');
+    }
+
+    function formatRecommendedSettings(settings) {
+        const parts = [];
+        if (settings.token_budget) parts.push(`${settings.token_budget} lore tokens`);
+        if (settings.default_scan_depth !== null && settings.default_scan_depth !== undefined) {
+            parts.push(`${settings.default_scan_depth} ${settings.scan_depth_unit || 'chapters'}`);
+        }
+        if (settings.recursive_scanning !== undefined) {
+            parts.push(`recursion ${settings.recursive_scanning ? 'enabled' : 'disabled'}`);
+        }
+        return parts.join(', ');
+    }
+
+    function buildImportReport(report, { completed = false, showSourceSettings = false } = {}) {
+        const root = document.createElement('div');
+        root.className = 'lb-import-report';
+
+        const intro = document.createElement('p');
+        intro.className = 'lb-import-intro';
+        intro.textContent = completed
+            ? `Finished importing “${report.bookName}”. Imported data, compatibility notes, and any unsupported rules are summarized below.`
+            : `Detected “${report.bookName}” as ${String(report.format).replaceAll('_', ' ')}. Review the compatibility report before importing.`;
+        root.appendChild(intro);
+
+        const stats = document.createElement('div');
+        stats.className = 'lb-import-stats';
+        addImportStat(stats, report.sourceEntries, 'Source entries');
+        addImportStat(stats, report.importedEntries, completed ? 'Imported' : 'Importable', 'ok');
+        addImportStat(stats, report.disabledEntries, 'Disabled for review', report.disabledEntries ? 'warn' : 'ok');
+        addImportStat(stats, report.skippedEntries, 'Skipped', report.skippedEntries ? 'danger' : 'ok');
+        root.appendChild(stats);
+
+        if (report.warnings && report.warnings.length) {
+            const sections = [
+                { severity: 'warning', title: 'Unsupported rules requiring review' },
+                { severity: 'approximation', title: 'Safe approximations' },
+                { severity: 'info', title: 'Import information' }
+            ];
+            sections.forEach((section) => {
+                const items = report.warnings.filter((item) => (item.severity || 'warning') === section.severity);
+                if (!items.length) return;
+                const heading = document.createElement('div');
+                heading.className = `lb-import-section-title lb-severity-${section.severity}`;
+                heading.textContent = section.title;
+                root.appendChild(heading);
+
+                const warningList = document.createElement('div');
+                warningList.className = 'lb-import-warning-list';
+                items.forEach((warning) => {
+                    const item = document.createElement('div');
+                    item.className = `lb-import-warning-item lb-severity-${section.severity}`;
+                    const header = document.createElement('div');
+                    header.className = 'lb-import-warning-header';
+                    const label = document.createElement('strong');
+                    label.textContent = warning.message;
+                    const count = document.createElement('span');
+                    count.textContent = warning.examples?.length
+                        ? `${warning.count} affected`
+                        : (warning.count > 1 ? `${warning.count} entries` : 'Book setting');
+                    header.append(label, count);
+                    item.appendChild(header);
+                    if (warning.examples && warning.examples.length) {
+                        const examples = document.createElement('small');
+                        examples.textContent = `Examples: ${warning.examples.join(', ')}`;
+                        item.appendChild(examples);
+                    }
+                    warningList.appendChild(item);
+                });
+                root.appendChild(warningList);
+            });
+        } else {
+            const clean = document.createElement('div');
+            clean.className = 'lb-import-clean';
+            clean.textContent = 'All detected fields have a supported Fablekin mapping.';
+            root.appendChild(clean);
+        }
+
+        const note = document.createElement('p');
+        note.className = 'lb-import-note';
+        note.textContent = 'Original source fields for imported entries are preserved in the lore database even when Fablekin cannot apply their behavior.';
+        root.appendChild(note);
+
+        const recommended = report.recommendedSettings || {};
+        if (showSourceSettings && Object.keys(recommended).length) {
+            const settingChoice = document.createElement('label');
+            settingChoice.className = 'lb-settings-check';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = S.applySourceSettings;
+            checkbox.addEventListener('change', () => { S.applySourceSettings = checkbox.checked; });
+            const copy = document.createElement('span');
+            copy.textContent = `Apply source book settings: ${formatRecommendedSettings(recommended)}. The global Fablekin token cap remains the final safety limit.`;
+            settingChoice.append(checkbox, copy);
+            root.appendChild(settingChoice);
+        }
+
+        if (completed && report.appliedSourceSettings) {
+            const applied = document.createElement('div');
+            applied.className = 'lb-import-clean';
+            applied.textContent = `Applied source book settings: ${formatRecommendedSettings(recommended)}.`;
+            root.appendChild(applied);
+        }
+        return root;
+    }
+
+    function beginAnalyzedImport(mode) {
+        if (!S.pendingImport) return;
+        setStatus(`Importing ${S.pendingImportName || 'lorebook'}…`, 'warn');
+        emitSocket('lore-book:import', {
+            filePath: FILE_PATH,
+            importData: S.pendingImport,
+            mode,
+            applySourceSettings: S.applySourceSettings
+        });
+    }
+
+    function showImportPreview(report) {
+        const hasWarnings = hasImportWarnings(report);
+        S.applySourceSettings = true;
+        Modals.show({
+            title: hasWarnings ? 'Lore Book Import Warnings' : 'Lore Book Import Compatibility',
+            content: buildImportReport(report, { showSourceSettings: true }),
+            className: hasWarnings ? 'modal-variant-warning' : '',
+            width: 'min(760px, 92vw)',
+            closeOnOverlayClick: false,
+            buttons: [
+                { text: 'Cancel', class: 'secondary' },
+                { text: 'Replace all entries', class: 'danger', onclick: () => beginAnalyzedImport('replace') },
+                { text: 'Merge with existing', class: 'primary', onclick: () => beginAnalyzedImport('merge') }
+            ]
+        });
+    }
+
+    function showImportResult(report) {
+        const hasWarnings = hasImportWarnings(report);
+        Modals.show({
+            title: hasWarnings ? 'Lore Book Imported with Warnings' : 'Lore Book Imported',
+            content: buildImportReport(report, { completed: true }),
+            className: hasWarnings ? 'modal-variant-warning' : '',
+            width: 'min(760px, 92vw)',
+            buttons: [{ text: 'Done', class: 'primary' }]
+        });
+    }
+
+    function createSettingsField(labelText, control, hintText) {
+        const field = document.createElement('div');
+        field.className = 'lb-field';
+        const label = document.createElement('label');
+        label.className = 'lb-label';
+        label.textContent = labelText;
+        field.append(label, control);
+        if (hintText) {
+            const hint = document.createElement('div');
+            hint.className = 'lb-hint';
+            hint.textContent = hintText;
+            field.appendChild(hint);
+        }
+        return field;
+    }
+
+    function showBookSettings() {
+        const settings = S.bookSettings || {};
+        const form = document.createElement('div');
+        form.className = 'lb-settings-form';
+        const grid = document.createElement('div');
+        grid.className = 'lb-settings-grid';
+
+        const tokenBudget = document.createElement('input');
+        tokenBudget.className = 'lb-input';
+        tokenBudget.type = 'number';
+        tokenBudget.min = '1';
+        tokenBudget.placeholder = 'Inherit global cap';
+        tokenBudget.value = settings.token_budget ?? '';
+
+        const scanDepth = document.createElement('input');
+        scanDepth.className = 'lb-input';
+        scanDepth.type = 'number';
+        scanDepth.min = '0';
+        scanDepth.placeholder = 'Inherit global default';
+        scanDepth.value = settings.default_scan_depth ?? '';
+
+        const scanUnit = document.createElement('select');
+        scanUnit.className = 'lb-select-full';
+        [['chapters', 'Chapters'], ['messages', 'Messages']].forEach(([value, label]) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            scanUnit.appendChild(option);
+        });
+        scanUnit.value = settings.scan_depth_unit || 'chapters';
+
+        grid.append(
+            createSettingsField('Lorebook Token Budget', tokenBudget, 'Optional per-book cap beneath the global Lore Book budget.'),
+            createSettingsField('Default Scan Depth', scanDepth, 'Blank inherits the plugin-wide default.'),
+            createSettingsField('Scan Depth Unit', scanUnit, 'Message mode counts user and narrative messages separately.')
+        );
+        form.appendChild(grid);
+
+        const recursionChoice = document.createElement('label');
+        recursionChoice.className = 'lb-settings-check';
+        const recursion = document.createElement('input');
+        recursion.type = 'checkbox';
+        recursion.checked = settings.recursive_scanning !== false;
+        const recursionCopy = document.createElement('span');
+        recursionCopy.textContent = 'Allow recursive scanning for this lorebook. Individual entries can still opt out or prevent their content from triggering another pass.';
+        recursionChoice.append(recursion, recursionCopy);
+        form.appendChild(recursionChoice);
+
+        Modals.show({
+            title: 'Lore Book Settings',
+            content: form,
+            width: 'min(620px, 92vw)',
+            buttons: [
+                { text: 'Cancel', class: 'secondary' },
+                {
+                    text: 'Save Settings',
+                    class: 'primary',
+                    onclick: () => emitSocket('lore-book:save-settings', {
+                        filePath: FILE_PATH,
+                        settings: {
+                            token_budget: tokenBudget.value === '' ? null : parseInt(tokenBudget.value, 10),
+                            default_scan_depth: scanDepth.value === '' ? null : parseInt(scanDepth.value, 10),
+                            scan_depth_unit: scanUnit.value,
+                            recursive_scanning: recursion.checked
+                        }
+                    })
+                }
+            ]
+        });
+    }
+
     // ── Category filter population ─────────────────────
     function rebuildCatFilter() {
         const cats = ['__all__', ...new Set(S.entries.map(e => e.category || 'General').filter(Boolean))].sort();
@@ -176,6 +455,7 @@
             list = list.filter(e =>
                 e.name.toLowerCase().includes(q) ||
                 (e.keywords || []).some(k => k.toLowerCase().includes(q)) ||
+                (e.secondary_keywords || []).some(k => k.toLowerCase().includes(q)) ||
                 (e.category || '').toLowerCase().includes(q) ||
                 (e.content   || '').toLowerCase().includes(q)
             );
@@ -269,7 +549,7 @@
     }
 
     // ── Keyword tag rendering ──────────────────────────
-    function renderTags() {
+    function renderTags(mark = true) {
         // Remove old tags (keep the input)
         Array.from(el.tagWrap.querySelectorAll('.lb-tag')).forEach(t => t.remove());
         const frag = document.createDocumentFragment();
@@ -287,7 +567,7 @@
             frag.appendChild(tag);
         });
         el.tagWrap.insertBefore(frag, el.kwInput);
-        markDirty();
+        if (mark) markDirty();
     }
 
     function addKeyword(raw) {
@@ -302,6 +582,55 @@
         renderTags();
     }
 
+    function renderSecondaryTags(mark = true) {
+        Array.from(el.secondaryTagWrap.querySelectorAll('.lb-tag')).forEach(tag => tag.remove());
+        const fragment = document.createDocumentFragment();
+        S.secondaryKeywords.forEach((keyword, index) => {
+            const tag = document.createElement('span');
+            tag.className = 'lb-tag';
+            const label = document.createElement('span');
+            label.textContent = keyword;
+            const remove = document.createElement('span');
+            remove.className = 'lb-tag-x';
+            remove.textContent = '\u00d7';
+            remove.addEventListener('click', (event) => {
+                event.stopPropagation();
+                S.secondaryKeywords.splice(index, 1);
+                renderSecondaryTags();
+            });
+            tag.append(label, remove);
+            fragment.appendChild(tag);
+        });
+        el.secondaryTagWrap.insertBefore(fragment, el.secondaryKwInput);
+        if (mark) markDirty();
+    }
+
+    function addSecondaryKeyword(raw) {
+        const keyword = raw.trim();
+        if (!keyword || S.secondaryKeywords.includes(keyword)) return;
+        S.secondaryKeywords.push(keyword);
+        renderSecondaryTags();
+    }
+
+    function renderDiagnostic(diagnostic) {
+        el.diagnostic.classList.remove('lb-diagnostic-injected', 'lb-diagnostic-skipped');
+        if (!diagnostic) {
+            el.diagnostic.textContent = 'No chapter has evaluated this entry yet.';
+            return;
+        }
+        const lines = [diagnostic.reason || diagnostic.status];
+        if (diagnostic.primary_matches?.length) lines.push(`Primary matches: ${diagnostic.primary_matches.join(', ')}`);
+        if (diagnostic.secondary_matches?.length) lines.push(`Secondary matches: ${diagnostic.secondary_matches.join(', ')}`);
+        if (diagnostic.secondary_missing?.length) lines.push(`Secondary keys not found: ${diagnostic.secondary_missing.join(', ')}`);
+        if (diagnostic.scan_depth !== undefined) lines.push(`Scanned: ${diagnostic.scan_depth} ${diagnostic.scan_unit || 'chapters'}`);
+        if (diagnostic.depth > 0) lines.push(`Recursion depth: ${diagnostic.depth}`);
+        el.diagnostic.textContent = lines.join('\n');
+        if (diagnostic.status === 'injected') el.diagnostic.classList.add('lb-diagnostic-injected');
+        else if (diagnostic.status.includes('skipped') || diagnostic.status.includes('failed')) {
+            el.diagnostic.classList.add('lb-diagnostic-skipped');
+        }
+    }
+
     // ── Select entry ───────────────────────────────────
     function selectEntry(id) {
         if (S.dirty) {
@@ -314,6 +643,7 @@
         S.selected = id;
         S.dirty    = false;
         S.keywords = Array.isArray(entry.keywords) ? entry.keywords.slice() : [];
+        S.secondaryKeywords = Array.isArray(entry.secondary_keywords) ? entry.secondary_keywords.slice() : [];
 
         el.empty.style.display  = 'none';
         el.editor.style.display = 'flex';
@@ -324,6 +654,11 @@
 
         el.category.value = entry.category || 'General';
         el.scanDepth.value = (entry.scan_depth !== null && entry.scan_depth !== undefined) ? entry.scan_depth : '';
+        el.scanDepthUnit.value = entry.scan_depth_unit || 'chapters';
+        el.position.value = entry.position || 'shared_dynamic';
+        el.selectiveLogic.value = String(entry.selective_logic ?? 0);
+        el.probability.value = entry.probability ?? 100;
+        el.recursionDelay.value = entry.delay_until_recursion ?? 0;
         el.comment.value  = entry.comment || '';
 
         setToggle(el.togEnabled,  el.cbEnabled,  entry.enabled);
@@ -331,6 +666,12 @@
         setToggle(el.togCase,     el.cbCase,     entry.case_sensitive);
         setToggle(el.togWord,     el.cbWord,     entry.match_whole_word);
         setToggle(el.togRegex,    el.cbRegex,    entry.use_regex);
+        setToggle(el.togSelective, el.cbSelective, entry.selective);
+        setToggle(el.togProbability, el.cbProbability, entry.use_probability);
+        setToggle(el.togExcludeRecursion, el.cbExcludeRecursion, entry.exclude_recursion);
+        setToggle(el.togPreventRecursion, el.cbPreventRecursion, entry.prevent_recursion);
+        setToggle(el.togIgnoreBudget, el.cbIgnoreBudget, entry.ignore_budget);
+        setToggle(el.togIncludeName, el.cbIncludeName, entry.include_name_in_prompt);
 
         updateSliderFill(entry.priority ?? 50);
         updateTokenCount();
@@ -339,7 +680,10 @@
         el.crumbHits.textContent = entry.hit_count + ' hits';
         el.crumbHits.title       = 'Lifetime matches: How many times this entry has been injected into your prompts.';
 
-        renderTags();
+        renderTags(false);
+        renderSecondaryTags(false);
+        renderDiagnostic(entry.last_diagnostic);
+        S.dirty = false;
         el.saveStatus.textContent = '';
         renderList(); // refresh selection highlight
     }
@@ -360,6 +704,7 @@
             id:              S.selected || undefined,
             name:            el.name.value.trim(),
             keywords:        S.keywords,
+            secondary_keywords: S.secondaryKeywords,
             content:         el.content.value,
             priority:        parseInt(el.priority.value, 10),
             enabled:         el.cbEnabled.checked,
@@ -370,6 +715,17 @@
             use_regex:       el.cbRegex.checked,
             match_whole_word: el.cbWord.checked,
             scan_depth:      el.scanDepth.value !== '' ? parseInt(el.scanDepth.value, 10) : null,
+            scan_depth_unit: el.scanDepthUnit.value,
+            position:        el.position.value,
+            selective:       el.cbSelective.checked,
+            selective_logic: parseInt(el.selectiveLogic.value, 10),
+            probability:     Math.max(0, Math.min(100, parseInt(el.probability.value, 10) || 0)),
+            use_probability: el.cbProbability.checked,
+            exclude_recursion: el.cbExcludeRecursion.checked,
+            prevent_recursion: el.cbPreventRecursion.checked,
+            delay_until_recursion: Math.max(0, parseInt(el.recursionDelay.value, 10) || 0),
+            ignore_budget: el.cbIgnoreBudget.checked,
+            include_name_in_prompt: el.cbIncludeName.checked,
             comment:         el.comment.value,
         };
     }
@@ -434,10 +790,11 @@
             }
         }, 2000);
 
-        onSocket('lore-book:loaded', ({ filePath, entries }) => {
+        onSocket('lore-book:loaded', ({ filePath, entries, settings }) => {
             if (filePath !== FILE_PATH) return;
             debugLog('Received lore-book:loaded.', { filePath, count: entries.length });
             S.entries = entries;
+            if (settings) S.bookSettings = settings;
             el.fileName.textContent = FILE_PATH.split(/[\\/]/).pop();
             setStatus('Archive connected.', 'ok');
             renderList();
@@ -457,7 +814,10 @@
             } else {
                 const idx = S.entries.findIndex(e => e.id === entry.id);
                 if (idx !== -1) {
-                    S.entries[idx] = entry;
+                    S.entries[idx] = {
+                        ...entry,
+                        last_diagnostic: entry.last_diagnostic || S.entries[idx].last_diagnostic || null
+                    };
                     // If the updated entry is the currently selected one, we may need to update the header
                     // but we should NEVER call selectEntry() here as it would hijack focus from a new selection.
                     if (S.selected === entry.id) {
@@ -502,6 +862,46 @@
             notify('Exported ' + data.entries.length + ' entries.');
         });
 
+        onSocket('lore-book:import-analysis', ({ filePath, report, error }) => {
+            if (filePath !== FILE_PATH) return;
+            if (error) {
+                setStatus('Import analysis failed.', 'err');
+                Modals.alert('Lore Book Import Warning', error, { variant: 'warning' });
+                S.pendingImport = null;
+                S.pendingImportName = '';
+                return;
+            }
+            setStatus('Import ready for review.', hasImportWarnings(report) ? 'warn' : 'ok');
+            showImportPreview(report);
+        });
+
+        onSocket('lore-book:imported', ({ filePath, report, settings }) => {
+            if (filePath !== FILE_PATH) return;
+            if (settings) S.bookSettings = settings;
+            setStatus(`Imported ${report.importedEntries} of ${report.sourceEntries} entries.`, hasImportWarnings(report) ? 'warn' : 'ok');
+            showImportResult(report);
+            S.pendingImport = null;
+            S.pendingImportName = '';
+        });
+
+        onSocket('lore-book:settings-saved', ({ filePath, settings }) => {
+            if (filePath !== FILE_PATH) return;
+            S.bookSettings = settings;
+            setStatus('Lorebook settings saved.', 'ok');
+            notify('Lorebook settings saved.');
+        });
+
+        onSocket('lore-book:diagnostics-updated', ({ filePath, diagnostics }) => {
+            if (filePath !== FILE_PATH || !diagnostics?.entries) return;
+            S.entries.forEach((entry) => {
+                entry.last_diagnostic = diagnostics.entries[String(entry.id)] || null;
+            });
+            if (S.selected) {
+                const selected = S.entries.find((entry) => entry.id === S.selected);
+                renderDiagnostic(selected?.last_diagnostic || null);
+            }
+        });
+
         onSocket('lore-book:pong', (data) => {
             debugLog('Received lore-book:pong.', data);
             setStatus('Archive link stable · ' + data.serverTime, 'ok');
@@ -526,6 +926,7 @@
         // New entry
         $('lb-new-btn').addEventListener('click',       newEntry);
         $('lb-empty-new').addEventListener('click',     newEntry);
+        $('lb-book-settings-btn').addEventListener('click', showBookSettings);
 
         // Save & delete
         el.saveBtn.addEventListener('click',   () => saveEntry(true));
@@ -540,8 +941,12 @@
         });
 
         // Editor field changes → mark dirty
-        [el.name, el.content, el.category, el.scanDepth, el.comment].forEach(f => {
+        [
+            el.name, el.content, el.category, el.scanDepth, el.scanDepthUnit,
+            el.position, el.selectiveLogic, el.probability, el.recursionDelay, el.comment
+        ].forEach(f => {
             f.addEventListener('input', markDirty);
+            f.addEventListener('change', markDirty);
         });
         el.content.addEventListener('input', updateTokenCount);
 
@@ -558,6 +963,12 @@
             [el.togCase,     el.cbCase],
             [el.togWord,     el.cbWord],
             [el.togRegex,    el.cbRegex],
+            [el.togSelective, el.cbSelective],
+            [el.togProbability, el.cbProbability],
+            [el.togExcludeRecursion, el.cbExcludeRecursion],
+            [el.togPreventRecursion, el.cbPreventRecursion],
+            [el.togIgnoreBudget, el.cbIgnoreBudget],
+            [el.togIncludeName, el.cbIncludeName],
         ].forEach(([wrap, cb]) => {
             wrap.addEventListener('click', () => {
                 cb.checked = !cb.checked;
@@ -584,50 +995,54 @@
         });
         el.tagWrap.addEventListener('click', () => el.kwInput.focus());
 
+        el.secondaryKwInput.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ',') {
+                ev.preventDefault();
+                addSecondaryKeyword(el.secondaryKwInput.value);
+                el.secondaryKwInput.value = '';
+            } else if (ev.key === 'Backspace' && !el.secondaryKwInput.value && S.secondaryKeywords.length) {
+                S.secondaryKeywords.pop();
+                renderSecondaryTags();
+            }
+        });
+        el.secondaryKwInput.addEventListener('blur', () => {
+            if (el.secondaryKwInput.value.trim()) {
+                addSecondaryKeyword(el.secondaryKwInput.value);
+                el.secondaryKwInput.value = '';
+            }
+        });
+        el.secondaryTagWrap.addEventListener('click', () => el.secondaryKwInput.focus());
+
         // Export
         $('lb-export-btn').addEventListener('click', () => {
             if (!SOCKET) return;
             emitSocket('lore-book:export', { filePath: FILE_PATH });
         });
 
-        // Import
-        $('lb-import-btn').addEventListener('click', () => $('lb-import-file').click());
-        $('lb-import-file').addEventListener('change', (ev) => {
+        // Import SillyTavern World Info, Character Book, or native Fablekin JSON.
+        const importFileInput = $('lb-import-file');
+        const openImportPicker = () => importFileInput.click();
+        $('lb-import-btn').addEventListener('click', openImportPicker);
+        $('lb-empty-import').addEventListener('click', openImportPicker);
+        importFileInput.addEventListener('change', (ev) => {
             const file = ev.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!data.entries) throw new Error('Invalid lorebook format.');
-                    
-                    Modals.show({
-                        title: 'Import Lore Entries',
-                        content: `<p>Found <strong>${data.entries.length}</strong> entries to import. How would you like to proceed?</p>`,
-                        buttons: [
-                            {
-                                text: 'Merge with existing',
-                                class: 'primary',
-                                onclick: () => {
-                                    emitSocket('lore-book:import', { filePath: FILE_PATH, importData: data, mode: 'merge' });
-                                }
-                            },
-                            {
-                                text: 'Replace all entries',
-                                class: 'danger',
-                                onclick: () => {
-                                    emitSocket('lore-book:import', { filePath: FILE_PATH, importData: data, mode: 'replace' });
-                                }
-                            },
-                            {
-                                text: 'Cancel',
-                                class: 'secondary'
-                            }
-                        ]
-                    });
+                    S.pendingImport = data;
+                    S.pendingImportName = file.name;
+                    setStatus(`Analyzing ${file.name}…`, 'warn');
+                    emitSocket('lore-book:analyze-import', { filePath: FILE_PATH, importData: data });
                 } catch (err) {
-                    notify('Import failed: ' + err.message, true);
+                    setStatus('Import file could not be read.', 'err');
+                    Modals.alert('Lore Book Import Warning', `The selected file is not valid JSON: ${err.message}`, { variant: 'warning' });
                 }
+            };
+            reader.onerror = () => {
+                setStatus('Import file could not be read.', 'err');
+                Modals.alert('Lore Book Import Warning', 'The selected file could not be read.', { variant: 'warning' });
             };
             reader.readAsText(file);
             ev.target.value = '';

@@ -39,7 +39,7 @@ Fablekin makes a different trade. A turn is treated as a production pipeline, an
 | Narrative control | One prompt and one generation | Context foundation, Director strategy, Writer generation, and post-processing |
 | Long-term memory | Growing transcript or flat similarity search | Full text, summaries, synopses, arc compression, dynamic elevation, and chronologically slotted recall |
 | World continuity | Best-effort prose summaries | Persistent SQLite state, structured trackers, and turn snapshots |
-| Cast | Character cards competing for prompt space | Persistent character sheets, goals, relationships, personalities, scene presence, and visual state |
+| Cast | Static character cards sharing prompt space | Existing character material synthesized into persistent sheets and capsules, with goals, relationships, personalities, scene presence, and visual state |
 | Presentation | Text with optional portraits | PixiJS staging, animated sprites, gaze, camera direction, backgrounds, music, shaders, VFX, SFX, TTS, and HUDs |
 | Extensibility | Prompt presets or scripts around the chat loop | Lifecycle hooks, run profiles, UI views, GUI intercepts, client events, plugin storage, and project-scoped Story Scripts |
 
@@ -47,7 +47,7 @@ There are many things Fablekin attempts to solve:
 - Characters have constant amnesia and have no will. I want a character to be busy looking for their lost sword, and if the user says "Let's go to the Inn to drink beer" I want the character to say "Woah there, first, we find my sword!"
 - The user should not feel like a god. If the party is fighting a dragon, saying "I take out my flaming sword and defeat it with one strike" should elicit a reaction from the party "Are you drunk? You have no falming sword! Run!". I want to feel like i'm participating, not directing.
 - Everything should be designed around multi-character support. Characters should retain short and long term goals, temporarily leave the party to take care of errands and overall feel like they have their own agency.
-- Not having to tinker with thousands of settings or build a super intricate lore book. I want to be able to take a large wiki article and dump it into a text box and tell it to handle it.
+- Detailed lore work should be optional, not wasted. I want to be able to drop in a large wiki article and let Fablekin organize it, while still supporting carefully keyworded lore books with trigger rules for creators who already use them.
 - Memory should be managed while keeping chronological sense - no random RAG chunks and hoping the AI understands those pieces. Characters keep core memories attached, meaning even if the story grows too far and older chapters get compressed, characters will never forget their core memories.
 - I want to drag & drop a few images and songs into a folder and have the system read the files and understand them by itself with zero configuration. Forest.jpg? Nice, we'll use it as background when we are in a forest. Spooky.mp3? Use it when we are in the haunted forest.
 - I don't want it to feel like a prettified chat frontend. This is not a chat front end, this is a full fledged, real time rendered PIXIJS visual novel.
@@ -59,6 +59,37 @@ There are many things Fablekin attempts to solve:
 <p align="center">
   <img src="engine/views/home/media/readme/separator.png" alt="" width="100%">
 </p>
+
+## FAQ: bringing an existing world into Fablekin
+
+### Can I bring over a SillyTavern or RisuAI lorebook and character cards?
+
+The content is reusable. The Lore Book plugin can already partially import most SillyTavern lorebooks; review the result afterwards because application-specific fields and advanced logic may not yet map one-to-one.
+
+| Existing material | How you can use it today | Compatibility status |
+| --- | --- | --- |
+| World lore, rules, history, locations, or wiki-style text | Add the files as project canon through the Content Manager. Fablekin can work with ordinary prose and Markdown; it does not require every fact to be keyworded. | Available now |
+| A carefully keyworded lorebook | Use the bundled, opt-in **Lore Book** plugin. It supports keywords, regular expressions, case-sensitive and whole-word matching, always-active entries, priorities, per-entry scan depth, recursive triggers, and a shared token budget. | Available now; native Fablekin JSON round-trips fully |
+| A SillyTavern comparible world info JSON | Import it through the Lore Book plugin. Most standard entries can be partially imported; review keywords, insertion behavior, and any advanced logic or macros after import. | Partial import available now |
+| Character-card text or a large character write-up | Paste the meaningful text into a character source file and mark it as a **Character Sheet**, or mark a multi-character document as a **Supporting Cast** source. The Character Sheets plugin synthesizes it into Fablekin's persistent format. If not using those plugins, simply add the character's lore as "Full text".| Available now |
+| A platform-specific character-card PNG/JSON | Copy or extract its character text first. Card-specific macros, scripts, and extension fields may need manual adaptation. | Direct card-format import is not currently available |
+
+### Do I need to rebuild my world as a keyworded lorebook?
+
+No. Fablekin supports two complementary workflows:
+
+- **Native canon:** add long-form lore as ordinary project files. This is the simplest path for wiki exports, setting documents, world rules, histories, and other prose-heavy material.
+- **Triggered lore:** use the Lore Book plugin when an entry should appear only after a keyword or regular expression matches, must always be active, or needs explicit priority and scan-depth control.
+
+You can mix both approaches in the same project. Broad world material can remain native canon while precise conditional entries stay in triggered lore books.
+
+### What replaces character cards?
+
+Fablekin treats a card or character dump as **source material**, rather than as the character's permanent runtime state. The Character Sheets plugin reads that source once, synthesizes a structured high-fidelity sheet for core characters, and caches the result. A large supporting-cast document can be split into smaller **lite capsules** so recurring NPCs do not all consume full-sheet context at once.
+
+Those records can then evolve with the story. Depending on the plugins you enable, Fablekin can maintain biography and voice alongside current goals, important memories, aliases, personality development, relationships, and location or party state. The player and selected core sheets retain high detail, while supporting capsules are chosen by relevance within a configurable context limit.
+
+This is not intended to make your existing character work disposable: descriptions, examples, scenario notes, personality details, and setting ties are valuable input. The main migration caveat is that application-specific macros or executable card extensions do not automatically translate into Fablekin behavior.
 
 ## What makes it different
 
@@ -470,5 +501,111 @@ I don’t intend nor do I have the time to personally maintain an integration fo
 The goal of the plugin system is that this shouldn’t be a bottleneck. If you’re a developer and there’s something you want Fablekin to do, the answer should ideally be: give it a try. 
 Plugins can participate throughout the generation pipeline, add interfaces and HUDs, persist their own state, introduce new scene modes, and integrate external services without requiring changes to the core engine.
 Plugins can almost literally change anything, and I have included somoe wiki docs, and some example plugins. Specially with an AI coding agent, getting started on creating/changing a plugin should be relatively simple.
+
+<p align="center">
+  <img src="engine/views/home/media/readme/separator.png" alt="" width="100%">
+</p>
+
+## Included plugins
+
+Fablekin ships with opt-in plugins for narrative simulation, visual-novel presentation, and gameplay experiments. They are deliberately modular: enable the pieces that fit a project rather than treating the entire list as required. The most immediately visible and broadly useful modules come first; the final group is a set of developer references.
+
+### Cinematic presentation and character life
+
+- **VN Cinematographer** (`vn_cinematographer`) — turns narrative beats into camera, animation, title, VFX, and SFX direction.
+- **CG Generator** (`cg_generator`) — generates context-aware visual-novel CG overlays through pluggable image providers.
+
+<p align="center"><img src="engine/plugins/disabled/cg_generator/screenshot1.webp" alt="CG Generator interface" width="440"></p>
+
+- **VN PixiJS VFX** (`vn_pixijs_vfx`) — triggerable cloud and volumetric-fog shaders for the VN stage.
+
+<p align="center"><img src="engine/plugins/disabled/vn_pixijs_vfx/screenshot1.webp" alt="VN PixiJS VFX preview" width="440"></p>
+
+- **VN Alive Backgrounds** (`vn_alive_bg`) — adds ambient lighting, bloom, light spread, and cursor parallax to backgrounds.
+- **Sprite Shading** (`sprite_shading`) — shades sprites against the active background for a more grounded scene.
+
+<p align="center"><img src="engine/plugins/disabled/sprite_shading/screenshot1.webp" alt="Sprite Shading preview" width="440"></p>
+
+- **VN SFX** (`vn_sfx`) — manages one-shot and looping scene sound effects.
+- **TTS Core** (`tts_core`) — centralizes text-to-speech, voice selection, progress, and selective regeneration.
+- **Arc Cinematics** (`arc_cinematics`) — supplies cinematic openings when a new narrative arc begins.
+
+<p align="center"><img src="engine/plugins/disabled/arc_cinematics/screenshot1.webp" alt="Arc Cinematics preview" width="440"></p>
+
+- **VN HUD** (`vn_hud`) — a managed on-canvas home for compact plugin panels and shared modals.
+
+### Persistent cast and social simulation
+
+- **Character Sheets** (`character_sheets`) — turns source material into persistent high-detail sheets and efficient supporting-cast capsules.
+
+<p align="center"><img src="engine/plugins/disabled/character_sheets/screenshot1.webp" alt="Character Sheets interface" width="440"></p>
+
+- **Relationship Tracker** (`relationship_tracker`) — tracks symmetrical friendship, romance, trust, fear, and respect between characters.
+
+<p align="center"><img src="engine/plugins/disabled/relationship_tracker/screenshot1.webp" alt="Relationship Tracker interface" width="440"></p>
+
+- **Personality Tracker** (`personality_tracker`) — evolves OCEAN traits and esteem from narrative behavior.
+- **Character Echoes** (`character_echoes`) — periodically interviews core characters to keep their inner lives fresh.
+- **Character Classifier** (`character_classifier`) — identifies character importance and attributes so costly tracking can focus on the cast that matters.
+
+### World, memory, and story direction
+
+- **Lore Book** (`lore_book`) — classic keyword- and regex-triggered lore injection with priorities, recursion, and token budgets.
+- **Grand Story Planner** (`grand_story_planner`) — maintains hidden long-range arcs and strategic pressure for the Director.
+- **Knowledge Graph** (`knowledge_graph`) — a persistent GraphRAG web for factual world knowledge and social paths.
+- **Memory Recall** (`memory_recall`) — recalls concise character, relationship, world, and location memories at prompt time.
+- **World Simulator** (`world_simulator`) — runs low-latency off-screen simulation and commits grounded changes to world trackers.
+- **World State Tracker** (`world_state_tracker`) — maintains global facts such as time, weather, and inventory.
+
+<p align="center"><img src="engine/plugins/disabled/world_state_tracker/screenshot1.webp" alt="World State Tracker interface" width="440"></p>
+
+- **World Location Tracker** (`world_location_tracker`) — manages locations, routes, and location-specific prompt context.
+
+<p align="center"><img src="engine/plugins/disabled/world_location_tracker/screenshot1.webp" alt="World Location Tracker interface" width="440"></p>
+
+- **Story Arc Tracker** (`story_arc_tracker`) — detects arc boundaries and can request an Arc Cinematics introduction.
+- **Story Objective Tracker** (`quest_tracker`) — tracks player-facing objectives in a compact Story Threads HUD.
+
+<p align="center"><img src="engine/plugins/disabled/quest_tracker/screenshot1.webp" alt="Story Objective Tracker HUD" width="440"></p>
+
+- **Story Cards** (`story_cards`) — a deck-building-style system for deliberately steering themes and events through the Director.
+- **Narrative Architect** (`narrative_architect`) — brings structural guidance from acclaimed episodes into planning.
+- **Narrative Pacing & Strategy** (`narrative_pacing`) — checks scene pacing against a target budget and suggests adjustments.
+- **Post Writer Consistency Checker** (`post_writer_consistency_checker`) — finds and corrects hallucinations, contradictions, and continuity errors after writing.
+- **Output Size Controller** (`output_size_controller`) — sets story length targets with play-time and dialogue estimates.
+
+<p align="center"><img src="engine/plugins/disabled/output_size_controller/screenshot1.webp" alt="Output Size Controller interface" width="440"></p>
+
+### Interactive scene modes and gameplay experiments
+
+- **Adventure Book** (`adventure_book`) — adds blocking d20-style storybook challenge loops before returning to the VN scene.
+
+<p align="center"><img src="engine/plugins/disabled/adventure_book/screenshot1.webp" alt="Adventure Book interface" width="440"></p>
+
+- **Camp Rest** (`camp_rest_interludes`) — provides camp/rest overlays, invitation interludes, and scene replay.
+
+<p align="center"><img src="engine/plugins/disabled/camp_rest_interludes/screenshot1.webp" alt="Camp Rest interface" width="440"></p>
+
+- **Top-Down Shooter Gameplay** (`top_down_shooter_gameplay_interludes`) — a combat-focused shooter overlay for gameplay interludes.
+
+### Plugin-development references
+
+- **Toolkit Demo** (`toolkit_demo`) — examples for utilities, pipelines, hook dispatch, and token counting.
+- **Example: Background Job** (`example_background_job`) — tracked background work with progress, cancellation, and failure handling.
+- **Example: Custom File Type** (`example_custom_file_type`) — a structured Content Manager file type using selected project files safely.
+- **Example: Custom View** (`example_custom_view`) — a plugin-owned application view with a socket request/response flow.
+- **Example: Director Integration** (`example_director_integration`) — a Director capability, project directive, and previous-turn feedback loop.
+- **Example: PixiJS Intercept** (`example_pixi_intercept`) — a minimal blocking PixiJS takeover with cleanup.
+- **Example: Plugin Exports** (`example_plugin_api`) — a small validated API exposed to other plugins.
+- **Example: Plugin Interoperability** (`example_plugin_api_consumer`) — optional dependencies and safe calls into another plugin.
+- **Example: Plugin Documentation** (`example_plugin_documentation`) — contributes a page to the built-in documentation portal.
+- **Example: Plugin Settings** (`example_plugin_settings`) — defines and updates settings schemas safely.
+- **Example: Plugin State and Facts** (`example_plugin_state`) — demonstrates runtime state, persisted turn state, and scoped facts.
+- **Example: Prompt and LLM** (`example_prompt_llm`) — an alias-routed LLM task with validated prompt injection.
+- **Example: Secret Storage** (`example_secret_storage`) — declares and checks an encrypted plugin secret.
+- **Example: Terminal Commands** (`example_terminal_commands`) — namespaced terminal commands with validation and bounded database access.
+- **Example: VN Client Events** (`example_vn_client_events`) — timed, one-shot, and line-scoped client events.
+- **Example: VN Frontend Injection** (`example_vn_frontend_injection`) — persistent VN HTML, CSS, JavaScript, sockets, and cleanup.
+- **Example: VN GUI Intercepts** (`example_vn_gui_intercept`) — advanced blocking, chained, timed, backend-backed, and PixiJS intercept patterns.
 
 If Fablekin has been useful to you, you can [support its development on Ko-fi](https://ko-fi.com/ineyve).

@@ -66,16 +66,18 @@ function createPluginSocketHandlers({
 
                 // 1. Manage configuration (preserve metadata like #order)
                 const currentConfig = await contentManager.loadFileConfig(rootDirectory);
-                const fileMetadata = currentConfig[oldPath] || {};
+                const currentFiles = { ...(currentConfig.files || {}) };
+                const fileMetadata = currentFiles[oldPath] || {};
 
                 // Transfer metadata to new path, enforcing the new mode
                 if (typeof fileMetadata === 'string') {
-                    currentConfig[newPath] = { mode: targetMode, lockedMode: targetMode };
+                    currentFiles[newPath] = { mode: targetMode, lockedMode: targetMode };
                 } else {
-                    currentConfig[newPath] = { ...fileMetadata, mode: targetMode, lockedMode: targetMode };
+                    currentFiles[newPath] = { ...fileMetadata, mode: targetMode, lockedMode: targetMode };
                 }
 
-                delete currentConfig[oldPath];
+                delete currentFiles[oldPath];
+                const updatedConfig = { ...currentConfig, files: currentFiles };
 
                 // 2. Physical file operations
                 if (conversionType === 'package') {
@@ -85,7 +87,7 @@ function createPluginSocketHandlers({
                     await fs.writeFile(newPath, '');
                 }
                 await fs.unlink(oldPath);
-                await contentManager.saveFileConfig(rootDirectory, currentConfig);
+                await contentManager.saveFileConfig(rootDirectory, updatedConfig);
 
                 // 3. Plugin hook - allow plugins to initialize the new file (e.g. SQLite tables)
                 const targetPluginId = modeMetadata ? modeMetadata.pluginId : 'unknown';

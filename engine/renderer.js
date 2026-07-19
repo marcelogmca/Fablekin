@@ -167,15 +167,31 @@ socket.on('get-global-settings-response', (response) => {
  * Initializes the tab switching functionality for the application.
  */
 function initializeTabs() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
+    // Action controls such as "Switch Projects" share the tab button styling,
+    // but must not participate in tab navigation.
+    const tabButtons = document.querySelectorAll('.tab-btn[data-tab]');
     const viewerWebview = document.getElementById('viewer-iframe');
+    const switchProjectBtn = document.getElementById('switch-project-btn');
+
+    // Bind action controls before tab restoration or webview synchronization.
+    // Those later operations may fail while a webview is still starting, but
+    // switching projects must always remain available.
+    switchProjectBtn?.addEventListener('click', () => {
+        console.log('[Renderer] Requesting app restart for project switch...');
+        socket.emit('restart-app');
+    });
 
     function notifyViewerTabActivity(isActive) {
         if (!viewerWebview || typeof viewerWebview.executeJavaScript !== 'function') return;
         const script = `window.__fablekinViewerTabActive = ${isActive === true}; window.dispatchEvent(new CustomEvent('fablekin:viewer-tab-activity', { detail: { isActive: window.__fablekinViewerTabActive } }));`;
-        viewerWebview.executeJavaScript(script).catch(() => {
+        try {
+            const execution = viewerWebview.executeJavaScript(script);
+            execution?.catch?.(() => {
+                // The dom-ready listener below will synchronize once the guest is available.
+            });
+        } catch {
             // The dom-ready listener below will synchronize once the guest is available.
-        });
+        }
     }
 
     viewerWebview?.addEventListener('dom-ready', () => {
@@ -183,9 +199,11 @@ function initializeTabs() {
     });
 
     function attachTabListener(btn) {
+        if (!btn?.dataset?.tab) return;
+
         btn.addEventListener('click', function () {
             // Remove active from all buttons (including dynamically added ones)
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
             // Remove active from all panes (including dynamically added ones)
             document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
@@ -215,15 +233,6 @@ function initializeTabs() {
     }
 
     notifyViewerTabActivity(document.getElementById('viewer-tab')?.classList.contains('active') === true);
-
-    // Handle Switch Project button
-    const switchProjectBtn = document.getElementById('switch-project-btn');
-    if (switchProjectBtn) {
-        switchProjectBtn.addEventListener('click', () => {
-            console.log('[Renderer] Requesting app restart for project switch...');
-            socket.emit('restart-app');
-        });
-    }
 
     // Handle messages from webviews (e.g., scene history requesting a tab switch)
     window.addEventListener('message', (event) => {

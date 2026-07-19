@@ -190,6 +190,7 @@ const HOOK_INFO = {
     'HOOK_TURN_DELETED': { isPipeline: false, icon: '🗑️', name: 'Turn Deleted', order: 50, phase: 'System', description: 'Fired when a turn is deleted (rewound). Plugins should clean up turn-specific physical assets.' },
     'HOOK_CHAT_DELETED': { isPipeline: false, icon: '🧨', name: 'Chat Deleted', order: 60, phase: 'System', description: 'Fired when an entire chat database is deleted. Plugins should clean up all associated data.' },
     'HOOK_CHAT_BRANCHED': { isPipeline: false, icon: '🌿', name: 'Chat Branched', order: 70, phase: 'System', description: 'Fired when a chat is branched. Plugins can sync or initialize state for the new branch.' },
+    'HOOK_FILE_WILL_DELETE': { isPipeline: false, icon: '🗑️', name: 'Preparing File Deletion', order: 80, phase: 'System', description: 'Fired before a project file is deleted so plugins can release file handles and other resources.' },
 
     // VN Turn Generation Hooks (100-3500)
     'HOOK_TURN_START': { isPipeline: true, weight: 1, icon: '▶️', name: 'Turn Start', order: 100, phase: 'Turn Start', description: 'Fired at the very start of a new turn. Allows plugins to set up turn-specific tracking.' },

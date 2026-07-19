@@ -12,3 +12,4 @@ tools/Sprite_Generator/weights/
 workspace/projects/*
 !workspace/projects/exampleadventure/
 !workspace/projects/exampleadventure/**
+workspace/logs/

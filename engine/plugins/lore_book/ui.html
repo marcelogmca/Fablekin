@@ -40,8 +40,13 @@
             <button class="lb-btn lb-btn-primary lb-btn-sm" id="lb-new-btn">+ New Entry</button>
             <span class="lb-status-bar" id="lb-status">⚡ Connecting to archive...</span>
             <div class="lb-toolbar-right">
+                <button class="lb-btn lb-btn-ghost lb-btn-sm" id="lb-book-settings-btn">Book Settings</button>
+                <button
+                    class="lb-btn lb-btn-import lb-btn-sm"
+                    id="lb-import-btn"
+                    title="Import a Fablekin lorebook JSON, SillyTavern World Info lorebook JSON or Character Book JSON"
+                >Import Lorebook</button>
                 <button class="lb-btn lb-btn-ghost lb-btn-sm" id="lb-export-btn">Export JSON</button>
-                <button class="lb-btn lb-btn-ghost lb-btn-sm" id="lb-import-btn">Import JSON</button>
                 <input type="file" id="lb-import-file" accept=".json" style="display:none" />
             </div>
         </div>
@@ -50,8 +55,15 @@
         <div class="lb-empty" id="lb-empty">
             <div class="lb-empty-icon">📜</div>
             <div class="lb-empty-title">Lore Book</div>
-            <div class="lb-empty-desc">Select an entry from the list, or create a new one to get started.</div>
-            <button class="lb-btn lb-btn-primary" id="lb-empty-new">+ Create Entry</button>
+            <div class="lb-empty-desc">Create entries manually or import an existing lorebook.</div>
+            <div class="lb-empty-actions">
+                <button class="lb-btn lb-btn-primary" id="lb-empty-new">+ Create Entry</button>
+                <button
+                    class="lb-btn lb-btn-import"
+                    id="lb-empty-import"
+                    title="Import a Fablekin lorebook JSON, SillyTavern World Info lorebook JSON or Character Book JSON"
+                >Import Lorebook</button>
+            </div>
         </div>
 
         <!-- Editor (hidden until entry selected) -->
@@ -87,6 +99,14 @@
                     Inject" is on).</div>
             </div>
 
+            <div class="lb-field">
+                <label class="lb-label">Secondary Keywords</label>
+                <div class="lb-tag-wrap" id="lb-secondary-tag-wrap">
+                    <input class="lb-tag-input" id="lb-secondary-kw-input" placeholder="Type secondary keyword, press Enter or comma..." />
+                </div>
+                <div class="lb-hint">Optional conditions used by Selective Activation and the chosen secondary-key logic.</div>
+            </div>
+
             <!-- Content -->
             <div class="lb-field">
                 <label class="lb-label">
@@ -116,9 +136,46 @@
 
                 <div class="lb-field">
                     <label class="lb-label">Scan Depth Override</label>
-                    <input class="lb-input" type="number" id="lb-scan-depth" placeholder="Use global default" min="0"
-                        max="30" />
-                    <div class="lb-hint">Turns of history to scan for this entry's keywords.</div>
+                    <div class="lb-inline-fields">
+                        <input class="lb-input" type="number" id="lb-scan-depth" placeholder="Use book default" min="0" />
+                        <select class="lb-select-full" id="lb-scan-depth-unit">
+                            <option value="chapters">Chapters</option>
+                            <option value="messages">Messages</option>
+                        </select>
+                    </div>
+                    <div class="lb-hint">Messages count user input and generated narrative separately.</div>
+                </div>
+
+                <div class="lb-field">
+                    <label class="lb-label">Prompt Placement</label>
+                    <select class="lb-select-full" id="lb-position">
+                        <option value="shared_dynamic">Shared Dynamic Knowledge</option>
+                        <option value="shared_canon">Shared Canon</option>
+                        <option value="writer_dynamic">Writer-only Knowledge</option>
+                        <option value="director_dynamic">Director-only Knowledge</option>
+                    </select>
+                    <div class="lb-hint">Shared Dynamic Knowledge is the safe default for triggered lore.</div>
+                </div>
+
+                <div class="lb-field">
+                    <label class="lb-label">Secondary-key Logic</label>
+                    <select class="lb-select-full" id="lb-selective-logic">
+                        <option value="0">AND ANY - at least one secondary key</option>
+                        <option value="1">NOT ALL - not every secondary key</option>
+                        <option value="2">NOT ANY - no secondary keys</option>
+                        <option value="3">AND ALL - every secondary key</option>
+                    </select>
+                </div>
+
+                <div class="lb-field">
+                    <label class="lb-label">Activation Probability (%)</label>
+                    <input class="lb-input" type="number" id="lb-probability" min="0" max="100" value="100" />
+                </div>
+
+                <div class="lb-field">
+                    <label class="lb-label">Recursion Delay</label>
+                    <input class="lb-input" type="number" id="lb-recursion-delay" min="0" max="5" value="0" />
+                    <div class="lb-hint">Minimum recursive pass before this entry may activate.</div>
                 </div>
 
             </div>
@@ -160,7 +217,60 @@
                             <small>Keywords are RegExp</small>
                         </div>
                     </label>
+                    <label class="lb-toggle-item" id="lb-tog-selective">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-selective" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Selective Activation</strong>
+                            <small>Apply secondary-key logic</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-probability">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-use-probability" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Use Probability</strong>
+                            <small>Roll after conditions match</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-exclude-recursion">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-exclude-recursion" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Exclude from Recursion</strong>
+                            <small>Only direct context can activate it</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-prevent-recursion">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-prevent-recursion" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Prevent Further Recursion</strong>
+                            <small>Content cannot trigger more lore</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-ignore-budget">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-ignore-budget" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Ignore Token Budget</strong>
+                            <small>Always fits after activation</small>
+                        </div>
+                    </label>
+                    <label class="lb-toggle-item" id="lb-tog-include-name">
+                        <input type="checkbox" class="lb-toggle-cb" id="lb-include-name" />
+                        <div class="lb-track"></div>
+                        <div class="lb-toggle-text">
+                            <strong>Include Entry Name</strong>
+                            <small>Add its name before injected content</small>
+                        </div>
+                    </label>
                 </div>
+            </div>
+
+            <div class="lb-field">
+                <label class="lb-label">Last Activation Diagnostic</label>
+                <div class="lb-diagnostic" id="lb-diagnostic">No chapter has evaluated this entry yet.</div>
             </div>
 
             <!-- Internal notes -->

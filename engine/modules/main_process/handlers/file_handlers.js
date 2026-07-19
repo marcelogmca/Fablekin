@@ -35,6 +35,17 @@ function createFileHandlers({
         return getFileMode(fileConfig) === 'intro';
     }
 
+    function isFileLockError(error) {
+        const code = String(error?.code || '').toUpperCase();
+        const message = String(error?.message || '').toLowerCase();
+        return code === 'EBUSY'
+            || code === 'EPERM'
+            || code === 'SQLITE_BUSY'
+            || code === 'SQLITE_LOCKED'
+            || message.includes('database is locked')
+            || message.includes('resource busy or locked');
+    }
+
     async function isIntroFilePath(rootDirectory, filePath) {
         if (!rootDirectory || !filePath) return false;
         try {
@@ -485,25 +496,43 @@ function createFileHandlers({
 
         async deleteFile(socket, { filePath }) {
             const rootDirectory = getRootDirectory();
-            if (!isPathInsideRoot(filePath, rootDirectory)) {
+            const normalizedFilePath = path.normalize(filePath);
+            if (!isPathInsideRoot(normalizedFilePath, rootDirectory)) {
                 Logger.error('Main', 'FileOperations', 'Unauthorized file access attempt.', { rootDirectory, filePath });
                 return emitResponse('delete-file-response', { success: false, error: 'Unauthorized file access.' });
             }
             try {
-                const affectsIntro = await isIntroFilePath(rootDirectory, filePath);
+                const affectsIntro = await isIntroFilePath(rootDirectory, normalizedFilePath);
+                const fileStats = await fs.lstat(normalizedFilePath);
+                const config = await contentManager.loadFileConfig(rootDirectory);
+                const fileConfig = config.files[normalizedFilePath] || null;
+
+                // Give every plugin a generic opportunity to release resources it owns.
+                // Core intentionally has no knowledge of individual plugin file formats.
+                await pluginManager.executeHook('HOOK_FILE_WILL_DELETE', null, {
+                    filePath: normalizedFilePath,
+                    mode: getFileMode(fileConfig) || null,
+                    isDirectory: fileStats.isDirectory()
+                });
+
                 // If the file is a .db file, close the database connections first
-                if (filePath.endsWith('.db')) {
-                    Logger.log('Main', 'FileOperations', `Attempting to close DB connections for ${filePath}`);
-                    await chaptermanagement.close();
-                    await closeFactManager();
-                    const staticDataManager = getStaticDataManager();
-                    if (staticDataManager) {
-                        await staticDataManager.close();
+                if (normalizedFilePath.toLowerCase().endsWith('.db')) {
+                    const activeChatPath = getActiveChatPathGlobal();
+                    const isActiveChat = activeChatPath
+                        && path.normalize(activeChatPath) === normalizedFilePath;
+
+                    if (isActiveChat) {
+                        Logger.log('Main', 'FileOperations', `Attempting to close active DB connections for ${normalizedFilePath}`);
+                        await chaptermanagement.close();
+                        await closeFactManager();
+                        const staticDataManager = getStaticDataManager();
+                        if (staticDataManager) {
+                            await staticDataManager.close();
+                        }
+                        Logger.log('Main', 'FileOperations', `Active DB connections for ${normalizedFilePath} closed.`);
                     }
 
-                    Logger.log('Main', 'FileOperations', `DB connections for ${filePath} closed.`);
-
-                    const dbFileName = path.basename(filePath, '.db');
+                    const dbFileName = path.basename(normalizedFilePath, '.db');
 
                     // Delete the centralized chat plugin storage directory
                     const chatPluginDir = path.join(rootDirectory, 'plugins', dbFileName);
@@ -517,15 +546,14 @@ function createFileHandlers({
                     }
                 }
 
-                const fileStats = await fs.lstat(filePath);
                 if (fileStats.isDirectory()) {
-                    await fs.rm(filePath, { recursive: true, force: true });
+                    await fs.rm(normalizedFilePath, { recursive: true, force: true });
                 } else {
-                    await fs.unlink(filePath);
+                    await fs.unlink(normalizedFilePath);
                     
                     // If it was a .db, notify plugins that the chat is gone
-                    if (filePath.endsWith('.db')) {
-                        await pluginManager.executeHook('HOOK_CHAT_DELETED', { chatDbPath: filePath });
+                    if (normalizedFilePath.toLowerCase().endsWith('.db')) {
+                        await pluginManager.executeHook('HOOK_CHAT_DELETED', { chatDbPath: normalizedFilePath });
                     }
                 }
                 const directory = await contentManager.processDirectory(rootDirectory, rootDirectory, getProjectName(), pluginManager.getRegisteredFileModes());
@@ -536,10 +564,15 @@ function createFileHandlers({
                         pluginModes: pluginManager.getRegisteredFileModes()
                     }
                 });
-                if (affectsIntro) emitPrologueContentInvalidated('intro-file-deleted', { filePath });
+                if (affectsIntro) emitPrologueContentInvalidated('intro-file-deleted', { filePath: normalizedFilePath });
             } catch (error) {
                 Logger.error('Main', 'FileOperations', 'Error deleting file', error);
-                emitResponse('delete-file-response', { success: false, error: error.message });
+                const locked = isFileLockError(error);
+                emitResponse('delete-file-response', {
+                    success: false,
+                    locked,
+                    error: locked ? 'The file is currently in use and could not be deleted.' : error.message
+                });
             }
         },
 

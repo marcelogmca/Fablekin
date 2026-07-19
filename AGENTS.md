@@ -1,6 +1,6 @@
 # Fablekin: AI-Powered Narrative Simulation
 
-Fablekin (formerly the Dynamic Narrative Engine) is a robust, self-contained environment for building and experiencing dynamic, long-form narratives. It combines a multi-agent AI system with a persistent world-brain to ensure long-term continuity, logical consistency, and evolving character arcs.
+Fablekin self-contained environment for building and experiencing dynamic, long-form narratives. It combines a multi-agent AI system with a persistent world-brain to ensure long-term continuity, logical consistency, and evolving character arcs.
 
 This project was born from a desire to solve common limitations in AI role-playing (RP) systems:
 - **SillyTavern/RisuAI**: While powerful, these often rely on a single, monolithic LLM call for every interaction, which can lead to instruction drift, lost context, and "flat" characters in multi-NPC scenes.
