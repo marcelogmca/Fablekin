@@ -62,7 +62,7 @@ There are many things Fablekin attempts to solve:
 
 ## FAQ: bringing an existing world into Fablekin
 
-### Can I bring over a SillyTavern or RisuAI lorebook and character cards?
+### Can I bring over a SillyTavern lorebook and character cards?
 
 The content is reusable. The Lore Book plugin can already partially import most SillyTavern lorebooks; review the result afterwards because application-specific fields and advanced logic may not yet map one-to-one.
 
@@ -551,10 +551,11 @@ Fablekin ships with opt-in plugins for narrative simulation, visual-novel presen
 ### World, memory, and story direction
 
 - **Lore Book** (`lore_book`) — classic keyword- and regex-triggered lore injection with priorities, recursion, and token budgets.
+
+<p align="center"><img src="engine/plugins/lore_book/screenshot1.webp" alt="Lore Book interface" width="440"></p>
+
 - **Grand Story Planner** (`grand_story_planner`) — maintains hidden long-range arcs and strategic pressure for the Director.
-- **Knowledge Graph** (`knowledge_graph`) — a persistent GraphRAG web for factual world knowledge and social paths.
 - **Memory Recall** (`memory_recall`) — recalls concise character, relationship, world, and location memories at prompt time.
-- **World Simulator** (`world_simulator`) — runs low-latency off-screen simulation and commits grounded changes to world trackers.
 - **World State Tracker** (`world_state_tracker`) — maintains global facts such as time, weather, and inventory.
 
 <p align="center"><img src="engine/plugins/disabled/world_state_tracker/screenshot1.webp" alt="World State Tracker interface" width="440"></p>
@@ -568,9 +569,7 @@ Fablekin ships with opt-in plugins for narrative simulation, visual-novel presen
 
 <p align="center"><img src="engine/plugins/disabled/quest_tracker/screenshot1.webp" alt="Story Objective Tracker HUD" width="440"></p>
 
-- **Story Cards** (`story_cards`) — a deck-building-style system for deliberately steering themes and events through the Director.
 - **Narrative Architect** (`narrative_architect`) — brings structural guidance from acclaimed episodes into planning.
-- **Narrative Pacing & Strategy** (`narrative_pacing`) — checks scene pacing against a target budget and suggests adjustments.
 - **Post Writer Consistency Checker** (`post_writer_consistency_checker`) — finds and corrects hallucinations, contradictions, and continuity errors after writing.
 - **Output Size Controller** (`output_size_controller`) — sets story length targets with play-time and dialogue estimates.
 
@@ -586,7 +585,7 @@ Fablekin ships with opt-in plugins for narrative simulation, visual-novel presen
 
 <p align="center"><img src="engine/plugins/disabled/camp_rest_interludes/screenshot1.webp" alt="Camp Rest interface" width="440"></p>
 
-- **Top-Down Shooter Gameplay** (`top_down_shooter_gameplay_interludes`) — a combat-focused shooter overlay for gameplay interludes.
+- **Top-Down Shooter Gameplay** (`top_down_shooter_gameplay_interludes`) — *EXPERIMENTAL* a combat-focused shooter overlay for gameplay interludes.
 
 ### Plugin-development references
 
