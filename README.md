@@ -61,41 +61,6 @@ There are many things Fablekin attempts to solve:
   <img src="engine/views/home/media/readme/separator.png" alt="" width="100%">
 </p>
 
-## FAQ: bringing an existing world into Fablekin
-
-### Can I bring over a SillyTavern lorebook and character cards?
-
-The content is reusable. The Lore Book plugin can already partially import most SillyTavern lorebooks; review the result afterwards because application-specific fields and advanced logic may not yet map one-to-one.
-
-| Existing material | How you can use it today | Compatibility status |
-| --- | --- | --- |
-| World lore, rules, history, locations, or wiki-style text | Add the files as project canon through the Content Manager. Fablekin can work with ordinary prose and Markdown; it does not require every fact to be keyworded. | Available now |
-| A carefully keyworded lorebook | Use the bundled, opt-in **Lore Book** plugin. It supports keywords, regular expressions, case-sensitive and whole-word matching, always-active entries, priorities, per-entry scan depth, recursive triggers, and a shared token budget. | Available now; native Fablekin JSON round-trips fully |
-| A SillyTavern comparible world info JSON | Import it through the Lore Book plugin. Most standard entries can be partially imported; review keywords, insertion behavior, and any advanced logic or macros after import. | Partial import available now |
-| Character-card text or a large character write-up | Paste the meaningful text into a character source file and mark it as a **Character Sheet**, or mark a multi-character document as a **Supporting Cast** source. The Character Sheets plugin synthesizes it into Fablekin's persistent format. If not using those plugins, simply add the character's lore as "Full text".| Available now |
-| A platform-specific character-card PNG/JSON | Copy or extract its character text first. Card-specific macros, scripts, and extension fields may need manual adaptation. | Direct card-format import is not currently available |
-
-### Do I need to rebuild my world as a keyworded lorebook?
-
-No. Fablekin supports two complementary workflows:
-
-- **Native canon:** add long-form lore as ordinary project files. This is the simplest path for wiki exports, setting documents, world rules, histories, and other prose-heavy material.
-- **Triggered lore:** use the Lore Book plugin when an entry should appear only after a keyword or regular expression matches, must always be active, or needs explicit priority and scan-depth control.
-
-You can mix both approaches in the same project. Broad world material can remain native canon while precise conditional entries stay in triggered lore books.
-
-### What replaces character cards?
-
-Fablekin treats a card or character dump as **source material**, rather than as the character's permanent runtime state. The Character Sheets plugin reads that source once, synthesizes a structured high-fidelity sheet for core characters, and caches the result. A large supporting-cast document can be split into smaller **lite capsules** so recurring NPCs do not all consume full-sheet context at once.
-
-Those records can then evolve with the story. Depending on the plugins you enable, Fablekin can maintain biography and voice alongside current goals, important memories, aliases, personality development, relationships, and location or party state. The player and selected core sheets retain high detail, while supporting capsules are chosen by relevance within a configurable context limit.
-
-This is not intended to make your existing character work disposable: descriptions, examples, scenario notes, personality details, and setting ties are valuable input. The main migration caveat is that application-specific macros or executable card extensions do not automatically translate into Fablekin behavior.
-
-<p align="center">
-  <img src="engine/views/home/media/readme/separator.png" alt="" width="100%">
-</p>
-
 ## What makes it different
 
 ### Memory is a system, not a larger prompt
@@ -611,5 +576,41 @@ Fablekin ships with opt-in plugins for narrative simulation, visual-novel presen
 - **Example: VN Client Events** (`example_vn_client_events`) — timed, one-shot, and line-scoped client events.
 - **Example: VN Frontend Injection** (`example_vn_frontend_injection`) — persistent VN HTML, CSS, JavaScript, sockets, and cleanup.
 - **Example: VN GUI Intercepts** (`example_vn_gui_intercept`) — advanced blocking, chained, timed, backend-backed, and PixiJS intercept patterns.
+ 
+<p align="center">
+  <img src="engine/views/home/media/readme/separator.png" alt="" width="100%">
+</p>
+
+## FAQ: bringing an existing world into Fablekin
+
+### Can I bring over a SillyTavern lorebook and character cards?
+
+The content is reusable. The Lore Book plugin can already partially import most SillyTavern lorebooks; review the result afterwards because application-specific fields and advanced logic may not yet map one-to-one.
+
+| Existing material | How you can use it today | Compatibility status |
+| --- | --- | --- |
+| World lore, rules, history, locations, or wiki-style text | Add the files as project canon through the Content Manager. Fablekin can work with ordinary prose and Markdown; it does not require every fact to be keyworded. | Available now |
+| A carefully keyworded lorebook | Use the bundled, opt-in **Lore Book** plugin. It supports keywords, regular expressions, case-sensitive and whole-word matching, always-active entries, priorities, per-entry scan depth, recursive triggers, and a shared token budget. | Available now; native Fablekin JSON round-trips fully |
+| A SillyTavern comparible world info JSON | Import it through the Lore Book plugin. Most standard entries can be partially imported; review keywords, insertion behavior, and any advanced logic or macros after import. | Partial import available now |
+| Character-card text or a large character write-up | Paste the meaningful text into a character source file and mark it as a **Character Sheet**, or mark a multi-character document as a **Supporting Cast** source. The Character Sheets plugin synthesizes it into Fablekin's persistent format. If not using those plugins, simply add the character's lore as "Full text".| Available now |
+| A platform-specific character-card PNG/JSON | Copy or extract its character text first. Card-specific macros, scripts, and extension fields may need manual adaptation. | Direct card-format import is not currently available |
+
+### Do I need to rebuild my world as a keyworded lorebook?
+
+No. Fablekin supports two complementary workflows:
+
+- **Native canon:** add long-form lore as ordinary project files. This is the simplest path for wiki exports, setting documents, world rules, histories, and other prose-heavy material.
+- **Triggered lore:** use the Lore Book plugin when an entry should appear only after a keyword or regular expression matches, must always be active, or needs explicit priority and scan-depth control.
+
+You can mix both approaches in the same project. Broad world material can remain native canon while precise conditional entries stay in triggered lore books.
+
+### What replaces character cards?
+
+Fablekin treats a card or character dump as **source material**, rather than as the character's permanent runtime state. The Character Sheets plugin reads that source once, synthesizes a structured high-fidelity sheet for core characters, and caches the result. A large supporting-cast document can be split into smaller **lite capsules** so recurring NPCs do not all consume full-sheet context at once.
+
+Those records can then evolve with the story. Depending on the plugins you enable, Fablekin can maintain biography and voice alongside current goals, important memories, aliases, personality development, relationships, and location or party state. The player and selected core sheets retain high detail, while supporting capsules are chosen by relevance within a configurable context limit.
+
+This is not intended to make your existing character work disposable: descriptions, examples, scenario notes, personality details, and setting ties are valuable input. The main migration caveat is that application-specific macros or executable card extensions do not automatically translate into Fablekin behavior.
+
 
 If Fablekin has been useful to you, you can [support its development on Ko-fi](https://ko-fi.com/ineyve).
