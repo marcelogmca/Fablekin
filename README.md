@@ -46,7 +46,7 @@ Fablekin makes a different trade. A turn is treated as a production pipeline, an
 
 There are many things Fablekin attempts to solve:
 - Characters have constant amnesia and have no will. I want a character to be busy looking for their lost sword, and if the user says "Let's go to the Inn to drink beer" I want the character to say "Woah there, first, we find my sword!"
-- The user should not feel like a god. If the party is fighting a dragon, saying "I take out my flaming sword and defeat it with one strike" should elicit a reaction from the party "Are you drunk? You have no falming sword! Run!". I want to feel like i'm participating, not directing.
+- The user should not feel like a god. If the party is fighting a dragon, saying "I take out my flaming sword and defeat it with one strike" should elicit a reaction from the party "Are you drunk? You have no flaming sword! Run!". I want to feel like i'm participating, not directing.
 - Everything should be designed around multi-character support. Characters should retain short and long term goals, temporarily leave the party to take care of errands and overall feel like they have their own agency.
 - Detailed lore work should be optional, not wasted. I want to be able to drop in a large wiki article and let Fablekin organize it, while still supporting carefully keyworded lore books with trigger rules for creators who already use them.
 - Memory should be managed while keeping chronological sense - no random RAG chunks and hoping the AI understands those pieces. Characters keep core memories attached, meaning even if the story grows too far and older chapters get compressed, characters will never forget their core memories.
@@ -229,8 +229,6 @@ Bundled systems include:
 - **Interludes:** camp scenes, tabletop-style adventure books, arc cinematics, and other alternate scene runtimes.
 
 Plugins declare dependencies and expose cost, latency, narrative-impact, and immersion metadata in the onboarding UI. They can run sequentially, in parallel, or as fire-and-forget work. Mainline turns and virtual Interludes use explicit run profiles so plugins cannot accidentally write into canonical history.
-
-Project authors can also mark JavaScript blocks inside Markdown as **Story Scripts**. Fablekin hashes each script for trust-on-first-use approval, executes it in a restricted VM context, and guards filesystem access to the authorized project root.
 
 ### Every scene leaves a trace
 
@@ -449,8 +447,7 @@ The main extension reference is in [`engine/modules/plugin_manager/plugin_api_re
 
 - There will be plenty of bugs to be fixed.
 
-- Coding agents have been used as implementation tools, but the architecture, system design, prompting frameworks, direction and code have been developed deliberately and iterated manually over the span of an year.
-- Sometimes even the best coding agent still does wrong questionable decisions - I should have caught most, but there might be the ocasional artifact.
+- AI coding agents were used as implementation tools, while the architecture, system design, prompting frameworks, and technical direction were developed and iterated manually. As with any project of this size, occasional implementation artifacts may remain.
 
 - The guided setup and branded launcher currently target Windows.
 - Generation quality and operating cost depend on the models and providers you choose.
@@ -465,7 +462,7 @@ The main extension reference is in [`engine/modules/plugin_manager/plugin_api_re
 </p>
 
 ## Future of the project
-Fablekin is a one-person project developed to learn more about AI, memory management and prompte engineering, and then to be for personal use.
+Fablekin is a one-person project developed to learn more about AI, memory management and prompt engineering, and then to be for personal use.
 I don’t intend nor do I have the time to personally maintain an integration for every LLM provider, TTS service, image generator, or feature someone might want. I’ve included the services and systems I personally use or considered broadly useful.
 
 The goal of the plugin system is that this shouldn’t be a bottleneck. If you’re a developer and there’s something you want Fablekin to do, the answer should ideally be: give it a try. 
@@ -591,7 +588,7 @@ The content is reusable. The Lore Book plugin can already partially import most 
 | --- | --- | --- |
 | World lore, rules, history, locations, or wiki-style text | Add the files as project canon through the Content Manager. Fablekin can work with ordinary prose and Markdown; it does not require every fact to be keyworded. | Available now |
 | A carefully keyworded lorebook | Use the bundled, opt-in **Lore Book** plugin. It supports keywords, regular expressions, case-sensitive and whole-word matching, always-active entries, priorities, per-entry scan depth, recursive triggers, and a shared token budget. | Available now; native Fablekin JSON round-trips fully |
-| A SillyTavern comparible world info JSON | Import it through the Lore Book plugin. Most standard entries can be partially imported; review keywords, insertion behavior, and any advanced logic or macros after import. | Partial import available now |
+| A SillyTavern compatible world info JSON | Import it through the Lore Book plugin. Most standard entries can be partially imported; review keywords, insertion behavior, and any advanced logic or macros after import. | Partial import available now |
 | Character-card text or a large character write-up | Paste the meaningful text into a character source file and mark it as a **Character Sheet**, or mark a multi-character document as a **Supporting Cast** source. The Character Sheets plugin synthesizes it into Fablekin's persistent format. If not using those plugins, simply add the character's lore as "Full text".| Available now |
 | A platform-specific character-card PNG/JSON | Copy or extract its character text first. Card-specific macros, scripts, and extension fields may need manual adaptation. | Direct card-format import is not currently available |
 
