@@ -20,6 +20,7 @@ Every plugin hook receives a `tools` object. This object is a comprehensive SDK 
 - `tools.db.project`: SQL interface for the global project database.
 - `tools.interludes.createProgrammatic(payload)`: Creates a headless interlude attached to a parent turn, with parent memory refresh enabled by default.
 - `tools.project.readFile(path)`: Securely reads a file within the project sandbox.
+- `tools.project.getPluginStorage()`: Returns the current plugin's project-wide storage path at `plugins/[PluginId]/`.
 - `tools.project.getChatPluginStorage(turnOverride?)`: Returns an isolated path for chapter/interlude-specific plugin data.
 - `tools.project.getChatPluginStorageFromContext(turnContext, turnOverride?)`: Same resolver for explicit contexts (useful in async callbacks that finalize older interludes).
 

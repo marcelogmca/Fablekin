@@ -201,10 +201,14 @@ function createPluginSocketHandlers({
             }
         },
 
-        getPluginViews(socket) {
+        getPluginViews(socket, data, callback) {
             const views = pluginManager.getRegisteredViews();
             Logger.log('Main', 'SocketIO', `Sending ${views.length} plugin views to client.`);
-            socket.emit('plugin-views', views);
+            const acknowledge = typeof callback === 'function'
+                ? callback
+                : (typeof data === 'function' ? data : null);
+            if (acknowledge) acknowledge(views);
+            else socket.emit('plugin-views', views);
         },
 
         async getPlugins(socket, data, callback) {

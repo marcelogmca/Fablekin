@@ -37,6 +37,10 @@ function createProjectSelectHandler({
             await fs.access(projectPath);
             setRootDirectory(projectPath);
             VectorStoreManager.setProjectRoot(projectPath);
+            // Plugin webviews connect as soon as loadFile() starts. Publish the
+            // selected root first so standalone plugin socket handlers can use
+            // project-scoped storage during their initial bootstrap request.
+            pluginManager.setProjectRoot(projectPath);
             Logger.log('Main', 'ProjectMgmt', 'Project selection started', 'start', projectPath);
 
             const newProjectName = getProjectName();

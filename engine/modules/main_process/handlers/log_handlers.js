@@ -1,4 +1,18 @@
-function createLogHandlers({ fs, logsDir, getProjectName, settings, Logger, emitResponse, resolveChildInsideRoot, isSafePathSegment }) {
+function createLogHandlers({ fs, logsDir, getProjectName, settings, Logger, emitResponse, resolveChildInsideRoot, isSafePathSegment, logArenaService = null }) {
+    const arenaResponse = async (eventName, action, fallback = {}) => {
+        if (!logArenaService) {
+            emitResponse(eventName, { success: false, error: 'LLM Arena service is unavailable.', ...fallback });
+            return;
+        }
+        try {
+            const result = await action();
+            emitResponse(eventName, { success: true, ...fallback, result });
+        } catch (error) {
+            Logger.error('Main', 'LogArena', `${eventName} failed`, error);
+            emitResponse(eventName, { success: false, error: error?.message || String(error), ...fallback });
+        }
+    };
+
     return {
         async getAllLogs(socket, { projectName, offset = 0, limit = 24 }) {
             Logger.log('Main', 'LogInspector', `Get all logs requested for project: ${projectName}`);
@@ -252,6 +266,65 @@ function createLogHandlers({ fs, logsDir, getProjectName, settings, Logger, emit
             } catch (error) {
                 emitResponse('get-model-pricing-response', { success: false, error: error.message });
             }
+        },
+
+        async getLogArenaProviders(_socket) {
+            return arenaResponse('get-log-arena-providers-response', async () => ({
+                providers: logArenaService.listProviders(),
+                limits: logArenaService.constants
+            }));
+        },
+
+        async getLogArenaPreset(_socket, payload = {}) {
+            return arenaResponse('get-log-arena-preset-response', () => logArenaService.getPreset(payload), {
+                requestTitle: payload.requestTitle || '', pluginId: payload.pluginId || ''
+            });
+        },
+
+        async saveLogArenaPreset(_socket, payload = {}) {
+            return arenaResponse('save-log-arena-preset-response', () => logArenaService.savePreset(payload), {
+                requestTitle: payload.requestTitle || '', pluginId: payload.pluginId || ''
+            });
+        },
+
+        async listLogArenaExperiments(_socket, payload = {}) {
+            return arenaResponse('list-log-arena-experiments-response', () => logArenaService.listExperiments(payload), {
+                requestTitle: payload.requestTitle || '', pluginId: payload.pluginId || ''
+            });
+        },
+
+        async getLogArenaExperiment(_socket, payload = {}) {
+            return arenaResponse('get-log-arena-experiment-response', () => logArenaService.getExperiment(payload.id), { id: payload.id || '' });
+        },
+
+        async startLogArenaExperiment(_socket, payload = {}) {
+            return arenaResponse('start-log-arena-experiment-response', () => logArenaService.startExperiment(payload), {
+                requestTitle: payload?.source?.requestTitle || ''
+            });
+        },
+
+        async cancelLogArenaExperiment(_socket, payload = {}) {
+            return arenaResponse('cancel-log-arena-experiment-response', () => logArenaService.cancelExperiment(payload.id), { id: payload.id || '' });
+        },
+
+        async stopLogArenaAndJudge(_socket, payload = {}) {
+            return arenaResponse('stop-log-arena-and-judge-response', () => logArenaService.stopAndJudgeExperiment(payload.id), { id: payload.id || '' });
+        },
+
+        async judgeLogArenaExperiment(_socket, payload = {}) {
+            return arenaResponse('judge-log-arena-experiment-response', () => logArenaService.rejudgeExperiment(payload.id, payload.judge || null), { id: payload.id || '' });
+        },
+
+        async retryFailedLogArenaJudges(_socket, payload = {}) {
+            return arenaResponse('retry-failed-log-arena-judges-response', () => logArenaService.retryFailedJudgements(payload.id, payload.judge || null), { id: payload.id || '' });
+        },
+
+        async pinLogArenaExperiment(_socket, payload = {}) {
+            return arenaResponse('pin-log-arena-experiment-response', () => logArenaService.pinExperiment(payload.id, payload.pinned), { id: payload.id || '' });
+        },
+
+        async deleteLogArenaExperiment(_socket, payload = {}) {
+            return arenaResponse('delete-log-arena-experiment-response', () => logArenaService.deleteExperiment(payload.id), { id: payload.id || '' });
         }
     };
 }

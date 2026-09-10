@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Cortex</title>
+    <link rel="stylesheet" href="/engine/themes/active/global.css">
+    <link rel="stylesheet" href="ui.css">
+    <script src="/engine/vendor/js/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-mark">CC</span>
+                <div><strong>Character Cortex</strong><small>Behavior laboratory</small></div>
+            </div>
+            <div class="sidebar-actions">
+                <button class="primary" id="new-profile">+ New character</button>
+                <button class="ghost" id="import-profile">Import</button>
+                <input id="import-file" type="file" accept="application/json,.json" hidden>
+            </div>
+            <label class="search"><span>⌕</span><input id="profile-search" placeholder="Find a character…"></label>
+            <div id="profile-list" class="profile-list"></div>
+            <label class="archive-toggle"><input id="show-archived" type="checkbox"> Show archived</label>
+        </aside>
+
+        <main class="workspace">
+            <section id="empty-state" class="empty-state">
+                <div class="empty-orbit"><span>CC</span></div>
+                <h1>Teach behavior, not clichés.</h1>
+                <p>Create a character profile, paste the persona, then probe how they perceive, decide, react, and speak.</p>
+                <button class="primary" data-create-profile>Create your first character</button>
+            </section>
+
+            <section id="profile-workspace" hidden>
+                <header class="profile-header">
+                    <div>
+                        <div class="eyebrow">Active behavioral model</div>
+                        <input id="profile-name" class="profile-name" aria-label="Character name">
+                        <input id="profile-description" class="profile-description" placeholder="Optional interpretation or notes">
+                    </div>
+                    <div class="header-actions">
+                        <button class="ghost" id="duplicate-profile">Duplicate</button>
+                        <button class="ghost" id="export-profile">Export</button>
+                        <button class="ghost" id="archive-profile">Archive</button>
+                        <button class="danger ghost" id="delete-profile">Delete</button>
+                    </div>
+                </header>
+
+                <nav class="tabs" aria-label="Character Cortex sections">
+                    <button class="tab active" data-tab="train">Training Lab</button>
+                    <button class="tab" data-tab="policy">Policy Library <span id="policy-count" class="count">0</span></button>
+                    <button class="tab" data-tab="evidence">Evidence</button>
+                    <button class="tab" data-tab="coverage">Coverage</button>
+                    <button class="tab" data-tab="settings">Models</button>
+                </nav>
+
+                <section class="tab-panel active" data-panel="train">
+                    <div class="train-grid">
+                        <div class="column">
+                            <article class="card persona-card">
+                                <div class="card-heading"><div><span class="step">Foundation</span><h2>Character persona</h2></div><span id="persona-status" class="save-state">Saved</span></div>
+                                <textarea id="persona-text" class="persona-text" placeholder="Paste the character card, persona, canon notes, voice guide, or any other starting context here…"></textarea>
+                                <div class="field-footer"><span id="persona-count">0 characters</span><span>Auto-saves per project</span></div>
+                            </article>
+
+                            <article class="card">
+                                <div class="card-heading"><div><span class="step">01 · Probe</span><h2>Situation</h2></div><span id="scenario-source" class="badge">Manual</span></div>
+                                <div class="probe-controls">
+                                    <label>Target dimension<select id="target-dimension"></select></label>
+                                    <label>User seed<input id="scenario-seed" placeholder="Optional constraint or idea"></label>
+                                </div>
+                                <div class="button-row">
+                                    <button class="secondary" id="generate-scenario">Generate adaptive situation</button>
+                                    <button class="ghost" id="new-manual-scenario">Write my own</button>
+                                </div>
+                                <input id="scenario-title" class="scenario-title" placeholder="Situation title (optional)">
+                                <textarea id="scenario-text" class="scenario-text" placeholder="Type your own situation here, or generate one and edit it before continuing…"></textarea>
+                                <div id="probe-reason" class="probe-reason" hidden></div>
+                                <div class="field-footer"><span id="scenario-dimensions">No dimensions tagged</span><button class="text-button" id="save-scenario">Save draft</button></div>
+                            </article>
+                        </div>
+
+                        <div class="column">
+                            <article class="card response-card">
+                                <div class="card-heading"><div><span class="step">02 · Portray</span><h2>In-character reaction</h2></div><span id="actor-model-chip" class="model-chip"></span></div>
+                                <div id="response-empty" class="response-empty">The actor will produce a compact reaction vignette from your persona and situation.</div>
+                                <div id="actor-response" class="actor-response" hidden></div>
+                                <div class="button-row end"><button class="primary" id="generate-actor">Generate reaction</button></div>
+                            </article>
+
+                            <article class="card feedback-card">
+                                <div class="card-heading"><div><span class="step">03 · Judge</span><h2>Your judgment</h2></div></div>
+                                <div id="rating-group" class="rating-group" role="radiogroup" aria-label="Response rating">
+                                    <button data-rating="1"><b>1</b><span>Fundamentally wrong</span></button>
+                                    <button data-rating="2"><b>2</b><span>Noticeably OOC</span></button>
+                                    <button data-rating="3"><b>3</b><span>Plausible, generic</span></button>
+                                    <button data-rating="4"><b>4</b><span>In character</span></button>
+                                    <button data-rating="5"><b>5</b><span>Excellent</span></button>
+                                </div>
+                                <label>Why did it earn this rating?<textarea id="feedback-rationale" placeholder="Your explanation is the most valuable training signal."></textarea></label>
+                                <label>Better direction or replacement <span class="optional">optional</span><textarea id="better-direction" placeholder="What would the character do or say instead?"></textarea></label>
+                                <div class="button-row end"><button class="primary" id="submit-feedback">Save judgment</button></div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <article id="proposal-section" class="card proposals-card" hidden>
+                        <div class="card-heading"><div><span class="step">04 · Curate</span><h2>Proposed policy changes</h2></div><span class="badge warning">Approval required</span></div>
+                        <p class="muted">The analysis model may suggest rules, but nothing enters the policy until you approve it.</p>
+                        <div id="proposal-list"></div>
+                    </article>
+                </section>
+
+                <section class="tab-panel" data-panel="policy">
+                    <div class="section-toolbar"><div><h2>Behavioral policy</h2><p>Approved, inspectable rules learned from your judgments.</p></div><label class="search"><span>⌕</span><input id="policy-search" placeholder="Search principles or tags…"></label></div>
+                    <div id="principle-list" class="principle-list"></div>
+                </section>
+
+                <section class="tab-panel" data-panel="evidence">
+                    <div class="section-toolbar"><div><h2>Training evidence</h2><p>Raw generations and human judgments remain the source of truth.</p></div><label class="search"><span>⌕</span><input id="evidence-search" placeholder="Search situations or feedback…"></label></div>
+                    <div id="evidence-list" class="evidence-list"></div>
+                </section>
+
+                <section class="tab-panel" data-panel="coverage">
+                    <div class="section-toolbar"><div><h2>Behavioral coverage</h2><p>Low-count dimensions are prioritized by adaptive situation generation.</p></div></div>
+                    <div id="coverage-grid" class="coverage-grid"></div>
+                </section>
+
+                <section class="tab-panel" data-panel="settings">
+                    <div class="models-layout">
+                        <article class="card"><span class="step">Situation Generator</span><h2>Probe designer</h2><p>Creates boundary-testing situations from policy gaps and prior examples.</p><select id="situation-model"></select></article>
+                        <article class="card"><span class="step">In-Character Actor</span><h2>Character portrayal</h2><p>Receives your persona first, then writes the reaction vignette.</p><select id="actor-model"></select></article>
+                        <article class="card" id="analysis-model-card"><div class="card-heading"><span class="step">Analysis & Distillation</span><span class="badge">Disabled for now</span></div><h2>Policy curator</h2><p>Reserved for the later principle-curation workflow. It is not called while you build the raw situation → reaction → judgment dataset.</p><select id="analysis-model" disabled></select></article>
+                    </div>
+                    <p class="security-note">Provider credentials remain inside Fablekin. Character Cortex stores model aliases only.</p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <dialog id="profile-dialog">
+        <form id="profile-form">
+            <div class="dialog-heading"><div><span class="step">New behavioral model</span><h2>Create character</h2></div><button type="button" id="close-profile-dialog" class="icon-button" aria-label="Close">×</button></div>
+            <label>Character or interpretation name<input id="new-profile-name" required placeholder="e.g. The Captain — Canon-focused"></label>
+            <label>Optional description<textarea id="new-profile-description" placeholder="What makes this interpretation distinct?"></textarea></label>
+            <div class="button-row end"><button type="button" id="cancel-profile-dialog" class="ghost">Cancel</button><button type="submit" id="confirm-create" class="primary">Create</button></div>
+        </form>
+    </dialog>
+
+    <div id="busy-overlay" class="busy-overlay" hidden><div class="spinner"></div><strong id="busy-title">Thinking…</strong><span id="busy-detail"></span></div>
+    <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+    <script src="/engine/views/libs/plugin_bridge.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>

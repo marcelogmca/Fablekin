@@ -210,6 +210,11 @@ function createTurnRunner({
         turnContext.input.userPrompt = promptWithCharacter;
         turnContext.input.directorPrompt = spec.directorPrompt;
         turnContext.input.softFeedback = spec.softFeedback;
+        turnContext.input.submitted = {
+            userPrompt: typeof spec.prompt === 'string' ? spec.prompt : '',
+            directorPrompt: typeof spec.directorPrompt === 'string' ? spec.directorPrompt : '',
+            softFeedback: typeof spec.softFeedback === 'string' ? spec.softFeedback : ''
+        };
         if (spec.metadata?.inventoryIntent && typeof spec.metadata.inventoryIntent === 'object') {
             turnContext.input.inventoryIntent = spec.metadata.inventoryIntent;
         }

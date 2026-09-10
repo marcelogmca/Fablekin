@@ -34,6 +34,7 @@ class TurnContext {
         userPrompt: null, // The initial prompt or instruction provided by the user for this turn
         directorPrompt: null, // High-priority manual director instructions for this turn
         softFeedback: null, // Non-overriding feedback/hints from the player
+        submitted: null, // Immutable copy of the three VN Viewer text inputs before pipeline transformations
         selectedFiles: [], // List of files selected by the user, if any, for processing in this turn
         assets: { sprites: [], backgrounds: [], osts: [] }, // Initially selected assets by the user or system for this turn
         playerCharacterName: null, // The name of the player character, configured per project

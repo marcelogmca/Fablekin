@@ -221,6 +221,16 @@ const MODEL_ALIAS_META = {
     highendmodel: { label: 'High', description: 'Strong general-purpose intelligence.' },
     veryhighendmodel: { label: 'Very High', description: 'Best configured route for writing and planning.' }
 };
+const REASONING_EFFORT_OPTIONS = [
+    ['', 'Automatic'],
+    ['none', 'None'],
+    ['minimal', 'Minimal'],
+    ['low', 'Low'],
+    ['medium', 'Medium'],
+    ['high', 'High'],
+    ['xhigh', 'Extra high']
+];
+const REASONING_EFFORT_PROVIDERS = new Set(['nano_gpt', 'openrouter', 'openai', 'deepseek']);
 
 function getNormalizedProviderConfig(rawConfig) {
     if (!rawConfig) return null;
@@ -273,10 +283,12 @@ function getAliasOptionsHtml(settings) {
 function getRouteSummary(settings, alias) {
     const route = getAliasRegistry(settings)[alias];
     if (!route?.provider || !route?.model) return 'Route is incomplete';
-    return [route.provider, route.model, route.subprovider ? `via ${route.subprovider}` : null]
+    const reasoningSummary = REASONING_EFFORT_PROVIDERS.has(route.provider)
+        ? (route.reasoning_effort ? `reasoning ${route.reasoning_effort}` : 'reasoning automatic')
+        : 'reasoning effort unsupported';
+    return [route.provider, route.model, route.subprovider ? `via ${route.subprovider}` : null, reasoningSummary]
         .filter(Boolean)
         .join(' · ');
-    return `${route.provider} Ã‚Â· ${route.model}${route.subprovider ? ` Ã‚Â· via ${route.subprovider}` : ''}`;
 }
 
 function initializeDynamicBindings() {
@@ -353,6 +365,10 @@ function renderModelAliasCards(settings) {
     const entries = getAliasEntries(settings);
     container.innerHTML = entries.filter(item => item.builtIn).map(item => {
         const route = item.route || {};
+        const supportsReasoningEffort = REASONING_EFFORT_PROVIDERS.has(route.provider);
+        const reasoningOptions = REASONING_EFFORT_OPTIONS.map(([value, label]) =>
+            `<option value="${value}"${route.reasoning_effort === value ? ' selected' : ''}>${label}</option>`
+        ).join('');
         const status = !route.provider || !route.model
             ? { kind: 'missing', text: 'Incomplete route' }
             : !providerHasSecret(route.provider)
@@ -375,8 +391,14 @@ function renderModelAliasCards(settings) {
                         <input class="premium-input mini-input" value="${escapeHtml(route.model || '')}" data-alias="${item.alias}" data-alias-field="model">
                     </div>
                 </div>
-                <div class="form-group mini-form-group"><label>Subprovider <span class="optional-label">optional</span></label>
-                    <input class="premium-input mini-input" value="${escapeHtml(route.subprovider || '')}" data-alias="${item.alias}" data-alias-field="subprovider">
+                <div class="engine-config-row">
+                    <div class="form-group mini-form-group"><label>Subprovider <span class="optional-label">optional</span></label>
+                        <input class="premium-input mini-input" value="${escapeHtml(route.subprovider || '')}" data-alias="${item.alias}" data-alias-field="subprovider">
+                    </div>
+                    <div class="form-group mini-form-group"><label>Thinking effort</label>
+                        <select class="premium-select mini-input" data-alias="${item.alias}" data-alias-field="reasoning_effort"${supportsReasoningEffort ? '' : ' disabled'}>${reasoningOptions}</select>
+                        ${supportsReasoningEffort ? '' : '<small class="description">Not supported by this provider adapter.</small>'}
+                    </div>
                 </div>
                 <div class="alias-route-summary">${escapeHtml(getRouteSummary(settings, item.alias))}</div>
             </article>`;
@@ -405,12 +427,14 @@ function saveAliasCard(alias) {
     const provider = card.querySelector('[data-alias-field="provider"]')?.value?.trim() || '';
     const model = card.querySelector('[data-alias-field="model"]')?.value?.trim() || '';
     const subprovider = card.querySelector('[data-alias-field="subprovider"]')?.value?.trim() || '';
+    const reasoningEffort = card.querySelector('[data-alias-field="reasoning_effort"]')?.value?.trim() || '';
     if (!provider || !model) {
         showNotify(`Alias "${alias}" requires both a provider and a model.`, 'error');
         return;
     }
     const route = { provider, model };
     if (subprovider) route.subprovider = subprovider;
+    if (reasoningEffort) route.reasoning_effort = reasoningEffort;
     setNestedValue(currentSettingsCache, `infrastructure.llm_routing.aliases.${alias}`, route);
     socket.emit('update-global-setting', { path: `infrastructure.llm_routing.aliases.${alias}`, value: route });
     scheduleProviderDependentRefresh();

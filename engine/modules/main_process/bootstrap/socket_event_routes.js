@@ -116,6 +116,18 @@ function createSocketEventRoutes({
         'get-log-projects': logHandlers.getLogProjects,
         'get-current-project-name': logHandlers.getCurrentProjectName,
         'get-model-pricing': logHandlers.getModelPricing,
+        'get-log-arena-providers': logHandlers.getLogArenaProviders,
+        'get-log-arena-preset': logHandlers.getLogArenaPreset,
+        'save-log-arena-preset': logHandlers.saveLogArenaPreset,
+        'list-log-arena-experiments': logHandlers.listLogArenaExperiments,
+        'get-log-arena-experiment': logHandlers.getLogArenaExperiment,
+        'start-log-arena-experiment': logHandlers.startLogArenaExperiment,
+        'cancel-log-arena-experiment': logHandlers.cancelLogArenaExperiment,
+        'stop-log-arena-and-judge': logHandlers.stopLogArenaAndJudge,
+        'judge-log-arena-experiment': logHandlers.judgeLogArenaExperiment,
+        'retry-failed-log-arena-judges': logHandlers.retryFailedLogArenaJudges,
+        'pin-log-arena-experiment': logHandlers.pinLogArenaExperiment,
+        'delete-log-arena-experiment': logHandlers.deleteLogArenaExperiment,
 
         // Scene history operations
         'get-scene-history-data': sceneHistoryHandlers.getSceneHistoryData,

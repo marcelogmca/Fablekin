@@ -667,8 +667,7 @@ async function transformVNProject(turnContext) {
           try {
             const narrativeText = turnContext.processed.dialogueProcessor.dialogue || turnContext.output.fulltext || '';
             const res = await SummarizationService.generateSummary(turnContext, narrativeText, {
-              includeUserPrompt: true,
-              useVnBackground: true
+              includeUserPrompt: true
             });
             Logger.log('VNManager', 'BackgroundTasks', 'Finished currentTurnSummary (background)', 'end');
             turnContext.output.summary = res;

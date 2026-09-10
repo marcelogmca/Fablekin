@@ -250,7 +250,9 @@ function initializeTabs() {
  * @param {boolean} clearExisting - Whether to remove existing plugin tabs first.
  */
 function loadPluginTabs(clearExisting = false) {
-    socket.emit('get-plugin-views', (views) => {
+    // Include an explicit data payload so the main-process wrapper receives the
+    // Socket.IO acknowledgement in its callback parameter.
+    socket.emit('get-plugin-views', {}, (views) => {
         const tabsContainer = document.getElementById('plugin-tabs-container');
         const contentContainer = document.getElementById('tab-content');
         const separator = document.getElementById('plugin-tabs-separator');
@@ -288,7 +290,13 @@ function loadPluginTabs(clearExisting = false) {
             const webview = document.createElement('webview');
             webview.id = `${tabId}-iframe`;
             // Add viewId and pluginId as query params for the bridge
-            const pluginViewUrl = `${view.entry}?viewId=${view.id}&pluginId=${view.pluginId}`;
+            const appServerUrl = typeof window.getAppServerUrl === 'function'
+                ? window.getAppServerUrl()
+                : 'http://127.0.0.1:14541';
+            const pluginEntryUrl = new URL(view.entry, `${appServerUrl}/`);
+            pluginEntryUrl.searchParams.set('viewId', view.id);
+            pluginEntryUrl.searchParams.set('pluginId', view.pluginId);
+            const pluginViewUrl = pluginEntryUrl.toString();
             webview.src = appendSocketQueryParams(pluginViewUrl);
             webview.style.width = '100%';
             webview.style.height = '100%';

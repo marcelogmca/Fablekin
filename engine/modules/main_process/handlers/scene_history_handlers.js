@@ -1,5 +1,16 @@
 const path = require('path');
 
+function getUndoRestoredInputs(turnContext) {
+    const input = turnContext?.input;
+    if (!input || typeof input !== 'object') return null;
+    const submitted = input.submitted && typeof input.submitted === 'object' ? input.submitted : input;
+    return {
+        userPrompt: typeof submitted.userPrompt === 'string' ? submitted.userPrompt : '',
+        directorPrompt: typeof submitted.directorPrompt === 'string' ? submitted.directorPrompt : '',
+        softFeedback: typeof submitted.softFeedback === 'string' ? submitted.softFeedback : ''
+    };
+}
+
 function createSceneHistoryHandlers({
     fs,
     chaptermanagement,
@@ -91,6 +102,12 @@ function createSceneHistoryHandlers({
         async deleteLatestTurn(_socket) {
             Logger.log('Main', 'SceneHistory', 'Request to delete latest turn received.');
             try {
+                let restoredInputs = null;
+                try {
+                    restoredInputs = getUndoRestoredInputs(await chaptermanagement.getLatestTurnContext());
+                } catch (inputError) {
+                    Logger.warn('Main', 'SceneHistory', `Could not capture the latest chapter inputs before undo: ${inputError.message}`);
+                }
                 const success = await chaptermanagement.deleteLatestTurn();
                 if (success) {
                     Logger.log('Main', 'SceneHistory', 'Latest turn deleted successfully.');
@@ -127,7 +144,7 @@ function createSceneHistoryHandlers({
                     // This triggers a refresh in the Scene History and tells the VN Viewer where to jump
                     io.emit('chat-db-switched', { path: resolvedActiveChatPath, viewerState });
 
-                    emitResponse('delete-latest-turn-response', { success: true });
+                    emitResponse('delete-latest-turn-response', { success: true, restoredInputs });
                     
                     // Notify plugins of turn deletion
                     await pluginManager.executeHook('HOOK_TURN_DELETED', { 
@@ -286,5 +303,6 @@ function createSceneHistoryHandlers({
 }
 
 module.exports = {
-    createSceneHistoryHandlers
+    createSceneHistoryHandlers,
+    getUndoRestoredInputs
 };

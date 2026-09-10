@@ -146,56 +146,462 @@
         }
       },
       "nano_gpt": {
-        "deepseek/deepseek-v4-pro:thinking": {
-          "input": 0.435,
-          "output": 0.87,
+        "deepseek/deepseek-v4-pro-0813:thinking": {
+          "input": 1.1,
+          "output": 2.5,
           "cache_read": 0.04,
           "unit": "USD per 1M tokens",
           "context": 1000000
         },
-        "zai-org/glm-4.7:thinking": {
-          "input": 0.2,
-          "output": 0.8,
+        "Meta-Llama-3-1-8B-Instruct-FP8": {
+          "input": 0.02,
+          "output": 0.03,
           "unit": "USD per 1M tokens",
-          "context": 200000,
-          "max_output": 65500
+          "context": 128000
         },
-        "deepseek/deepseek-v4-flash:thinking": {
-          "input": 0.14,
-          "output": 0.28,
-          "cache_read": 0.03,
+        "meta-llama/llama-3.2-3b-instruct": {
+          "input": 0.03,
+          "output": 0.05,
           "unit": "USD per 1M tokens",
-          "context": 1000000,
-          "max_output": 384000
+          "context": 131100
         },
-        "deepseek/deepseek-v4-flash": {
-          "input": 0.14,
-          "output": 0.28,
-          "cache_read": 0.03,
+        "gemma-4-e2b-it": {
+          "input": 0.02,
+          "output": 0.1,
           "unit": "USD per 1M tokens",
-          "context": 1000000,
-          "max_output": 384000
+          "context": 131100
         },
-        "openai/gpt-oss-20b": {
-          "input": 0.04,
-          "output": 0.15,
+        "mistralai/Devstral-Small-2505": {
+          "input": 0.06,
+          "output": 0.06,
           "unit": "USD per 1M tokens",
-          "context": 128000,
-          "max_output": 16400
+          "context": 32800
         },
-        "glm-z1-air": {
-          "input": 0.07,
-          "output": 0.07,
+        "nex-agi/nex-n2-mini": {
+          "input": 0.03,
+          "output": 0.1,
           "unit": "USD per 1M tokens",
-          "context": 32000,
-          "max_output": 16400
+          "context": 262100
         },
         "sarvam-30b": {
           "input": 0.03,
           "output": 0.11,
           "unit": "USD per 1M tokens",
-          "context": 65500,
-          "max_output": 4100
+          "context": 65500
+        },
+        "meta-llama/llama-3.1-8b-instruct": {
+          "input": 0.05,
+          "output": 0.09,
+          "unit": "USD per 1M tokens",
+          "context": 131100
+        },
+        "glm-z1-air": {
+          "input": 0.07,
+          "output": 0.07,
+          "unit": "USD per 1M tokens",
+          "context": 32000
+        },
+        "ibm-granite/granite-4.1-8b": {
+          "input": 0.05,
+          "output": 0.1,
+          "unit": "USD per 1M tokens",
+          "context": 131100
+        },
+        "upstage/solar-pro4": {
+          "input": 0.03,
+          "output": 0.12,
+          "unit": "USD per 1M tokens",
+          "context": 524300
+        },
+        "upstage/solar-pro4:thinking": {
+          "input": 0.03,
+          "output": 0.12,
+          "unit": "USD per 1M tokens",
+          "context": 524300
+        },
+        "qwen3.7-flash": {
+          "input": 0.03,
+          "output": 0.13,
+          "unit": "USD per 1M tokens",
+          "context": 991800
+        },
+        "qwen3.7-flash:thinking": {
+          "input": 0.03,
+          "output": 0.13,
+          "unit": "USD per 1M tokens",
+          "context": 983600
+        },
+        "phi-4-multimodal-instruct": {
+          "input": 0.07,
+          "output": 0.11,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "meganova-ai/manta-flash-1.0": {
+          "input": 0.02,
+          "output": 0.16,
+          "unit": "USD per 1M tokens",
+          "context": 16400
+        },
+        "meganova-ai/manta-mini-1.0": {
+          "input": 0.02,
+          "output": 0.16,
+          "unit": "USD per 1M tokens",
+          "context": 8200
+        },
+        "qwen3.5-0.8b": {
+          "input": 0.06,
+          "output": 0.12,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "inception/mercury-2.5-preview": {
+          "input": 0.04,
+          "output": 0.15,
+          "unit": "USD per 1M tokens",
+          "context": 260000
+        },
+        "mistralai/ministral-3b-2512": {
+          "input": 0.1,
+          "output": 0.1,
+          "unit": "USD per 1M tokens",
+          "context": 131100
+        },
+        "qwen/qwen3.5-9b": {
+          "input": 0.05,
+          "output": 0.15,
+          "unit": "USD per 1M tokens",
+          "context": 256000
+        },
+        "Gryphe/MythoMax-L2-13b": {
+          "input": 0.1,
+          "output": 0.1,
+          "unit": "USD per 1M tokens",
+          "context": 4000
+        },
+        "mistralai/Mistral-Nemo-Instruct-2407": {
+          "input": 0.1,
+          "output": 0.12,
+          "unit": "USD per 1M tokens",
+          "context": 16400
+        },
+        "TheDrummer/Cydonia-24B-v2": {
+          "input": 0.1,
+          "output": 0.12,
+          "unit": "USD per 1M tokens",
+          "context": 16400
+        },
+        "TheDrummer/Magidonia-24B-v4.3": {
+          "input": 0.1,
+          "output": 0.12,
+          "unit": "USD per 1M tokens",
+          "context": 32800
+        },
+        "sarvam-105b": {
+          "input": 0.05,
+          "output": 0.18,
+          "unit": "USD per 1M tokens",
+          "context": 131100
+        },
+        "qwen3.5-2b": {
+          "input": 0.08,
+          "output": 0.16,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "gemma-4-e4b-it": {
+          "input": 0.04,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 131100
+        },
+        "ibm-granite/granite-4.2-8b": {
+          "input": 0.1,
+          "output": 0.15,
+          "unit": "USD per 1M tokens",
+          "context": 131100
+        },
+        "nvidia/nemotron-3.5-lightning": {
+          "input": 0.05,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "nvidia/nemotron-3.5-lightning:thinking": {
+          "input": 0.05,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "qwen-turbo": {
+          "input": 0.05,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "TheDrummer/Cydonia-24B-v4.3": {
+          "input": 0.12,
+          "output": 0.15,
+          "unit": "USD per 1M tokens",
+          "context": 32800
+        },
+        "glm-4-air-0111": {
+          "input": 0.14,
+          "output": 0.14,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "meta-llama/llama-3.3-70b-instruct": {
+          "input": 0.05,
+          "output": 0.23,
+          "unit": "USD per 1M tokens",
+          "context": 131100
+        },
+        "inclusionai/ling-3.0-flash": {
+          "input": 0.08,
+          "output": 0.22,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "inclusionai/ling-3.0-flash:thinking": {
+          "input": 0.08,
+          "output": 0.22,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "amazon/nova-lite-v1": {
+          "input": 0.06,
+          "output": 0.24,
+          "unit": "USD per 1M tokens",
+          "context": 300000
+        },
+        "gemma-4-12b-it": {
+          "input": 0.05,
+          "output": 0.25,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "mistralai/ministral-8b-2512": {
+          "input": 0.15,
+          "output": 0.15,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "nvidia/nemotron-3-super-120b-a12b": {
+          "input": 0.05,
+          "output": 0.25,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "nvidia/nemotron-3-super-120b-a12b:thinking": {
+          "input": 0.05,
+          "output": 0.25,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "nvidia/Llama-3.3-Nemotron-Super-49B-v1": {
+          "input": 0.15,
+          "output": 0.15,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "dots-studio/dots-3-note-preview": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 393200
+        },
+        "poolside/laguna-s-2.1": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "poolside/laguna-s-2.1:thinking": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "liquid/lfm-2.5-2.6b": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "meta/muse-spark-1.2-contributor": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "ornith-ai/ornith-1.5-9b": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "ornith-ai/ornith-1.5-9b:thinking": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "qwen3.5-4b": {
+          "input": 0.1,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "Baichuan4-Air": {
+          "input": 0.16,
+          "output": 0.16,
+          "unit": "USD per 1M tokens",
+          "context": 32800
+        },
+        "qwen/qwen3-14b": {
+          "input": 0.08,
+          "output": 0.24,
+          "unit": "USD per 1M tokens",
+          "context": 41000
+        },
+        "z-ai/glm-5.3-flash": {
+          "input": 0.08,
+          "output": 0.25,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "tencent/hy3": {
+          "input": 0.07,
+          "output": 0.26,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "openai/gpt-oss-safeguard-20b": {
+          "input": 0.08,
+          "output": 0.3,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "THUDM/GLM-4-32B-0414": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "THUDM/GLM-4-9B-0414": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 32000
+        },
+        "THUDM/GLM-Z1-9B-0414": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 32000
+        },
+        "mistralai/ministral-14b-2512": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 262100
+        },
+        "mistral-small-31-24b-instruct": {
+          "input": 0.1,
+          "output": 0.3,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "qwen/qwen3-32b": {
+          "input": 0.1,
+          "output": 0.3,
+          "unit": "USD per 1M tokens",
+          "context": 41000
+        },
+        "qwen/qwen3-30b-a3b": {
+          "input": 0.1,
+          "output": 0.3,
+          "unit": "USD per 1M tokens",
+          "context": 41000
+        },
+        "stepfun-ai/step-3.5-flash": {
+          "input": 0.1,
+          "output": 0.3,
+          "unit": "USD per 1M tokens",
+          "context": 256000
+        },
+        "stepfun-ai/step-3.5-flash-2603": {
+          "input": 0.1,
+          "output": 0.3,
+          "unit": "USD per 1M tokens",
+          "context": 256000
+        },
+        "unsloth/gemma-3-4b-it": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "glm-4-long": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "Qwen/Qwen2.5-Coder-32B-Instruct": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 32000
+        },
+        "Sao10K/L3-8B-Stheno-v3.2": {
+          "input": 0.2,
+          "output": 0.2,
+          "unit": "USD per 1M tokens",
+          "context": 16400
+        },
+        "doubao-seed-1-6-flash-250615": {
+          "input": 0.04,
+          "output": 0.37,
+          "unit": "USD per 1M tokens",
+          "context": 256000
+        },
+        "bytedance/doubao-seed-character": {
+          "input": 0.12,
+          "output": 0.29,
+          "unit": "USD per 1M tokens",
+          "context": 128000
+        },
+        "deepseek/deepseek-v4-flash": {
+          "input": 0.14,
+          "output": 0.28,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "deepseek/deepseek-v4-flash:thinking": {
+          "input": 0.14,
+          "output": 0.28,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "deepseek/deepseek-v4-flash-0731": {
+          "input": 0.14,
+          "output": 0.28,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "deepseek/deepseek-v4-flash-0731:thinking": {
+          "input": 0.14,
+          "output": 0.28,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
+        },
+        "deepseek/deepseek-v4-flash-latest": {
+          "input": 0.14,
+          "output": 0.28,
+          "unit": "USD per 1M tokens",
+          "context": 1000000
         }
       },
       "openai": {},
@@ -211,29 +617,31 @@
       }
     },
     "socket_host": "127.0.0.1",
-    "socket_port": 56266,
-    "socket_url": "http://127.0.0.1:56266",
+    "socket_port": 49399,
+    "socket_url": "http://127.0.0.1:49399",
     "llm_routing": {
       "aliases": {
         "lowendmodel": {
           "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-flash",
-          "subprovider": "Deepseek"
+          "model": "inception/mercury-2.5-preview",
+          "reasoning_effort": "high"
         },
         "mediumendmodel": {
           "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-flash",
-          "subprovider": "Deepseek"
+          "model": "deepseek/deepseek-v4-flash-0731",
+          "subprovider": "CrofAI"
         },
         "highendmodel": {
           "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-flash:thinking",
-          "subprovider": "Deepseek"
+          "model": "deepseek/deepseek-v4-flash-0731:thinking",
+          "subprovider": "CrofAI",
+          "reasoning_effort": "high"
         },
         "veryhighendmodel": {
           "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-pro:thinking",
-          "subprovider": "Deepseek"
+          "model": "deepseek/deepseek-v4-flash-0731:thinking",
+          "subprovider": "CrofAI",
+          "reasoning_effort": "high"
         }
       }
     }
@@ -273,7 +681,7 @@
       "model": "veryhighendmodel",
       "retries": 4,
       "timeout": 360000,
-      "enable_chain_of_thought": false
+      "enable_chain_of_thought": true
     },
     "summarizer": {
       "description": "Historical memory specialist. Compresses past scenes into concise summaries and keeps character sheets updated to maintain long-term consistency.",
@@ -296,9 +704,9 @@
         "settings_note": "Use cheaper aliases here once your main Writer and Director are stable.",
         "toggleable": true
       },
-      "summary_model": "mediumendmodel",
-      "synopsis_model": "mediumendmodel",
-      "arc_compression_model": "mediumendmodel",
+      "summary_model": "lowendmodel",
+      "synopsis_model": "lowendmodel",
+      "arc_compression_model": "lowendmodel",
       "timeout": 360000,
       "retries": 4
     },
@@ -325,7 +733,7 @@
       },
       "model": "highendmodel",
       "chapters_to_review": 1,
-      "enabled": false,
+      "enabled": true,
       "direct_plugins_enabled": false,
       "enable_scene_boundary_strategy": true,
       "retries": 0,
@@ -356,8 +764,8 @@
       },
       "enable_ost": true,
       "enable_background": true,
-      "background_model": "mediumendmodel",
-      "ost_model": "mediumendmodel",
+      "background_model": "lowendmodel",
+      "ost_model": "lowendmodel",
       "background_params": {
         "max_tokens": 500,
         "temperature": 0.3,
@@ -393,7 +801,7 @@
         "toggleable": true
       },
       "enabled": true,
-      "model": "highendmodel",
+      "model": "lowendmodel",
       "llm_params": {
         "max_tokens": 5000,
         "temperature": 0.3
@@ -494,7 +902,7 @@
         "toggleable": true
       },
       "enabled": true,
-      "model": "highendmodel",
+      "model": "lowendmodel",
       "retries": 3,
       "timeout": 120000
     },
@@ -546,7 +954,7 @@
         "toggleable": true
       },
       "enabled": true,
-      "model": "highendmodel",
+      "model": "lowendmodel",
       "retries": 2,
       "timeout": 90000,
       "min_confidence": 0.62,
@@ -586,9 +994,9 @@
   "visual_novel": {
     "settings": {
       "audio": {
-        "ost_volume": 0.3,
+        "ost_volume": 0.17,
         "tts_volume": 0.61,
-        "bgm_sfx_volume": 0.15,
+        "bgm_sfx_volume": 0.1,
         "sfx_volume": 0.23,
         "mute_audio_during_generation": true,
         "play_sound_on_ready": true,
@@ -616,7 +1024,7 @@
         "text_alignment": "center",
         "auto_play_delay": 1450,
         "show_controls": true,
-        "show_music_player": false,
+        "show_music_player": true,
         "show_ost_popup": true,
         "show_dialogue_index_indicator": true,
         "plugin_manager_view_mode": "list",
@@ -649,8 +1057,8 @@
         }
       },
       "debug": {
-        "director_mode": false,
-        "feedback_mode": false,
+        "director_mode": true,
+        "feedback_mode": true,
         "debug_viewport": false,
         "show_system_console": true
       },
@@ -728,30 +1136,6 @@
           "world_environment": true,
           "world_status": true,
           "inventory": true
-        }
-      },
-      "plugins": {
-        "sprite_shading": {
-          "enable_blurred_edge": false,
-          "blurred_edge_blur": 5,
-          "blurred_edge_opacity": 1,
-          "enable_ambient_lighting": true,
-          "ambient_lighting_opacity": 0.2,
-          "ambient_lighting_saturation": 200,
-          "enable_shadow_shading": true,
-          "shadow_shading_opacity": 0.25,
-          "shadow_shading_contrast": 1000,
-          "shadow_offset_x": 30,
-          "shadow_offset_y": 30,
-          "enable_outline": false,
-          "outline_thickness": 1,
-          "outline_color": "#000000",
-          "outline_color_matching": true,
-          "enable_debug_pips": false,
-          "enable_breathing": true,
-          "breathing_intensity": 0.003,
-          "breathing_speed": 6,
-          "breathing_randomness": 40
         }
       }
     }
@@ -1047,7 +1431,7 @@
     },
     "vn_cinematographer": {
       "model_def": {
-        "model": "highendmodel"
+        "model": "lowendmodel"
       },
       "skip_reasoning": false,
       "standalone_camera_llm": true,

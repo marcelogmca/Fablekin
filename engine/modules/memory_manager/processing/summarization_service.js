@@ -6,12 +6,6 @@ const {
     readSettings
 } = require("../../utils");
 const { callLLM, resolveModelAlias } = require("../../llm.js");
-const { buildCoreVnLlmMessages } = require("../../vn_manager/shared_llm_context.js");
-const {
-    buildVnBackgroundMessages,
-    getVnBackgroundAssignment,
-    waitForVnBackgroundCacheSlot
-} = require("../../vn_manager/background_llm_cache.js");
 const { getStore } = require("../storage/vector_store_manager");
 const { getDiagnosticContext, runWithDiagnosticContext } = require("../../diagnostic_context.js");
 
@@ -26,6 +20,13 @@ const DB_OPERATION_TIMEOUT = 30000; // 30 seconds
 const summaryPrompt = readFileSync("engine/prompts/summary_prompt.txt");
 const synopsisPrompt = readFileSync("engine/prompts/synopsis_prompt.txt");
 // #endregion
+
+function buildCurrentTurnSummaryMessages(content) {
+    return [
+        { role: 'system', content: summaryPrompt },
+        { role: 'user', content: String(content || 'No current chapter text available.') }
+    ];
+}
 
 async function runLoggedSummarizerCall(title, messages, model, provider, callOptions = {}, fallbackDiagnostics = {}) {
     provider = resolveModelAlias(model).provider;
@@ -103,7 +104,7 @@ async function _retrieveFromLanceDB(content, type, projectName) {
  * @returns {Promise<string>} The generated summary.
  */
 async function generateSummary(turnContext, contentToSummarize, options = {}) {
-    const { filePath = null, staticDataManager = null, includeUserPrompt = false, useVnBackground = false } = options;
+    const { filePath = null, staticDataManager = null, includeUserPrompt = false } = options;
     const content = contentToSummarize;
 
     // --- Path 1: Static file summary with caching ---
@@ -146,18 +147,11 @@ async function generateSummary(turnContext, contentToSummarize, options = {}) {
 
     // --- Path 2: Turn-based summary without caching ---
     else if (includeUserPrompt) {
-        Logger.log('SummarizationService', 'Generation', 'Generating summary for turn content (with user prompt).', 'start');
-        const taskPrompt = `${summaryPrompt}\n\nSummarize FINAL WRITER CHAPTER from the shared context. Use CURRENT USER INPUT only as context.`;
-        const backgroundAssignment = useVnBackground ? getVnBackgroundAssignment() : null;
-        const messages = useVnBackground
-            ? buildVnBackgroundMessages(turnContext, taskPrompt)
-            : buildCoreVnLlmMessages(turnContext, taskPrompt);
-        if (useVnBackground) {
-            await waitForVnBackgroundCacheSlot(turnContext, 'core:currentTurnSummary');
-        }
+        Logger.log('SummarizationService', 'Generation', 'Generating summary from the current chapter only.', 'start');
+        const messages = buildCurrentTurnSummaryMessages(content);
         const { content: summaryContent } = await runLoggedSummarizerCall('Summary Request', messages,
-            backgroundAssignment?.model || settings.narrative_agents?.summarizer?.summary_model,
-            backgroundAssignment?.provider,
+            settings.narrative_agents?.summarizer?.summary_model,
+            undefined,
             {
             retries: settings.narrative_agents?.summarizer?.retries,
             timeout: settings.narrative_agents?.summarizer?.timeout,
@@ -249,6 +243,9 @@ module.exports = {
     generateSummary,
     generateSynopsis,
     retrieveSummary: _retrieveFromLanceDB,
-    retrieveSynopsis: _retrieveFromLanceDB
+    retrieveSynopsis: _retrieveFromLanceDB,
+    _private: {
+        buildCurrentTurnSummaryMessages
+    }
 };
 // #endregion

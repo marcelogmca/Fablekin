@@ -77,6 +77,8 @@ const { createFileHandlers } = require('./modules/main_process/handlers/file_han
 const { createVnHandlers } = require('./modules/main_process/handlers/vn_handlers.js');
 const { createChapterHandlers } = require('./modules/main_process/handlers/chapter_handlers.js');
 const { createLogHandlers } = require('./modules/main_process/handlers/log_handlers.js');
+const { createLogArenaService } = require('./modules/log_arena.js');
+const { callLLMDirect, listConfiguredProviders } = require('./modules/llm.js');
 const { createProjectHandlersBase } = require('./modules/main_process/handlers/project_handlers_base.js');
 const { createProjectSelectHandler } = require('./modules/main_process/handlers/project_select_handler.js');
 const { createSceneHistoryHandlers } = require('./modules/main_process/handlers/scene_history_handlers.js');
@@ -430,6 +432,14 @@ const chapterHandlers = createChapterHandlers({
 // #endregion
 
 // #region Log Handlers
+const logArenaService = createLogArenaService({
+    databasePath: path.resolve(__dirname, '..', 'workspace', 'log_arena', 'arena.db'),
+    callLLMDirect,
+    listConfiguredProviders,
+    readSettings,
+    io,
+    Logger
+});
 const logHandlers = createLogHandlers({
     fs,
     logsDir,
@@ -438,7 +448,8 @@ const logHandlers = createLogHandlers({
     Logger,
     emitResponse,
     resolveChildInsideRoot,
-    isSafePathSegment
+    isSafePathSegment,
+    logArenaService
 });
 // #endregion
 

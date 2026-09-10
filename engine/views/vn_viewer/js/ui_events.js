@@ -104,6 +104,14 @@ function getActiveInterludeState() {
     };
 }
 
+function restoreUndoneChapterInputs(restoredInputs) {
+    if (!restoredInputs || typeof restoredInputs !== 'object') return;
+    if (elements.userMessage) elements.userMessage.value = typeof restoredInputs.userPrompt === 'string' ? restoredInputs.userPrompt : '';
+    if (elements.directorMessage) elements.directorMessage.value = typeof restoredInputs.directorPrompt === 'string' ? restoredInputs.directorPrompt : '';
+    if (elements.feedbackMessage) elements.feedbackMessage.value = typeof restoredInputs.softFeedback === 'string' ? restoredInputs.softFeedback : '';
+    if (elements.userMessage && !elements.userMessage.disabled) elements.userMessage.focus();
+}
+
 export async function submitUserInput(options = {}) {
     const {
         skipBeforeSubmit = false,
@@ -437,6 +445,8 @@ export function initUIEvents(socket) {
                 const response = await socket.emitReceive('delete-latest-turn');
                 if (!response || !response.success) {
                     await showConfirmation('Error', 'Failed to undo last chapter: ' + (response?.error || 'Unknown error'));
+                } else {
+                    restoreUndoneChapterInputs(response.restoredInputs);
                 }
             } catch (err) {
                 console.error('Error during undo:', err);

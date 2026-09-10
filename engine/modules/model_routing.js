@@ -1,4 +1,5 @@
 const MODEL_ALIAS_ID_PATTERN = /^[a-z][a-z0-9_-]*$/;
+const REASONING_EFFORT_LEVELS = Object.freeze(['none', 'minimal', 'low', 'medium', 'high', 'xhigh']);
 
 const BUILT_IN_MODEL_ALIASES = Object.freeze([
   'lowendmodel',
@@ -42,6 +43,13 @@ function normalizeModelRoute(route) {
   };
   const subprovider = String(route.subprovider || '').trim();
   if (subprovider) normalized.subprovider = subprovider;
+  const explicitEffort = String(route.reasoning_effort ?? route.reasoningEffort ?? '').trim().toLowerCase();
+  const suffixMatch = normalized.model.match(/:(thinking|no[_-]?thinking|nothinking)$/i);
+  const inferredEffort = suffixMatch
+    ? (suffixMatch[1].toLowerCase().replace(/[-_]/g, '') === 'thinking' ? 'high' : 'none')
+    : '';
+  const reasoningEffort = REASONING_EFFORT_LEVELS.includes(explicitEffort) ? explicitEffort : inferredEffort;
+  if (reasoningEffort) normalized.reasoning_effort = reasoningEffort;
   return normalized;
 }
 
@@ -119,7 +127,8 @@ function resolveModelAlias(settings, rawAlias) {
     alias,
     provider: route.provider,
     model: route.model,
-    ...(route.subprovider ? { subprovider: route.subprovider } : {})
+    ...(route.subprovider ? { subprovider: route.subprovider } : {}),
+    ...(route.reasoning_effort ? { reasoning_effort: route.reasoning_effort } : {})
   };
 }
 
@@ -152,6 +161,7 @@ module.exports = {
   BUILT_IN_MODEL_ALIASES,
   BUILT_IN_MODEL_ALIAS_META,
   MODEL_ALIAS_ID_PATTERN,
+  REASONING_EFFORT_LEVELS,
   applyStarterProfile,
   getAliasRegistry,
   getModelAliasMeta,

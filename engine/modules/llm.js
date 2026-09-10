@@ -225,7 +225,7 @@ function getConfiguredProviderKeys(settings) {
  * @param {string} providerKey 
  * @returns {object|null}
  */
-function getProviderInstance(providerKey) {
+function getProviderInstance(providerKey, fallbackModel = null) {
   const settings = readSettings();
   const providerKeyLower = normalizeProviderKey(providerKey);
 
@@ -266,12 +266,13 @@ function getProviderInstance(providerKey) {
         if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
           const geminiRoute = Object.values(settings.infrastructure?.llm_routing?.aliases || {})
             .find(route => normalizeProviderKey(route?.provider) === 'gemini' && String(route?.model || '').trim());
-          if (!geminiRoute) {
+          const bootstrapModel = String(fallbackModel || geminiRoute?.model || '').trim();
+          if (!bootstrapModel) {
             throw new Error('Gemini has no configured model alias. Configure a Gemini route in Settings > Models & Routing.');
           }
           return new ChatGoogleGenerativeAI({
             apiKey: config.apiKey,
-            model: geminiRoute.model,
+            model: bootstrapModel,
           });
         }
         break;
@@ -339,13 +340,14 @@ function normalizeOpenRouterReasoningModel(modelName, extra = {}) {
 
   const marker = match[1].toLowerCase().replace(/[-_]/g, '');
   const effort = marker === 'thinking' ? 'high' : 'none';
+  const effectiveEffort = baseExtra.reasoning?.effort || effort;
   const normalizedExtra = {
     ...baseExtra,
     reasoning: {
       ...(baseExtra.reasoning && typeof baseExtra.reasoning === 'object' && !Array.isArray(baseExtra.reasoning)
         ? baseExtra.reasoning
         : {}),
-      effort
+      effort: effectiveEffort
     }
   };
 
@@ -353,8 +355,129 @@ function normalizeOpenRouterReasoningModel(modelName, extra = {}) {
     model: model.slice(0, -match[0].length),
     extra: normalizedExtra,
     reasoningMarker: match[0],
-    reasoningEffort: effort
+    reasoningEffort: effectiveEffort
   };
+}
+
+function applyRouteReasoningEffort(route, extra = {}) {
+  const normalizedExtra = extra && typeof extra === 'object' && !Array.isArray(extra) ? { ...extra } : {};
+  const effort = String(route?.reasoning_effort || '').trim().toLowerCase();
+  const existingReasoning = normalizedExtra.reasoning && typeof normalizedExtra.reasoning === 'object' && !Array.isArray(normalizedExtra.reasoning)
+    ? { ...normalizedExtra.reasoning }
+    : {};
+  if (effort && !existingReasoning.effort && !normalizedExtra.reasoning_effort) {
+    normalizedExtra.reasoning = { ...existingReasoning, effort };
+  }
+  return normalizedExtra;
+}
+
+function normalizeReasoningParamsForProvider(providerKey, extra = {}) {
+  const normalized = { ...(extra || {}) };
+  if (normalized.reasoning && typeof normalized.reasoning === 'object' && !Array.isArray(normalized.reasoning)) {
+    normalized.reasoning = { ...normalized.reasoning };
+  }
+  if (normalized.reasoning && (providerKey === 'openai' || providerKey === 'deepseek')) {
+    const effort = normalized.reasoning.effort;
+    if (effort && !normalized.reasoning_effort) {
+      normalized.reasoning_effort = providerKey === 'deepseek' && effort === 'minimal' ? 'low' : effort;
+    }
+    delete normalized.reasoning;
+  } else if (normalized.reasoning && providerKey !== 'openrouter' && providerKey !== 'nano_gpt') {
+    // The pinned Anthropic, Gemini, and Ollama adapters do not expose the same
+    // effort-level contract. Do not forward an incompatible router parameter.
+    delete normalized.reasoning;
+  }
+  if (!['openrouter', 'nano_gpt', 'openai', 'deepseek'].includes(providerKey)) {
+    delete normalized.reasoning_effort;
+  }
+  return normalized;
+}
+
+/**
+ * Executes a single, side-effect-free LLM request against an explicit provider
+ * and raw model id. This is intentionally narrower than callLLM: it does not
+ * resolve aliases, retry, validate, use the local dev cache, emit generation
+ * notifications, or link usage into TurnLogger.
+ */
+async function callLLMDirect({ messages, provider, model, timeout = 600000, extra = {}, signal = null }) {
+  const settings = readSettings();
+  const providerKey = normalizeProviderKey(provider);
+  const rawModel = String(model || '').trim();
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    throw new Error('Arena requests require at least one message.');
+  }
+  if (!rawModel) throw new Error('Arena requests require a raw model id.');
+
+  const configuredProviders = getConfiguredProviderKeys(settings).map(normalizeProviderKey);
+  if (!configuredProviders.includes(providerKey)) {
+    throw new Error(`Provider '${providerKey}' is not configured.`);
+  }
+
+  const baseModelInstance = getProviderInstance(providerKey, rawModel);
+  if (!baseModelInstance) {
+    const providerConfig = getProviderConfig(settings, providerKey);
+    if (providerKey !== 'ollama' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
+      throw new Error(`Provider '${providerKey}' has no configured API key.`);
+    }
+    throw new Error(`Provider '${providerKey}' is unavailable.`);
+  }
+
+  const suffixReasoningRoute = (providerKey === 'openrouter' || providerKey === 'nano_gpt')
+    ? normalizeOpenRouterReasoningModel(rawModel, extra)
+    : { model: rawModel, extra };
+  const normalizedRoute = providerKey === 'nano_gpt'
+    ? { ...suffixReasoningRoute, model: rawModel }
+    : suffixReasoningRoute;
+  const resolvedModel = normalizedRoute.model;
+  const callExtraParams = normalizeReasoningParamsForProvider(providerKey, normalizedRoute.extra);
+  if (providerKey === 'openrouter' && settings.infrastructure?.include_cache_usage) {
+    callExtraParams.usage = { include: true };
+  }
+
+  const dynamicInstance = new baseModelInstance.constructor({
+    ...baseModelInstance.lc_kwargs,
+    model: resolvedModel,
+    modelName: resolvedModel,
+    modelKwargs: callExtraParams,
+    ...(baseModelInstance instanceof ChatOpenAI ? { __includeRawResponse: true } : {})
+  });
+  const configuredModel = dynamicInstance.withConfig({ retries: 0 });
+  const langChainMessages = messages.map((message) => {
+    const content = message?.content ?? '';
+    if (message?.role === 'system') return new SystemMessage(content);
+    if (message?.role === 'assistant') return new AIMessage(content);
+    return new HumanMessage(content);
+  });
+
+  const startedAt = Date.now();
+  const response = await configuredModel.invoke(
+    langChainMessages,
+    signal ? { timeout, signal } : { timeout }
+  );
+  let content = response.content;
+  const reasoning = extractReasoningContent(response);
+
+  if (typeof content === 'string' && settings.infrastructure?.sanitize_responses?.enabled) {
+    content = content.replace(/[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uffef\u4e00-\u9faf\u3400-\u4dbf]/g, '');
+  }
+
+  return {
+    content,
+    reasoning,
+    model: resolvedModel,
+    provider: providerKey,
+    usage: normalizeUsageData(providerKey, response),
+    durationMs: Date.now() - startedAt
+  };
+}
+
+function listConfiguredProviders() {
+  return getConfiguredProviderKeys(readSettings())
+    .map(normalizeProviderKey)
+    .filter(Boolean)
+    .filter((value, index, list) => list.indexOf(value) === index)
+    .sort((a, b) => a.localeCompare(b));
 }
 
 function asFiniteNumber(value) {
@@ -597,9 +720,10 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
   const providerKey = resolveCallProviderKey(route.provider, provider);
   const baseModelInstance = getProviderInstance(providerKey);
   const rawResolvedModel = route.model;
+  const routeExtra = applyRouteReasoningEffort(route, extra);
   const openRouterReasoningModel = providerKey === 'openrouter'
-    ? normalizeOpenRouterReasoningModel(rawResolvedModel, extra)
-    : { model: rawResolvedModel, extra };
+    ? normalizeOpenRouterReasoningModel(rawResolvedModel, routeExtra)
+    : { model: rawResolvedModel, extra: routeExtra };
   const resolvedModel = openRouterReasoningModel.model;
   const normalizedExtra = openRouterReasoningModel.extra;
   const subprovider = route.subprovider;
@@ -657,29 +781,14 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
     for (let attempt = 1; attempt <= totalAttempts; attempt++) {
       cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
       try {
-        const callExtraParams = { ...normalizedExtra };
+        const callExtraParams = normalizeReasoningParamsForProvider(providerKey, normalizedExtra);
         // --- REASONING NORMALIZATION ---
         if (callExtraParams.reasoning) {
           const r = callExtraParams.reasoning;
-          if (providerKey === 'openrouter') {
-            // OpenRouter supports the unified 'reasoning' object directly via modelKwargs.
+          if (providerKey === 'openrouter' || providerKey === 'nano_gpt') {
+            // Router-style providers support the unified reasoning object directly.
             // No changes needed to the structure, but we ensure it persists here.
             Logger.log(safeModule, resolvedModel, `Reasoning configuration detected: ${JSON.stringify(r)}`);
-          } else if (providerKey === 'openai' || providerKey === 'deepseek') {
-            // Map to OpenAI-style reasoning_effort if present
-            if (r.effort) {
-              const effortMap = {
-                'none': 'none',
-                'minimal': 'low',
-                'low': 'low',
-                'medium': 'medium',
-                'high': 'high',
-                'xhigh': 'xhigh'
-              };
-              callExtraParams.reasoning_effort = effortMap[r.effort] || r.effort;
-            }
-            // For OpenAI/DeepSeek, we strip the internal 'reasoning' object to avoid unknown param errors
-            delete callExtraParams.reasoning;
           }
         }
 
@@ -963,11 +1072,12 @@ function getLangChainModel({ model, provider = null, retries = 3, extra = {} }) 
   }
 
   const rawResolvedModelName = route.model;
+  const routeExtra = applyRouteReasoningEffort(route, extra);
   const openRouterReasoningModel = providerKey === 'openrouter'
-    ? normalizeOpenRouterReasoningModel(rawResolvedModelName, extra)
-    : { model: rawResolvedModelName, extra };
+    ? normalizeOpenRouterReasoningModel(rawResolvedModelName, routeExtra)
+    : { model: rawResolvedModelName, extra: routeExtra };
   const resolvedModelName = openRouterReasoningModel.model;
-  const normalizedExtra = openRouterReasoningModel.extra;
+  const normalizedExtra = normalizeReasoningParamsForProvider(providerKey, openRouterReasoningModel.extra);
 
   // Create a new, dynamically configured instance for this specific call
   const dynamicInstance = new baseModelInstance.constructor({
@@ -991,11 +1101,16 @@ function getLangChainModel({ model, provider = null, retries = 3, extra = {} }) 
 // #region EXPORTS
 module.exports = {
   callLLM,
+  callLLMDirect,
+  containsRefusalFuzzy,
+  listConfiguredProviders,
   getLangChainModel,
   repairJson,
   resolveModelAlias,
   normalizeProviderKey,
   normalizeOpenRouterReasoningModel,
+  applyRouteReasoningEffort,
+  normalizeReasoningParamsForProvider,
   resolveCallProviderKey
 };
 // #endregion

@@ -13,7 +13,7 @@ function makeSettings() {
     infrastructure: {
       providers: { nano_gpt: {}, openrouter: {}, openai: {}, anthropic: {}, gemini: {}, deepseek: {} },
       llm_routing: { aliases: {
-        highendmodel: { provider: 'nano-gpt', model: 'vendor/high', subprovider: 'upstream-a' },
+        highendmodel: { provider: 'nano-gpt', model: 'vendor/high', subprovider: 'upstream-a', reasoning_effort: 'medium' },
         customhigh1: { provider: 'openrouter', model: 'vendor/custom' }
       }}
     }
@@ -23,7 +23,7 @@ function makeSettings() {
 test('resolves built-in and custom aliases through one global registry', () => {
   const settings = makeSettings();
   assert.deepEqual(resolveModelAlias(settings, 'highendmodel'), {
-    alias: 'highendmodel', provider: 'nano_gpt', model: 'vendor/high', subprovider: 'upstream-a'
+    alias: 'highendmodel', provider: 'nano_gpt', model: 'vendor/high', subprovider: 'upstream-a', reasoning_effort: 'medium'
   });
   assert.equal(resolveModelAlias(settings, 'customhigh1').model, 'vendor/custom');
 });
@@ -53,4 +53,12 @@ test('starter profiles preserve custom aliases', () => {
   applyStarterProfile(settings, 'openai', presets.openai);
   assert.equal(settings.infrastructure.llm_routing.aliases.customhigh1.model, 'vendor/custom');
   assert.equal(settings.infrastructure.llm_routing.aliases.lowendmodel.provider, 'openai');
+});
+
+test('normalizes explicit reasoning effort and infers legacy suffixes', () => {
+  const settings = makeSettings();
+  settings.infrastructure.llm_routing.aliases.lowendmodel = { provider: 'openrouter', model: 'vendor/low:no_thinking' };
+  settings.infrastructure.llm_routing.aliases.mediumendmodel = { provider: 'nano_gpt', model: 'vendor/medium', reasoningEffort: 'LOW' };
+  assert.equal(resolveModelAlias(settings, 'lowendmodel').reasoning_effort, 'none');
+  assert.equal(resolveModelAlias(settings, 'mediumendmodel').reasoning_effort, 'low');
 });

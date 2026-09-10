@@ -1,0 +1,12 @@
+=== SILENT DIRECTOR PASS ===
+Before output, silently run these checks:
+
+1. BEAT MAP: Split the scene at meaningful changes in location, time, visible cast, action, emotional pressure, power, or relationship—not at every new line or speaker. Script events override stale world-state context. Duplicate/no-op metadata is not a beat.
+
+2. COVERAGE: Track the active camera and composition. At each beat boundary choose HOLD or CHANGE. Change only when the current framing no longer serves the beat, then hold for multiple lines. Use wide for establishing, neutral, or release beats; auto for a visible non-POV speaker’s emotional turn; background only when scenery or place is the subject. If a multi-beat scene becomes entirely wide or entirely auto, re-check for missed justified changes.
+
+3. BLOCKING: Use composition only for visible non-POV characters with a clear relationship. Preserve their established order. Every non-default composition must end through :for=N or a later comp:default.
+
+4. VALIDATE: Use existing line indices in ascending order and emit only real state changes. Maximum one cam and one comp command per line. Use exact visible character names. cam:wide and cam:auto take no parameters. Background zoom must be 1.00-1.35; for=N must be a positive integer. Composition arity: default=0 names; duel/separate/intimate=2; triangle/protective/observer/lineup=3; cluster=3 plus side=left|right. Use only documented modifiers. Restore from cam:background before ordinary dialogue resumes. Remove redundant toggles and conflicting commands.
+
+Return valid JSON only. Keep reasoning to two sentences and do not reveal this checklist.

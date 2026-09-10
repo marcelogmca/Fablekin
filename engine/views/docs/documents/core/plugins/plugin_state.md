@@ -10,6 +10,7 @@ Choose storage by lifetime and purpose. Small pipeline state belongs in the Turn
 | Small state attached to a turn snapshot | `tools.pluginState.turn()` | `turnContext.processed.plugins[pluginId]` |
 | Searchable or consolidatable narrative memory | `tools.facts.*` | Project facts database |
 | Images, audio, exports, and large cache files | `tools.project.getChatPluginStorage()` | Managed project plugin directory |
+| Project-wide plugin databases and configuration | `tools.project.getPluginStorage()` | `plugins/[PluginId]/` under the active project |
 
 ## Runtime State
 
@@ -114,6 +115,17 @@ const storage = tools.project.getChatPluginStorageFromContext(
 Branch operations copy and prune the managed hierarchy. Chat deletion removes the chat's managed plugin directory. Turn deletion fires `HOOK_TURN_DELETED`; plugins that create physical per-turn files must remove the corresponding files in that lifecycle hook.
 
 Use the plugin's sandboxed file tools for reads and writes. Do not construct paths outside the managed project root.
+
+## Project-Wide Plugin Storage
+
+Standalone tools that are not tied to a chat or chapter can use project-wide storage:
+
+```javascript
+const storage = tools.project.getPluginStorage();
+// plugins/[PluginId]/ under the active project
+```
+
+Use this for durable plugin databases and user-authored working data. Chat rewind and chapter deletion do not remove this directory.
 
 ## Rule Of Thumb
 

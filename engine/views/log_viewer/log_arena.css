@@ -1,0 +1,212 @@
+.arena-open-btn,
+.arena-request-btn {
+    border: 1px solid color-mix(in srgb, var(--accent-color, #ffcc00) 65%, transparent);
+    background: color-mix(in srgb, var(--accent-color, #ffcc00) 12%, transparent);
+    color: var(--accent-color, #ffcc00);
+    border-radius: 5px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.arena-request-btn { margin-left: 10px; }
+.arena-open-btn:hover,
+.arena-request-btn:hover { background: color-mix(in srgb, var(--accent-color, #ffcc00) 25%, transparent); }
+
+/* Reserve a stable action slot so revealing a button never moves it away from the cursor. */
+.topic-arena-cell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.topic-arena-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.arena-open-btn {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+}
+
+.topic-breakdown-table tbody tr:hover .arena-open-btn,
+.topic-breakdown-table tbody tr:focus-within .arena-open-btn,
+.arena-open-btn:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.arena-request-btn {
+    display: inline-block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+}
+.log-topic-header:hover .arena-request-btn,
+.log-topic-header:focus-within .arena-request-btn,
+.arena-request-btn:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.log-arena-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    background: rgba(10, 12, 18, 0.84);
+    backdrop-filter: blur(5px);
+    padding: 18px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.log-arena-overlay.open { display: block; }
+
+.log-arena-shell {
+    height: calc(100vh - 36px);
+    max-width: 1800px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border-color, #4b4f5c);
+    border-radius: 12px;
+    background: var(--container-background, #252832);
+    color: var(--text-color, #e6e8ee);
+    box-shadow: 0 22px 80px rgba(0, 0, 0, 0.55);
+}
+
+.log-arena-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color, #4b4f5c);
+}
+
+.log-arena-title { min-width: 0; }
+.log-arena-title h2 { margin: 0; color: var(--accent-color, #ffcc00); }
+.log-arena-title small { display: block; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.log-arena-close,
+.arena-btn {
+    border: 1px solid var(--border-color, #555b68);
+    background: var(--input-background, #343842);
+    color: inherit;
+    border-radius: 6px;
+    padding: 7px 11px;
+    cursor: pointer;
+}
+
+.arena-btn.primary { background: var(--accent-color, #ffcc00); color: #171717; border-color: transparent; font-weight: 700; }
+.arena-btn.danger { color: #ff7b72; border-color: #a54444; }
+.arena-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.log-arena-body {
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 16px;
+    display: grid;
+    align-content: start;
+    grid-auto-rows: max-content;
+    gap: 14px;
+}
+
+.arena-section {
+    min-width: 0;
+    border: 1px solid var(--border-color, #454a56);
+    border-radius: 9px;
+    padding: 13px;
+    background: color-mix(in srgb, var(--container-background, #252832) 84%, #000 16%);
+}
+
+.arena-section h3 { margin: 0 0 10px; font-size: 15px; color: var(--accent-color, #ffcc00); }
+.arena-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.arena-field { display: grid; gap: 5px; font-size: 12px; }
+.arena-field label { opacity: 0.75; }
+.arena-field input,
+.arena-field select,
+.arena-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color, #555b68);
+    background: var(--input-background, #30343e);
+    color: inherit;
+    border-radius: 5px;
+    padding: 7px;
+}
+.arena-field textarea { resize: vertical; min-height: 110px; font: 12px/1.45 Consolas, monospace; }
+
+.arena-source-grid { display: grid; grid-template-columns: minmax(250px, 0.8fr) minmax(420px, 1.2fr); gap: 12px; }
+.arena-source-meta { display: grid; gap: 7px; align-content: start; }
+.arena-source-meta span { overflow-wrap: anywhere; }
+.arena-json,
+.arena-output {
+    margin: 0;
+    max-height: 280px;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    border: 1px solid var(--border-color, #454a56);
+    border-radius: 6px;
+    padding: 10px;
+    background: #171920;
+    color: #d6dae3;
+    font: 12px/1.45 Consolas, monospace;
+}
+
+.arena-contestants { display: grid; gap: 8px; }
+.arena-contestant-row {
+    display: grid;
+    grid-template-columns: minmax(120px, .6fr) minmax(140px, .7fr) minmax(240px, 1.4fr) minmax(150px, .65fr) auto;
+    gap: 8px;
+    align-items: end;
+}
+.arena-prompt-modifications { grid-column: 1 / -1; border: 1px solid var(--border-color, #454a56); border-radius: 6px; background: rgba(255,255,255,.02); }
+.arena-prompt-modifications > summary { cursor: pointer; padding: 7px 10px; color: var(--accent-color, #ffd700); }
+.arena-prompt-modification-body { display: grid; gap: 9px; padding: 4px 10px 10px; }
+.arena-prompt-modification-body small { opacity: .72; }
+
+.arena-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.arena-progress { margin-left: auto; opacity: 0.75; }
+.arena-status-error { color: #ff7b72; }
+.arena-status-ok { color: #56d364; }
+
+.arena-results-scroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: visible; }
+.arena-results-table { width: 100%; min-width: 1050px; border-collapse: collapse; font-size: 12px; }
+.arena-results-table th,
+.arena-results-table td { border-bottom: 1px solid var(--border-color, #414652); padding: 7px; text-align: left; }
+.arena-results-table th.numeric,
+.arena-results-table td.numeric { text-align: right; }
+.arena-result-details { margin-top: 10px; display: grid; gap: 8px; }
+.arena-run-card { border: 1px solid var(--border-color, #454a56); border-radius: 6px; overflow: hidden; }
+.arena-run-card summary { cursor: pointer; padding: 8px; background: rgba(255,255,255,.035); }
+.arena-run-card .arena-output { border: 0; border-radius: 0; max-height: 420px; }
+
+.arena-history-list { display: grid; gap: 6px; }
+.arena-history-item { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; border-bottom: 1px solid var(--border-color, #414652); padding: 7px 0; }
+.arena-history-actions { display: flex; gap: 5px; }
+.arena-judge-panel { display: grid; gap: 10px; }
+.arena-judge-panel pre { max-height: 360px; }
+
+@media (max-width: 900px) {
+    .log-arena-overlay { padding: 0; }
+    .log-arena-shell { height: 100vh; border-radius: 0; }
+    .arena-source-grid { grid-template-columns: 1fr; }
+    .arena-contestant-row { grid-template-columns: 1fr; }
+    .arena-progress { width: 100%; margin-left: 0; }
+}

@@ -1,0 +1,30 @@
+=== SILENT PLANNING WORKFLOW ===
+Before producing JSON:
+
+1. Read the entire scene and divide it into narrative beats. Start a new beat on a meaningful change in location, time, cast, action, emotion, revelation, danger, or scene direction.
+
+2. For every beat, consider 0–2 purposeful commands. Do not command every line, but do not skip major entrances, reactions, discoveries, impacts, ambience changes, or exits when an allowed command fits.
+
+3. Maintain a state ledger:
+
+- current environment and indoors/outdoors status
+- visible characters
+- characters already introduced
+- active persistent VFX and SFX
+- whether OST silence has already been used
+
+4. Place each command on the exact line where its cause first occurs. Explicit script evidence overrides initial metadata. If evidence conflicts or is uncertain, omit environmental effects rather than inventing conditions.
+
+5. Use only exact commands and parameters from the supplied lists. Character targets must be visibly present and use their exact names. Avoid repeating the same animation, emote, or impact effect on neighboring beats unless the script clearly requires it.
+
+6. Before answering, audit the result:
+
+- every line index exists
+- entries are sorted and duplicate line entries are merged
+- every command matches the grammar and whitelist exactly
+- persistent effects are cleared or stopped when continuity ends
+- cast:flush is used only for a hard cut or complete exit
+- no forbidden camera/composition commands appear
+- output is valid JSON with no text outside it
+
+Do not reveal this workflow. The reasoning field should contain only a brief editorial summary.

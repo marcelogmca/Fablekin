@@ -28,6 +28,28 @@ function ensureDirectorRuntime(context) {
     return context.runtime.director;
 }
 
+function resolveProjectPluginStorage(rootDirectory, pluginId, projectName = 'default_project') {
+    const root = rootDirectory ? path.resolve(rootDirectory) : null;
+    const safePluginId = String(pluginId || '').trim();
+    if (!root) throw new Error(`No project root directory available for plugin '${safePluginId || 'unknown'}'.`);
+    if (!/^[a-zA-Z0-9_-]+$/.test(safePluginId)) {
+        throw new Error(`Invalid plugin id for project storage: '${safePluginId}'.`);
+    }
+
+    const relativePath = `plugins/${safePluginId}`;
+    const absolutePath = path.resolve(root, 'plugins', safePluginId);
+    if (!isPathInsideRoot(absolutePath, root)) {
+        throw new Error(`Access denied: Plugin storage escaped the active project root.`);
+    }
+
+    return {
+        absolutePath,
+        relativePath,
+        projectName: String(projectName || 'default_project'),
+        pluginId: safePluginId
+    };
+}
+
 function normalizeDirectorContributionId(pluginId, id) {
     const text = typeof id === 'string' ? id.trim() : '';
     return text || `${pluginId}.unnamed`;
@@ -1936,6 +1958,18 @@ ${trimmed}
             getChatPluginStorageFromContext: (sourceTurnContext, turnOverride = null) => {
                 return resolveChatPluginStorage(sourceTurnContext, turnOverride);
             },
+            /**
+             * Returns project-wide storage paths isolated to the current plugin.
+             * Structure: plugins/[PluginId]/
+             * Unlike getChatPluginStorage(), this path is not tied to a chat or turn.
+             */
+            getPluginStorage: () => {
+                return resolveProjectPluginStorage(
+                    resolvedRoot,
+                    pluginId,
+                    context?.projectName || pluginManager.staticDataManager?.projectName
+                );
+            },
             getFrontendAssetPrefix: () => {
                 // Returns the relative path from a plugin UI (running in engine/plugins/[pluginId]/)
                 // to the workspace/projects/ directory.
@@ -2131,4 +2165,4 @@ ${trimmed}
     };
 }
 
-module.exports = { buildTools };
+module.exports = { buildTools, resolveProjectPluginStorage };

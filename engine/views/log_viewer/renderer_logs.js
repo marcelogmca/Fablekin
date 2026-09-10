@@ -21,6 +21,7 @@ let isLoadingLogs = false;
 const pendingOpenLogRefreshTimers = new Map();
 const splitViewModes = new Map();
 const SPLIT_VIEW_STATES = ['turn', 'split', 'console'];
+let logArenaUi = null;
 // #endregion
 
 // #region CORE FUNCTIONS & UTILITIES
@@ -1836,7 +1837,7 @@ function renderCostSummary(container, modelBreakdown, topicBreakdown, totalCost,
             topicTbody.innerHTML += `
                 <tr>
                     <td class="sticky-accent-cell" style="width: 25px;"><span class="topic-color-accent" style="background-color: ${getTopicColor(row.topic)};"></span></td>
-                    <td class="sticky-topic-cell">${row.topic}</td>
+                    <td class="sticky-topic-cell"><div class="topic-arena-cell"><span class="topic-arena-label">${row.topic}</span><button type="button" class="arena-open-btn" data-arena-topic="${encodeURIComponent(row.topic)}">⚔ Arena</button></div></td>
                     <td>${row.provider}</td>
                     <td style="color:${getModelColor(row.model)};">${row.model}</td>
                     <td class="numeric-cell">${row.inputTokens}</td>
@@ -2630,8 +2631,11 @@ function renderTopicItem(container, entry, topicBreakdown) {
     const topicHeader = document.createElement('div');
     topicHeader.className = 'log-topic-header';
     const accentHTML = `<span class="topic-color-accent" style="background-color: ${getTopicColor(title)};" title="${baseTopic}"></span>`;
+    const arenaAction = title.endsWith(' - Request')
+        ? `<button type="button" class="arena-request-btn" data-arena-title="${encodeURIComponent(title)}" data-arena-timestamp="${encodeURIComponent(entry.timestamp)}">⚔ Arena</button>`
+        : '';
     topicHeader.innerHTML = `${accentHTML} <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-        <span>${title} (${new Date(entry.timestamp).toLocaleTimeString()})</span>
+        <span>${title} (${new Date(entry.timestamp).toLocaleTimeString()}) ${arenaAction}</span>
         ${metaInfo}
     </div>`;
 
@@ -2735,6 +2739,7 @@ function renderTopicStack(container, cluster, topicBreakdown) {
  */
 function renderTopics(topicsContainer, data) {
     topicsContainer.innerHTML = '';
+    topicsContainer._logData = data;
     const { modelBreakdown, topicBreakdown, totalCost, costTotals } = calculateLogCost(data);
     renderCostSummary(topicsContainer, modelBreakdown, topicBreakdown, totalCost, costTotals);
 
@@ -2854,6 +2859,30 @@ function setLogFileItemOpen(fileItem, isOpen) {
     }
 }
 
+function buildLogArenaInvocations(fileItem, topicOrTitle, exactRequestTitle = false) {
+    const data = fileItem?.querySelector('.log-topics-container')?._logData;
+    if (!window.LogArenaPairing?.buildInvocations) return [];
+    return window.LogArenaPairing.buildInvocations(data, topicOrTitle, {
+        exactRequestTitle,
+        projectName: fileItem.dataset.projectName || currentProject,
+        filename: fileItem.dataset.filename,
+        getMetrics: getPairMetrics
+    });
+}
+
+function openLogArenaForTopic(fileItem, topicOrTitle, preferredTimestamp = null, exactRequestTitle = false) {
+    if (!logArenaUi || !fileItem) return;
+    const invocations = buildLogArenaInvocations(fileItem, topicOrTitle, exactRequestTitle);
+    if (invocations.length === 0) {
+        console.error('No replayable Arena request was found for', topicOrTitle);
+        return;
+    }
+    const selectedIndex = preferredTimestamp
+        ? Math.max(0, invocations.findIndex(item => item.request.timestamp === preferredTimestamp))
+        : 0;
+    logArenaUi.open({ invocations, selectedIndex });
+}
+
 // #region EVENT HANDLERS & SOCKET.IO
 /**
  * Handles click events on the log list container, managing file and topic expansion.
@@ -2864,6 +2893,17 @@ function handleContainerClick(event) {
         ? event.target
         : event.target?.parentElement;
     if (!target) return;
+
+    const arenaButton = target.closest('.arena-open-btn, .arena-request-btn');
+    if (arenaButton) {
+        event.stopPropagation();
+        const fileItem = arenaButton.closest('.log-file-item');
+        const preferredTitle = arenaButton.dataset.arenaTitle ? decodeURIComponent(arenaButton.dataset.arenaTitle) : null;
+        const baseTopic = arenaButton.dataset.arenaTopic ? decodeURIComponent(arenaButton.dataset.arenaTopic) : null;
+        const preferredTimestamp = arenaButton.dataset.arenaTimestamp ? decodeURIComponent(arenaButton.dataset.arenaTimestamp) : null;
+        openLogArenaForTopic(fileItem, preferredTitle || baseTopic, preferredTimestamp, !!preferredTitle);
+        return;
+    }
 
     const loadMoreButton = target.closest('.load-more-logs-btn');
     if (loadMoreButton) {
@@ -2909,6 +2949,7 @@ window.addEventListener('DOMContentLoaded', () => {
     elements.logListContainer.appendChild(elements.logGroupsContainer);
     elements.logListContainer.appendChild(elements.loadMoreContainer);
     elements.logListContainer.addEventListener('click', handleContainerClick);
+    if (window.LogArenaUi?.create) logArenaUi = window.LogArenaUi.create({ socket });
 
     socket.on('connect', () => {
         elements.connectionStatus.textContent = 'Connected';

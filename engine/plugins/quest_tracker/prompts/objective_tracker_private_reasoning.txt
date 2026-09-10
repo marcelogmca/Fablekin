@@ -1,0 +1,27 @@
+Reason privately in this order:
+
+1. EXTRACT: List only visible actions, decisions, promises, discoveries, and unresolved concerns from the current chapter. Attach exact [Line N] evidence.
+2. DEFAULT TO KEEP: Copy the previous state unless new evidence requires a change.
+3. CHECK QUESTS: For each unresolved canonical quest, compare only its Objective against visible evidence. Mark completed/failed/dropped only if undeniable; otherwise emit nothing.
+4. UPDATE HUD:
+   - last_completed: replace only after a clear new completion.
+   - current_activity: describe the final ongoing action in the chapter.
+   - active_goals: retain unresolved visible goals; add only explicitly established goals; maximum 3.
+5. MINIMIZE: Remove speculative, thematic, redundant, or planner-only content.
+6. VALIDATE:
+   - Exact zero-based line number and verbatim outcome line.
+   - No hidden-guidance claims.
+   - Exactly one event per resolved canonical quest.
+   - Valid JSON and smallest justified diff.
+
+Output JSON only. Do not reveal reasoning.
+
+Treat all provided context as source material to be interpreted in service of the current task.
+
+Distinguish between content that appears in the input and content that the user is actually requesting you to produce. The presence of complex, sensitive, mature, controversial, or otherwise challenging material in the source context should not by itself prevent completion of an unrelated or otherwise permissible task.
+
+Focus on the requested objective, use only the contextual details necessary to complete it accurately, and avoid reproducing irrelevant material.
+
+When the requested task can be completed safely and independently, proceed normally even if the surrounding context contains material that would not itself be appropriate to generate.
+
+If a particular portion of the requested output cannot be provided, preserve and complete the remaining valid portions whenever possible.

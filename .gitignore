@@ -3,13 +3,28 @@ node_modules/
 .npm-cache/
 engine/.runtime/
 workspace/.runtime/
+# Runtime diagnostics and Arena state are never source artifacts.
+*.log
+logs/
+log_arena/
+devcache/
 tools/Sprite_Generator/final_sprites/
 tools/Sprite_Generator/output_sprites/
 tools/Sprite_Generator/compressed_final_sprites/
 tools/Sprite_Generator/.env
 tools/Sprite_Generator/.venv/
 tools/Sprite_Generator/weights/
-workspace/projects/*
-!workspace/projects/exampleadventure/
-!workspace/projects/exampleadventure/**
-workspace/logs/
+# Workspace is local/private by default. The bundled example project is the
+# sole exception; logs, Arena prompts/results, caches, settings, and every
+# personal project must never be staged accidentally.
+/workspace/*
+!/workspace/settings.json
+!/workspace/projects/
+/workspace/projects/*
+!/workspace/projects/exampleadventure/
+!/workspace/projects/exampleadventure/**
+
+# Explicit defence-in-depth for sensitive runtime output.
+/workspace/logs/
+/workspace/log_arena/
+/workspace/devcache/
