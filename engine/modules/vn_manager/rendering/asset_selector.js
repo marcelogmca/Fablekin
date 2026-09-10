@@ -498,7 +498,7 @@ async function selectBestBackground(turnContext) {
 
   try {
     Logger.log('AssetSelector', 'Background', 'Selecting best background...', 'start');
-    const messages = buildCoreVnLlmMessages(turnContext, prompt);
+    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'none' });
     TurnLogger.logRequest('Select Best Background', messages, CONFIG.BACKGROUND_MODEL, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
@@ -601,7 +601,7 @@ async function selectMetadataDrivenBackground(turnContext, backgrounds, metadata
       .replace('${schemaDesc}', schemaDesc)
       .replace('${project_directives}', projectDirectives);
 
-    const filterMessages = buildCoreVnLlmMessages(turnContext, filterPrompt);
+    const filterMessages = buildCoreVnLlmMessages(turnContext, filterPrompt, { scene: 'none' });
     TurnLogger.logRequest('Smart Background Filters', filterMessages, CONFIG.BACKGROUND_MODEL, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
     const { content: llmFilterResponse, model: resolvedModelFilter } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
@@ -663,7 +663,7 @@ async function selectMetadataDrivenBackground(turnContext, backgrounds, metadata
       .replace('${candidateSummaries}', candidateSummaries)
       .replace('${project_directives}', projectDirectives);
 
-    const selectionMessages = buildCoreVnLlmMessages(turnContext, selectionPrompt);
+    const selectionMessages = buildCoreVnLlmMessages(turnContext, selectionPrompt, { scene: 'none' });
     TurnLogger.logRequest('Smart Background Select', selectionMessages, CONFIG.BACKGROUND_MODEL, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
     const { content: llmSelection, model: resolvedModelSelect } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
@@ -1016,7 +1016,7 @@ async function buildNormalPathOstCategoryChoices(turnContext, sceneDescription, 
   }
 
   try {
-    const messages = buildCoreVnLlmMessages(turnContext, prompt);
+    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'none' });
     TurnLogger.logRequest('OST Category Split (Basic)', messages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.OST_MODEL,
@@ -1177,7 +1177,7 @@ async function selectBestOST(turnContext) {
 
   try {
     Logger.log('AssetSelector', 'OST', 'Selecting best OST...', 'start');
-    const messages = buildCoreVnLlmMessages(turnContext, prompt);
+    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'none' });
     TurnLogger.logRequest('Select Best Ost', messages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.OST_MODEL,
@@ -1308,7 +1308,7 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
       .replace('${schemaDesc}', schemaDesc)
       .replace('${project_directives}', projectDirectives + (diversitySeed ? `\n\nVARIETY NUDGE: ${diversitySeed}` : ""));
 
-    const filterMessages = buildCoreVnLlmMessages(turnContext, filterPrompt);
+    const filterMessages = buildCoreVnLlmMessages(turnContext, filterPrompt, { scene: 'none' });
     TurnLogger.logRequest('Smart OST Filters', filterMessages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
     const { content: llmFilterResponse, model: resolvedModelFilter } = await callLLM({
       model: CONFIG.OST_MODEL,
@@ -1395,7 +1395,7 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
       .replace('${project_directives}', projectDirectives)
       .replace('${recentOSTHistory}', recentHistorySignal);
 
-    const selectionMessages = buildCoreVnLlmMessages(turnContext, selectionPrompt);
+    const selectionMessages = buildCoreVnLlmMessages(turnContext, selectionPrompt, { scene: 'none' });
     TurnLogger.logRequest('Smart OST Select', selectionMessages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
     const { content: llmSelection, model: resolvedModelSelect } = await callLLM({
       model: CONFIG.OST_MODEL,

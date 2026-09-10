@@ -863,19 +863,21 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
             const base = getVnBackgroundAssignment(readSettings());
             return llmResolveModelDefinition(base.definition) || base;
         };
-        const getMessages = (suffix) => buildVnBackgroundMessages(context, suffix);
+        const getMessages = (suffix, options = {}) => buildVnBackgroundMessages(context, suffix, options);
         const buildTask = async (task = {}) => {
             const source = task && typeof task === 'object' ? { ...task } : {};
             if (source.model !== undefined || source.provider !== undefined || source.messages !== undefined) {
                 throw new Error(`tools.llm.vnBackground does not accept model, provider, or messages overrides for plugin '${pluginId}'.`);
             }
             const suffix = source.suffix;
+            const scene = source.scene || 'none';
             delete source.suffix;
+            delete source.scene;
             const assignment = getAssignment();
             await waitForVnBackgroundCacheSlot(context, `plugin:${pluginId}:${source.msg || source.title || 'task'}`);
             return {
                 ...source,
-                messages: getMessages(suffix),
+                messages: getMessages(suffix, { scene }),
                 model: assignment.model,
                 provider: assignment.provider,
                 params: {

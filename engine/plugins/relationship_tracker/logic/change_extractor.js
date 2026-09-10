@@ -45,7 +45,7 @@ async function extractAndStoreRelationshipChanges(turnContext, tools) {
         const prompt = promptTemplate
             .replaceAll('${playerName}', playerName)
             .replace('${currentRelationships}', currentRelationshipsText)
-            .replace('${sceneText}', useSharedModel ? 'Use FINAL WRITER CHAPTER and FINAL PROCESSED DIALOGUE from the shared background context.' : sceneText)
+            .replace('${sceneText}', useSharedModel ? 'Use CURRENT WRITER CHAPTER from the dedicated scene message above.' : sceneText)
             .replace('${scoringGuide}', scoringGuide);
 
         const messages = [{ role: 'user', content: prompt }];
@@ -60,7 +60,7 @@ async function extractAndStoreRelationshipChanges(turnContext, tools) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, suffix: prompt })
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'raw', suffix: prompt })
             : await tools.llm.json({ ...task, messages, model: config.MODEL, provider: config.PROVIDER });
 
         const changeData = response.content;

@@ -30,19 +30,20 @@ function createTurnContext() {
   };
 }
 
-test('background context freezes finalized content and shares an exact prefix', () => {
+test('background context excludes the current scene and shares an exact prefix', () => {
   const turnContext = createTurnContext();
   const shared = initializeVnBackgroundLlmContext(turnContext);
   turnContext.processed.vnManager.processedLines[0].line = 'Changed later.';
 
-  const relationship = buildVnBackgroundMessages(turnContext, 'Extract relationships.');
-  const personality = buildVnBackgroundMessages(turnContext, 'Extract personality changes.');
+  const relationship = buildVnBackgroundMessages(turnContext, 'Extract relationships.', { scene: 'raw' });
+  const objective = buildVnBackgroundMessages(turnContext, 'Extract objectives.', { scene: 'numbered' });
 
   assert.equal(initializeVnBackgroundLlmContext(turnContext), shared);
-  assert.deepEqual(relationship.slice(0, 2), personality.slice(0, 2));
-  assert.match(relationship[1].content, /Mira: Careful\./);
-  assert.doesNotMatch(relationship[1].content, /Changed later/);
-  assert.notEqual(relationship[2].content, personality[2].content);
+  assert.deepEqual(relationship.slice(0, 2), objective.slice(0, 2));
+  assert.doesNotMatch(relationship[1].content, /Ari opens the door|Mira: Careful/);
+  assert.match(relationship[2].content, /Ari opens the door/);
+  assert.match(objective[2].content, /\[Line 0\] Narrator: Changed later\./);
+  assert.notEqual(relationship[3].content, objective[3].content);
 });
 
 test('followers release in two waves without waiting for leader completion', async () => {

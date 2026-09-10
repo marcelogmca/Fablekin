@@ -21,9 +21,31 @@ function buildFinalDialogue(turnContext) {
     ? turnContext.processed.vnManager.processedLines
     : [];
   return lines
-    .map((line, index) => `${index + 1}. ${line?.line || line?.text || ''}`)
-    .filter(line => !/^\d+\.\s*$/.test(line))
+    .map((line, index) => `[Line ${index}] ${line?.character || 'Narrator'}: ${line?.text || line?.line || ''}`)
+    .filter(line => !/^\[Line \d+\]\s+[^:]+:\s*$/.test(line))
     .join('\n');
+}
+
+function buildSceneMessage(turnContext, scene = 'none') {
+  switch (scene) {
+    case 'raw':
+      return `=== CURRENT WRITER CHAPTER ===\n${turnContext?.processed?.narrativeEngine?.writerResponse || '(empty)'}`;
+    case 'numbered':
+      return `=== CURRENT NUMBERED SCENE ===\n${buildFinalDialogue(turnContext) || '(empty)'}`;
+    case 'dialogue': {
+      const dialogue = (turnContext?.processed?.vnManager?.processedLines || [])
+        .filter(line => line?.type === 'dialogue')
+        .map((line, index) => `[Dialogue ${index}] ${line?.character || 'Unknown'}: ${line?.text || line?.line || ''}`)
+        .join('\n');
+      return `=== CURRENT DIALOGUE-ONLY SCENE ===\n${dialogue || '(empty)'}`;
+    }
+    case 'none':
+    case undefined:
+    case null:
+      return '';
+    default:
+      throw new Error(`Unknown VN background scene mode '${scene}'.`);
+  }
 }
 
 function buildBackgroundCapsule(turnContext) {
@@ -53,11 +75,6 @@ ${joinSlot(root.simulation) || '(none)'}
 SELECTED NARRATIVE HISTORY:
 ${joinSlot(root.history) || '(none)'}
 
-FINAL WRITER CHAPTER:
-${turnContext?.processed?.narrativeEngine?.writerResponse || '(empty)'}
-
-FINAL PROCESSED DIALOGUE:
-${buildFinalDialogue(turnContext) || '(empty)'}
 === END SHARED VN BACKGROUND CONTEXT ===`;
 }
 
@@ -128,11 +145,13 @@ function normalizeSuffix(suffix) {
   throw new Error('VN background LLM calls require a non-empty suffix.');
 }
 
-function buildVnBackgroundMessages(turnContext, suffix) {
+function buildVnBackgroundMessages(turnContext, suffix, options = {}) {
   const shared = initializeVnBackgroundLlmContext(turnContext);
   if (!shared) throw new Error('VN background context is unavailable.');
+  const sceneMessage = buildSceneMessage(turnContext, options.scene || 'none');
   return [
     ...shared.messages.map(message => ({ ...message })),
+    ...(sceneMessage ? [{ role: 'user', content: sceneMessage }] : []),
     ...normalizeSuffix(suffix)
   ];
 }
@@ -207,6 +226,7 @@ module.exports = {
   _private: {
     buildBackgroundCapsule,
     buildFinalDialogue,
+    buildSceneMessage,
     normalizeSuffix
   }
 };

@@ -7,16 +7,36 @@ Use the final task message to determine your specific responsibility and output 
 function formatDialogueScript(lines) {
   return lines
     .filter(line => line?.type === 'dialogue')
-    .map((line, index) => `${index + 1}. ${line.character || 'Unknown'}: ${line.text || line.line || ''}`)
+    .map((line, index) => `[Dialogue ${index}] ${line.character || 'Unknown'}: ${line.text || line.line || ''}`)
     .join('\n');
 }
 
-function buildSceneCapsule(turnContext) {
+function formatNumberedScene(lines) {
+  return lines
+    .map((line, index) => `[Line ${index}] ${line?.character || 'Narrator'}: ${line?.text || line?.line || ''}`)
+    .filter(line => !/^\[Line \d+\]\s+[^:]+:\s*$/.test(line))
+    .join('\n');
+}
+
+function buildSceneMessage(turnContext, scene = 'none') {
   const lines = Array.isArray(turnContext?.processed?.vnManager?.processedLines)
     ? turnContext.processed.vnManager.processedLines
     : [];
+  if (scene === 'raw') {
+    return `=== CURRENT WRITER CHAPTER ===\n${turnContext?.processed?.narrativeEngine?.writerResponse || '(empty)'}`;
+  }
+  if (scene === 'numbered') {
+    return `=== CURRENT NUMBERED SCENE ===\n${formatNumberedScene(lines) || '(empty)'}`;
+  }
+  if (scene === 'dialogue') {
+    return `=== CURRENT DIALOGUE-ONLY SCENE ===\n${formatDialogueScript(lines) || '(empty)'}`;
+  }
+  if (scene === 'none' || scene === undefined || scene === null) return '';
+  throw new Error(`Unknown core VN scene mode '${scene}'.`);
+}
+
+function buildSceneCapsule(turnContext) {
   const userPrompt = turnContext?.input?.userPrompt || '';
-  const writerChapter = turnContext?.processed?.narrativeEngine?.writerResponse || '';
   const playerName = turnContext?.input?.playerCharacterName || 'Player';
 
   return `=== SHARED VN SCENE CAPSULE ===
@@ -26,11 +46,6 @@ ${playerName}
 CURRENT USER INPUT:
 ${userPrompt || '(none)'}
 
-CURRENT WRITER CHAPTER:
-${writerChapter || '(empty)'}
-
-DIALOGUE-ONLY INDEX OF THE SAME CHAPTER:
-${formatDialogueScript(lines) || '(empty)'}
 === END SHARED VN SCENE CAPSULE ===`;
 }
 
@@ -71,9 +86,11 @@ function getCoreVnSharedLlmMessages(turnContext) {
   ];
 }
 
-function buildCoreVnLlmMessages(turnContext, taskPrompt) {
+function buildCoreVnLlmMessages(turnContext, taskPrompt, options = {}) {
+  const sceneMessage = buildSceneMessage(turnContext, options.scene || 'none');
   return [
     ...getCoreVnSharedLlmMessages(turnContext),
+    ...(sceneMessage ? [{ role: 'user', content: sceneMessage }] : []),
     { role: 'user', content: String(taskPrompt || '') }
   ];
 }
@@ -84,6 +101,8 @@ module.exports = {
   initializeCoreVnSharedLlmContext,
   _private: {
     buildSceneCapsule,
-    formatDialogueScript
+    buildSceneMessage,
+    formatDialogueScript,
+    formatNumberedScene
   }
 };

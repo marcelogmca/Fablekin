@@ -95,7 +95,7 @@ async function consolidateMultipleRelationships(tools, projectName, pairs) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, suffix: prompt })
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'none', suffix: prompt })
             : await tools.llm.json({ ...task, messages, model, provider });
 
         const results = response.content;

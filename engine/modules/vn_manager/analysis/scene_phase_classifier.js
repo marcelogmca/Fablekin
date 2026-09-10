@@ -404,7 +404,7 @@ function buildPrompt(turnContext, registeredCapabilities, historyContext) {
     .replace('${writer_brief}', writerBrief)
     .replace(
       '${chapter_text}',
-      chapterText ? 'Use CURRENT WRITER CHAPTER from the shared VN scene capsule above.' : 'No chapter text.'
+      chapterText ? 'Use CURRENT WRITER CHAPTER from the dedicated scene message above.' : 'No chapter text.'
     );
 
   return template;
@@ -712,7 +712,7 @@ async function classifyScenePhaseHandoff(turnContext) {
   try {
     const historyContext = await buildHistoryContext(turnContext);
     const prompt = buildPrompt(turnContext, registeredCapabilities, historyContext);
-    const messages = buildCoreVnLlmMessages(turnContext, prompt);
+    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'raw' });
 
     Logger.log('ScenePhaseClassifier', 'Request', `Classifying handoff with ${registeredCapabilities.length} registered capabilities...`, 'start');
     TurnLogger.logRequest('Scene Phase Classifier', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);

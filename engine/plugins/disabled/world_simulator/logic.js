@@ -546,7 +546,7 @@ async function processSimulation(turnContext, tools, rawSettings = {}) {
             callingModule: 'Plugin:world_simulator'
         };
         const response = tools.llm.vnBackground?.isSelected?.(modelDef) === true
-            ? await tools.llm.vnBackground.json({ ...task, suffix: messages })
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'none', suffix: messages })
             : await tools.llm.json({ ...task, messages, model, provider });
 
         const normalized = normalizeLlmResult(response?.content);

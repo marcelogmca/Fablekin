@@ -445,7 +445,7 @@ async function extractAndStoreBatchPersonalityChanges(turnContext, tools, target
         const promptTemplate = await fs.readFile(promptPath, 'utf-8');
         const useSharedModel = tools.llm.vnBackground?.isSelected?.(modelDef) === true;
         const prompt = preparePrompt(tools, promptTemplate, {
-            '${sceneText}': useSharedModel ? 'Use FINAL WRITER CHAPTER from the shared background context.' : sceneText,
+            '${sceneText}': useSharedModel ? 'Use CURRENT WRITER CHAPTER from the dedicated scene message above.' : sceneText,
             '${characters}': majorCharacters.join(', ')
         });
 
@@ -462,7 +462,7 @@ async function extractAndStoreBatchPersonalityChanges(turnContext, tools, target
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, suffix: prompt })
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'raw', suffix: prompt })
             : await tools.llm.json({ ...task, messages, model: config.MODEL, provider: config.PROVIDER });
         tools.logger.log('BatchExtraction', 'PersonalityChangeExtractor response received.', 'end');
 
@@ -665,7 +665,7 @@ async function consolidatePersonalityHistory(tools, projectName, characters) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, suffix: prompt })
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'none', suffix: prompt })
             : await tools.llm.json({ ...task, messages, model, provider });
 
         const results = response.content;

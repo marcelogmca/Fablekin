@@ -204,7 +204,8 @@ async function generateSynopsis(turnContext, contentToSummarize, options = {}) {
     const messages = includeUserPrompt
         ? buildCoreVnLlmMessages(
             turnContext,
-            `${synopsisPrompt}\n\nGenerate the synopsis from CURRENT WRITER CHAPTER in the shared VN scene capsule. Use CURRENT USER INPUT only as context.`
+            `${synopsisPrompt}\n\nGenerate the synopsis from CURRENT WRITER CHAPTER in the dedicated scene message above. Use CURRENT USER INPUT only as context.`,
+            { scene: 'raw' }
         )
         : [
             { role: 'system', content: synopsisPrompt },

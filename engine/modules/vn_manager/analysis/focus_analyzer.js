@@ -39,9 +39,9 @@ async function identifyFocusInstructions(turnContext) {
     const projectDirectives = turnContext.getFormattedDirective('focus_analyzer', { header: '=== PROJECT DIRECTIVES ===' });
     
     focusPrompt = focusPrompt
-      .replace('{{dialogues}}', 'Use the DIALOGUE-ONLY INDEX from the shared VN scene capsule above')
+      .replace('{{dialogues}}', 'Use the CURRENT DIALOGUE-ONLY SCENE message above')
       .replace('${project_directives}', projectDirectives);
-    const messages = buildCoreVnLlmMessages(turnContext, focusPrompt);
+    const messages = buildCoreVnLlmMessages(turnContext, focusPrompt, { scene: 'dialogue' });
 
     Logger.log('FocusAnalyzer', 'Request', `Identifying gaze for ${dialogueLines.length} lines...`, 'start');
     TurnLogger.logRequest('Gaze Director', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);

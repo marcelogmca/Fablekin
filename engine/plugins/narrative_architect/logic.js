@@ -251,7 +251,7 @@ async function extractContextTags(turnContext, tools, settings, seriesList = [])
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.withSchema({ ...task, suffix: systemPrompt }, schema)
+            ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'none', suffix: systemPrompt }, schema)
             : await tools.llm.withSchema({ ...task, messages, model: resolvedModelDef.model, provider: resolvedModelDef.provider }, schema);
 
         const extractedData = response.content || {};

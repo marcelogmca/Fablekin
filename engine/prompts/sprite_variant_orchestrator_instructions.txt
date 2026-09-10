@@ -44,7 +44,7 @@ ${project_directives}
 {{lastVariants}}
 
 === TURN 1 INTRO / PROLOGUE OUTFIT BASELINE ===
-This section is populated only on Turn 1. Use explicit attire and end-of-prologue circumstances to choose the scene-starting variant. The CURRENT WRITER CHAPTER remains authoritative if it changes or contradicts the Intro. Do not invent clothing details that neither source supports.
+This section is populated only on Turn 1. Use explicit attire and end-of-prologue circumstances to choose the scene-starting variant. The CURRENT NUMBERED SCENE remains authoritative if it changes or contradicts the Intro. Do not invent clothing details that neither source supports.
 {{turnOneIntro}}
 
 === CHAPTER TEXT (NUMBERED DIALOGUE LINES) ===

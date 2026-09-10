@@ -1521,7 +1521,7 @@ async function updateQuestTracker(turnContext, tools, settingsOverride = null) {
         canonicalQuests,
         compressedHistory: useSharedModel ? 'Use SELECTED NARRATIVE HISTORY from the shared background context.' : getCompressedHistory(turnContext, historyPreset),
         currentUserPrompt: useSharedModel ? 'Use CURRENT USER INPUT from the shared background context.' : normalizeWhitespace(turnContext?.input?.userPrompt || ''),
-        currentScript: useSharedModel ? 'Use FINAL PROCESSED DIALOGUE from the shared background context.' : buildNumberedScript(turnContext),
+        currentScript: useSharedModel ? 'Use CURRENT NUMBERED SCENE from the dedicated scene message above.' : buildNumberedScript(turnContext),
         maxActiveGoals
     });
     const resolvedModelDef = tools.llm.resolveModelDefinition?.(modelDef) || modelDef;
@@ -1534,7 +1534,7 @@ async function updateQuestTracker(turnContext, tools, settingsOverride = null) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.withSchema({ ...task, suffix: prompt }, isPlausibleRawState)
+            ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'numbered', suffix: prompt }, isPlausibleRawState)
             : await tools.llm.withSchema({
                 ...task,
                 messages: [{ role: 'user', content: prompt }],

@@ -24,7 +24,7 @@ function createTurnContext() {
   };
 }
 
-test('shared VN context remains immutable after initialization', () => {
+test('shared VN context excludes the current scene', () => {
   const turnContext = createTurnContext();
   const first = initializeCoreVnSharedLlmContext(turnContext);
 
@@ -32,16 +32,17 @@ test('shared VN context remains immutable after initialization', () => {
   const second = initializeCoreVnSharedLlmContext(turnContext);
 
   assert.equal(second, first);
-  assert.match(second.sceneCapsule, /Mira: Careful\./);
-  assert.doesNotMatch(second.sceneCapsule, /Changed later/);
+  assert.doesNotMatch(second.sceneCapsule, /Mira: Careful|Changed later|Ari opens the door/);
   assert.equal(second.prefixHash.length, 16);
 });
 
-test('core VN messages share an exact two-message prefix', () => {
+test('core VN callers explicitly select a current-scene representation', () => {
   const turnContext = createTurnContext();
-  const gazeMessages = buildCoreVnLlmMessages(turnContext, 'Generate gaze directions.');
-  const emotionMessages = buildCoreVnLlmMessages(turnContext, 'Classify emotions.');
+  const gazeMessages = buildCoreVnLlmMessages(turnContext, 'Generate gaze directions.', { scene: 'dialogue' });
+  const phaseMessages = buildCoreVnLlmMessages(turnContext, 'Classify phase.', { scene: 'raw' });
 
-  assert.deepEqual(gazeMessages.slice(0, 2), emotionMessages.slice(0, 2));
-  assert.notEqual(gazeMessages[2].content, emotionMessages[2].content);
+  assert.deepEqual(gazeMessages.slice(0, 2), phaseMessages.slice(0, 2));
+  assert.match(gazeMessages[2].content, /\[Dialogue 0\] Mira: Careful\./);
+  assert.match(phaseMessages[2].content, /Ari opens the door\./);
+  assert.notEqual(gazeMessages[3].content, phaseMessages[3].content);
 });

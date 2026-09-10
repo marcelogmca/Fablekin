@@ -627,7 +627,7 @@ async function runClassifier(turnContext, tools, settings, previousState, pressu
     };
 
     const response = useSharedModel
-        ? await tools.llm.vnBackground.withSchema({ ...task, suffix: prompt }, isPlausibleClassification)
+        ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'none', suffix: prompt }, isPlausibleClassification)
         : await tools.llm.withSchema({
             ...task,
             messages: [{ role: 'user', content: prompt }],

@@ -408,10 +408,10 @@ async function orchestrateSpriteVariants(turnContext, spriteCatalog = null) {
       .replace('{{charactersAndVariants}}', buildCharactersAndVariantsBlock(sceneEntries))
       .replace('{{lastVariants}}', buildLastVariantsBlock(sceneEntries, lastVariantsByCharacter))
       .replace('{{turnOneIntro}}', getTurnOneIntroContext(turnContext))
-      .replace('{{dialogues}}', 'Use the DIALOGUE-ONLY INDEX from the shared VN scene capsule above')
+      .replace('{{dialogues}}', 'Use the CURRENT NUMBERED SCENE message above')
       .replace('{{worldState}}', getWorldStateHint(turnContext))
       .replace('${project_directives}', turnContext.getFormattedDirective('sprite_variant_orchestrator', { header: '=== PROJECT DIRECTIVES ===' }));
-    const messages = buildCoreVnLlmMessages(turnContext, prompt);
+    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'numbered' });
 
     Logger.log('SpriteVariantOrchestrator', 'Request', `Analyzing ${sceneEntries.length} variant-aware characters...`, 'start');
     TurnLogger.logRequest('Sprite Variant Orchestrator', messages, CONFIG.MODEL, CONFIG.PROVIDER);

@@ -1231,7 +1231,7 @@ async function classifyCleanupCandidate(tools, candidate) {
         }
     };
     const response = tools.llm.vnBackground?.isSelected?.(modelDef) === true
-        ? await tools.llm.vnBackground.json({ ...task, suffix: prompt })
+        ? await tools.llm.vnBackground.json({ ...task, scene: 'none', suffix: prompt })
         : await tools.llm.json({ ...task, messages, model: resolvedModelDef.model, provider: resolvedModelDef.provider });
 
     const parsed = parseJsonObject(response.content) || {};

@@ -362,7 +362,7 @@ async function updateCharacterSheet(turnContext, tools, characterName) {
         }
     };
     const response = useSharedModel
-        ? await tools.llm.vnBackground.call({ ...task, suffix: `${finalPrompt}\n\nCURRENT CHARACTER SHEET:\n${currentText}\n\nTASK:\nUpdate ${characterName}'s mutable layers using the shared narrative context. Use SEARCH/REPLACE patches only.` })
+        ? await tools.llm.vnBackground.call({ ...task, scene: 'raw', suffix: `${finalPrompt}\n\nCURRENT CHARACTER SHEET:\n${currentText}\n\nTASK:\nUpdate ${characterName}'s mutable layers using the shared narrative context. Use SEARCH/REPLACE patches only.` })
         : await tools.llm.runTask({ ...task, messages, model: modelDef.model, provider: modelDef.provider });
 
     if (!response.content || !response.content.includes('<<<<<<< SEARCH')) {
@@ -519,8 +519,9 @@ async function updateLightCapsulesBatch(turnContext, tools, windowSize = 5) {
         ? await tools.llm.vnBackground.json({
             msg: 'Batch Capsule Update',
             suffix: chapters
-                ? prompt.replace(chapters, 'Use SELECTED NARRATIVE HISTORY and FINAL WRITER CHAPTER from the shared background context.')
+                ? prompt.replace(chapters, 'Use SELECTED NARRATIVE HISTORY and CURRENT WRITER CHAPTER from the dedicated scene message above.')
                 : prompt,
+            scene: chapters ? 'raw' : 'none',
             callingModule: 'Plugin:character_sheets:batch_evolution'
         })
         : await tools.llm.json({
