@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { relativizeAssetPath, readSettings } = require('../../modules/utils.js');
 const { resolveTurnStorageKey, resolveBaseTurnNumber } = require('../../modules/turn_storage_key.js');
+const { formatIndexedScene } = require('../../modules/vn_manager/scene_prompt_formatter.js');
 const biomeNavigation = require('./biome_navigation.js');
 const navigationCopilot = require('./navigation_copilot.js');
 const destinationGrounding = require('./destination_grounding.js');
@@ -3688,9 +3689,7 @@ class LocationTrackerLogic {
 
     buildNumberedScript(turnContext) {
         const processedLines = turnContext?.processed?.vnManager?.processedLines || [];
-        return processedLines
-            .map((line, index) => `[Line ${index}] ${line.character || 'Narrator'}: ${line.text || line.line || ''}`)
-            .join('\n');
+        return formatIndexedScene(processedLines);
     }
 
     formatBackgroundChangeHints(turnContext) {
@@ -3703,7 +3702,7 @@ class LocationTrackerLogic {
             .map(change => {
                 const line = Number.isInteger(change.line) ? change.line : 0;
                 const bgPath = change.path || '';
-                return `Line ${line}: ${path.basename(bgPath) || bgPath || 'unknown background'}`;
+                return `${line}. ${path.basename(bgPath) || bgPath || 'unknown background'}`;
             })
             .join('\n');
     }

@@ -75,6 +75,9 @@ Each wrapper also supports a `voices/` directory beside its own `tts_api.py`. Du
 
 ## Option A: IndexTTS2
 
+The [IndexTTS bridge guide](IndexTTS2/README.md) covers both IndexTTS 2 and 2.5,
+reference conditioning reuse, and automatic GPU release after generation.
+
 1. Install [IndexTTS2 from its official repository](https://github.com/index-tts/index-tts) and verify its own inference example works.
 2. Copy these files into the upstream `index-tts/` directory:
    - [`IndexTTS2/tts_api.py`](IndexTTS2/tts_api.py)
@@ -162,7 +165,7 @@ Dehya_happy.wav
 Dehya_sad.wav
 ```
 
-The unsuffixed file is required as the base character voice. Fablekin discovers mood suffixes from the available files and constrains classification to moods that actually exist. If `Dehya_angry.wav` is requested but unavailable, the wrapper falls back to `Dehya.wav` rather than failing the line.
+The unsuffixed file is required as the base character voice. Fablekin discovers mood suffixes from the available files and constrains classification to moods that actually exist. You can also add a shared reference such as `emotion_angry.wav`; its reserved `emotion_` prefix means it applies to every character and is never treated as a voice for a character named "emotion" or "angry". The wrapper prefers `Dehya_angry.wav`, then `emotion_angry.wav`, then `Dehya.wav` rather than failing the line.
 
 High-quality, well-matched emotional samples can produce much more convincing changes in tone than asking one neutral reference to carry every scene.
 
@@ -198,7 +201,14 @@ Normal Fablekin use does not require sending requests manually.
 
 ## Performance
 
-Both launchers default to `--parallel 1`. Local TTS inference can consume substantial VRAM, and higher parallelism may exhaust it even on high-end GPUs. Increase concurrency only after measuring one complete scene on the target hardware.
+Both launchers default to `--parallel 1`. The IndexTTS bridge requires one inference
+worker to protect mutable model state and preserve dialogue order. It caches
+speaker and emotion conditioning separately (32 entries / 256 MiB by default),
+then stops the worker after five idle seconds to release its RAM and VRAM.
+The next batch reloads the model, adding latency to its first clip. Set
+`--idle-unload-seconds -1` to keep it loaded, or `0` to release immediately.
+Spark-TTS concurrency should only be increased after measuring a complete scene
+on the target hardware.
 
 The wrappers process batches asynchronously from Fablekin's point of view, but individual inference work is deliberately conservative. Generation speed depends on model, GPU, reference duration, line length, and selected parallelism.
 

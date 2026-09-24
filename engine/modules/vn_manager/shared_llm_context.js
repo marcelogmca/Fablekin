@@ -1,35 +1,24 @@
 const crypto = require('crypto');
+const {
+  formatIndexedDialogueWithNarrative,
+  formatIndexedScene,
+  getProcessedSceneLines
+} = require('./scene_prompt_formatter.js');
 
 const CORE_VN_SHARED_SYSTEM_PROMPT = `You are a specialist in a visual-novel post-processing pipeline.
 The next message is an immutable shared scene capsule. Treat it as authoritative scene context.
 Use the final task message to determine your specific responsibility and output format.`;
 
-function formatDialogueScript(lines) {
-  return lines
-    .filter(line => line?.type === 'dialogue')
-    .map((line, index) => `[Dialogue ${index}] ${line.character || 'Unknown'}: ${line.text || line.line || ''}`)
-    .join('\n');
-}
-
-function formatNumberedScene(lines) {
-  return lines
-    .map((line, index) => `[Line ${index}] ${line?.character || 'Narrator'}: ${line?.text || line?.line || ''}`)
-    .filter(line => !/^\[Line \d+\]\s+[^:]+:\s*$/.test(line))
-    .join('\n');
-}
-
 function buildSceneMessage(turnContext, scene = 'none') {
-  const lines = Array.isArray(turnContext?.processed?.vnManager?.processedLines)
-    ? turnContext.processed.vnManager.processedLines
-    : [];
+  const lines = getProcessedSceneLines(turnContext);
   if (scene === 'raw') {
     return `=== CURRENT WRITER CHAPTER ===\n${turnContext?.processed?.narrativeEngine?.writerResponse || '(empty)'}`;
   }
-  if (scene === 'numbered') {
-    return `=== CURRENT NUMBERED SCENE ===\n${formatNumberedScene(lines) || '(empty)'}`;
+  if (scene === 'indexedScene' || scene === 'numbered') {
+    return `=== CURRENT INDEXED SCENE ===\n${formatIndexedScene(lines) || '(empty)'}`;
   }
-  if (scene === 'dialogue') {
-    return `=== CURRENT DIALOGUE-ONLY SCENE ===\n${formatDialogueScript(lines) || '(empty)'}`;
+  if (scene === 'indexedDialogueWithNarrative' || scene === 'dialogue') {
+    return `=== CURRENT NARRATIVE-ASSISTED INDEXED DIALOGUE ===\n${formatIndexedDialogueWithNarrative(lines) || '(empty)'}`;
   }
   if (scene === 'none' || scene === undefined || scene === null) return '';
   throw new Error(`Unknown core VN scene mode '${scene}'.`);
@@ -102,7 +91,7 @@ module.exports = {
   _private: {
     buildSceneCapsule,
     buildSceneMessage,
-    formatDialogueScript,
-    formatNumberedScene
+    formatIndexedDialogueWithNarrative,
+    formatIndexedScene
   }
 };

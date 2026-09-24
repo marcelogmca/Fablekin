@@ -54,6 +54,7 @@ function applyUiLock(active) {
 function snapshotAudioState() {
     const ostPlayer = elements.audioPlayer;
     const voicePlayer = elements.voicePlayer;
+    const voicePlayerSecondary = elements.voicePlayerSecondary;
 
     return {
         ost: {
@@ -66,6 +67,11 @@ function snapshotAudioState() {
             currentTime: Number.isFinite(voicePlayer?.currentTime) ? voicePlayer.currentTime : 0,
             wasPlaying: !!(voicePlayer && !voicePlayer.paused),
             talkingCharacter: state.currentTalkingCharacter || null
+        },
+        voiceSecondary: {
+            src: voicePlayerSecondary?.src || '',
+            currentTime: Number.isFinite(voicePlayerSecondary?.currentTime) ? voicePlayerSecondary.currentTime : 0,
+            wasPlaying: !!(voicePlayerSecondary && !voicePlayerSecondary.paused)
         }
     };
 }
@@ -76,6 +82,9 @@ function pauseAudioSystem(snapshot) {
     }
     if (elements.voicePlayer && snapshot?.voice?.wasPlaying) {
         elements.voicePlayer.pause();
+    }
+    if (elements.voicePlayerSecondary && snapshot?.voiceSecondary?.wasPlaying) {
+        elements.voicePlayerSecondary.pause();
     }
     state.isAudioPlaying = false;
     state.currentTalkingCharacter = null;
@@ -101,6 +110,7 @@ function restoreAudioSystem(snapshot) {
 
     const ostPlayer = elements.audioPlayer;
     const voicePlayer = elements.voicePlayer;
+    const voicePlayerSecondary = elements.voicePlayerSecondary;
 
     if (
         snapshot.ost?.wasPlaying &&
@@ -122,14 +132,15 @@ function restoreAudioSystem(snapshot) {
         });
     }
 
-    if (
+    const resumePrimaryVoice = (
         snapshot.voice?.wasPlaying &&
         voicePlayer &&
         snapshot.voice.src &&
         voicePlayer.src === snapshot.voice.src &&
         voicePlayer.paused &&
         !state.pendingVoiceResume
-    ) {
+    );
+    if (resumePrimaryVoice) {
         try {
             if (Number.isFinite(snapshot.voice.currentTime) && snapshot.voice.currentTime > 0) {
                 voicePlayer.currentTime = snapshot.voice.currentTime;
@@ -145,11 +156,36 @@ function restoreAudioSystem(snapshot) {
             state.isAudioPlaying = false;
             state.currentTalkingCharacter = null;
         });
-        return;
     }
 
-    state.isAudioPlaying = false;
-    state.currentTalkingCharacter = null;
+    const resumeSecondaryVoice = (
+        snapshot.voiceSecondary?.wasPlaying &&
+        voicePlayerSecondary &&
+        snapshot.voiceSecondary.src &&
+        voicePlayerSecondary.src === snapshot.voiceSecondary.src &&
+        voicePlayerSecondary.paused &&
+        !state.pendingVoiceResume
+    );
+    if (resumeSecondaryVoice) {
+        try {
+            if (Number.isFinite(snapshot.voiceSecondary.currentTime) && snapshot.voiceSecondary.currentTime > 0) {
+                voicePlayerSecondary.currentTime = snapshot.voiceSecondary.currentTime;
+            }
+        } catch {
+            // Some browsers reject currentTime writes while metadata is not ready.
+        }
+        voicePlayerSecondary.play().then(() => {
+            state.isAudioPlaying = true;
+            state.currentTalkingCharacter = snapshot.voice?.talkingCharacter || null;
+        }).catch((error) => {
+            debugError('[Intercept][Pixi] Failed to resume secondary voice after takeover', error);
+        });
+    }
+
+    if (!resumePrimaryVoice && !resumeSecondaryVoice) {
+        state.isAudioPlaying = false;
+        state.currentTalkingCharacter = null;
+    }
 }
 
 function removePluginLayer() {

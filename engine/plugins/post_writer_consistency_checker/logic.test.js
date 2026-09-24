@@ -181,6 +181,236 @@ test('patches may convert a small number of dialogue lines to narration', () => 
   assert.strictEqual(lines[1].line, 'Storm far away, thunder rolls.');
 });
 
+test('HQ settings default to disabled with quality model and limits', () => {
+  const settings = logic.resolveSettings({});
+
+  assert.equal(settings.hq_multipass_enabled, false);
+  assert.equal(settings.hq_quality_model_def.model, 'lowendmodel');
+  assert.equal(settings.hq_corrector_max_tokens, 2000);
+  assert.equal(settings.hq_max_flags_per_agent, 4);
+  assert.equal(settings.hq_history_count, 10);
+  assert.equal(settings.hq_concurrency, 6);
+});
+
+test('HQ settings preserve explicit multipass values', () => {
+  const settings = logic.resolveSettings({
+    hq_multipass_enabled: true,
+    hq_quality_model_def: { model: 'mediumendmodel' },
+    hq_corrector_max_tokens: 1500,
+    hq_max_flags_per_agent: 2,
+    hq_history_count: 5,
+    hq_concurrency: 3
+  });
+
+  assert.equal(settings.hq_multipass_enabled, true);
+  assert.equal(settings.hq_quality_model_def.model, 'mediumendmodel');
+  assert.equal(settings.hq_corrector_max_tokens, 1500);
+  assert.equal(settings.hq_max_flags_per_agent, 2);
+  assert.equal(settings.hq_history_count, 5);
+  assert.equal(settings.hq_concurrency, 3);
+});
+
+test('compressed flag messages exclude the full Writer prompt', () => {
+  const messages = logic.buildCompressedFlagMessages('Category rules.', {
+    dialogueText: 'Aether: We move at dawn.',
+    historyText: 'Chapter 1 [SUMMARY]: They met.',
+    activeCharacters: ['Aether'],
+    characterGenders: {},
+    worldStateSummary: ''
+  }, {});
+
+  assert.equal(messages.length, 1);
+  const content = messages[0].content;
+  assert.match(content, /Category rules\./);
+  assert.match(content, /<draft_to_validate>/);
+  assert.match(content, /Aether: We move at dawn\./);
+  assert.match(content, /<compact_history>/);
+  assert.match(content, /They met\./);
+  assert.ok(!content.includes('Writer system prompt'));
+});
+
+test('flag findings parse JSON arrays and cap per-agent counts', () => {
+  const content = JSON.stringify([
+    { quote: 'a', reason: 'r1', rewrite_hint: 'h1' },
+    { quote: 'b', reason: 'r2', rewrite_hint: 'h2' },
+    { quote: '', reason: 'r3', rewrite_hint: 'h3' },
+    { quote: 'c', reason: 'r4' }
+  ]);
+
+  const findings = logic.parseFlagFindings(content, 'cat1_banned_phrases', 2);
+
+  assert.equal(findings.length, 2);
+  assert.equal(findings[0].category, 'cat1_banned_phrases');
+  assert.equal(findings[0].quote, 'a');
+  assert.deepEqual(logic.parseFlagFindings('not json at all', 'cat1_banned_phrases', 4), []);
+  assert.deepEqual(logic.parseFlagFindings('[]', 'cat1_banned_phrases', 4), []);
+  assert.deepEqual(logic.parseFlagFindings('', 'cat1_banned_phrases', 4), []);
+});
+
+test('corrector messages carry findings and the tagged draft after the Writer context', () => {
+  const writerMessages = [
+    { role: 'system', content: 'Writer system prompt.' },
+    { role: 'user', content: 'Write the next scene.' }
+  ];
+  const lines = [dialogue('Aether', 'We should go.')];
+  const turnContext = {
+    processed: {
+      promptBuilder: { messages: writerMessages },
+      narrativeEngine: { writerResponse: 'Aether: We should go.' },
+      vnManager: { processedLines: lines },
+      dialogueProcessor: { dialogue: logic.buildScriptFromLines(lines) }
+    }
+  };
+  const findings = [{
+    key: 'consistency',
+    label: 'Consistency',
+    findings: [{ quote: 'Aether: We should go.', reason: 'Wrong direction.', rewrite_hint: 'Change to stay.' }]
+  }];
+
+  const messages = logic.buildCorrectorMessages(turnContext, 'Fix it.', findings, {});
+
+  assert.deepStrictEqual(messages.slice(0, 2), writerMessages);
+  assert.equal(messages[2].role, 'assistant');
+  const review = messages[3].content;
+  assert.match(review, /^Fix it\./);
+  assert.match(review, /<flagged_findings>/);
+  assert.match(review, /Wrong direction\./);
+  assert.match(review, /<draft_to_validate>/);
+});
+
+function makeHqTurnContext(lines) {
+  return {
+    processed: {
+      promptBuilder: { messages: [{ role: 'user', content: 'Write.' }] },
+      narrativeEngine: { writerResponse: 'Aether keeps polishing his sword.\nAether: I used to be a warrior, all I knew was duty, but now I feel free.' },
+      vnManager: { processedLines: lines },
+      dialogueProcessor: { dialogue: logic.buildScriptFromLines(lines) }
+    },
+    async getFormattedHistory() {
+      return 'Chapter 1 [SUMMARY]: Prior events.';
+    }
+  };
+}
+
+function hqTwoLineContext() {
+  const lines = [
+    dialogue('Aether', 'We ride at dawn.'),
+    dialogue('Aether', 'I used to be a warrior, all I knew was rigidity and duty, but now I feel free.')
+  ];
+  return { lines, turnContext: makeHqTurnContext(lines) };
+}
+
+const HQ_FLAGGED_LINE = 'Aether: I used to be a warrior, all I knew was rigidity and duty, but now I feel free.';
+const HQ_FIXED_LINE = 'Aether: I used to be a warrior, all I knew was rigidity and duty, but now I choose my own road.';
+
+function makeHqTools(state, calls, { withBatch = true, failFlag = null, correctorPatch = true } = {}) {
+  const tools = {
+    settings: { getSelf: () => ({ hq_multipass_enabled: true }) },
+    llm: {
+      getPluginModel: () => null,
+      getCoreModel: () => null,
+      runTask: async (task) => {
+        calls.push(task.msg);
+        if (task.msg.startsWith('Post Writer HQ Flag')) {
+          if (failFlag && task.msg.includes(failFlag)) {
+            throw new Error(`flag agent boom: ${failFlag}`);
+          }
+          if (task.msg.includes('Banned')) {
+            return {
+              content: JSON.stringify([{
+                quote: HQ_FLAGGED_LINE,
+                reason: 'Identity-reset monologue.',
+                rewrite_hint: 'Show the change through action instead.'
+              }])
+            };
+          }
+          return { content: '[]' };
+        }
+        if (!correctorPatch) return { content: 'No corrections needed.' };
+        return {
+          content: [
+            '<<<<<<< SEARCH',
+            HQ_FLAGGED_LINE,
+            '=======',
+            HQ_FIXED_LINE,
+            '>>>>>>> REPLACE'
+          ].join('\n')
+        };
+      }
+    },
+    logger: { log: () => {}, runtime: () => {} },
+    pluginState: { turn: () => state }
+  };
+  if (withBatch) {
+    tools.llm.batch = async (items, factory) => {
+      const results = [];
+      for (let i = 0; i < items.length; i++) {
+        const task = await factory(items[i], i, items);
+        try {
+          results.push({ status: 'fulfilled', value: await tools.llm.runTask(task), index: i });
+        } catch (error) {
+          results.push({ status: 'rejected', reason: error, index: i });
+        }
+      }
+      return results;
+    };
+  }
+  return tools;
+}
+
+test('HQ check fans out to 6 flaggers then corrects with patches', async () => {
+  const { lines, turnContext } = hqTwoLineContext();
+  const calls = [];
+  const state = {};
+  const tools = makeHqTools(state, calls, { withBatch: true });
+
+  const stats = await logic.runHqCheck(turnContext, tools);
+
+  assert.equal(stats.mode, 'hq');
+  assert.equal(stats.acceptedCount, 1);
+  assert.equal(stats.flagCount, 1);
+  assert.equal(stats.perAgent.length, 6);
+  const flagCalls = calls.filter(msg => msg.startsWith('Post Writer HQ Flag'));
+  assert.equal(flagCalls.length, 6);
+  assert.ok(calls.includes('Post Writer HQ Corrector'));
+  assert.match(lines[1].line, /choose my own road/);
+  assert.ok(Array.isArray(state.hqFindings));
+  assert.equal(state.hqFindings.length, 6);
+  const banned = state.hqFindings.find(agent => agent.key === 'cat1_banned_phrases');
+  assert.equal(banned.findings.length, 1);
+});
+
+test('HQ check works without tools.llm.batch via the settled fallback', async () => {
+  const { lines, turnContext } = hqTwoLineContext();
+  const calls = [];
+  const state = {};
+  const tools = makeHqTools(state, calls, { withBatch: false });
+
+  const stats = await logic.runHqCheck(turnContext, tools);
+
+  assert.equal(stats.mode, 'hq');
+  assert.equal(stats.acceptedCount, 1);
+  assert.equal(calls.filter(msg => msg.startsWith('Post Writer HQ Flag')).length, 6);
+  assert.match(lines[1].line, /choose my own road/);
+});
+
+test('HQ check continues when a flag agent fails', async () => {
+  const { lines, turnContext } = hqTwoLineContext();
+  const calls = [];
+  const state = {};
+  const tools = makeHqTools(state, calls, { withBatch: false, failFlag: 'Dialogue', correctorPatch: false });
+
+  const stats = await logic.runHqCheck(turnContext, tools);
+
+  assert.equal(stats.mode, 'hq');
+  assert.equal(stats.acceptedCount, 0);
+  assert.equal(stats.flagCount, 1);
+  const dialogueAgent = stats.perAgent.find(agent => agent.key === 'cat3_dialogue');
+  assert.equal(dialogueAgent.failed, true);
+  assert.ok(calls.includes('Post Writer HQ Corrector'));
+  assert.match(lines[1].line, /rigidity and duty/);
+});
+
 test('patches are rejected when cumulative dialogue count delta exceeds tolerance', () => {
   const lines = [
     dialogue('Storm far away', 'we hear thundering.'),

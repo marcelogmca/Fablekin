@@ -286,9 +286,18 @@ function getRouteSummary(settings, alias) {
     const reasoningSummary = REASONING_EFFORT_PROVIDERS.has(route.provider)
         ? (route.reasoning_effort ? `reasoning ${route.reasoning_effort}` : 'reasoning automatic')
         : 'reasoning effort unsupported';
-    return [route.provider, route.model, route.subprovider ? `via ${route.subprovider}` : null, reasoningSummary]
+    const primaryRoute = [route.provider, route.model, route.subprovider ? `via ${route.subprovider}` : null, reasoningSummary]
         .filter(Boolean)
         .join(' · ');
+    const fallback = route.fallback;
+    if (!fallback?.provider || !fallback?.model) return primaryRoute;
+    const fallbackReasoning = REASONING_EFFORT_PROVIDERS.has(fallback.provider)
+        ? (fallback.reasoning_effort ? `reasoning ${fallback.reasoning_effort}` : 'reasoning automatic')
+        : 'reasoning effort unsupported';
+    const fallbackRoute = [fallback.provider, fallback.model, fallback.subprovider ? `via ${fallback.subprovider}` : null, fallbackReasoning]
+        .filter(Boolean)
+        .join(' · ');
+    return `${primaryRoute} → fallback: ${fallbackRoute}`;
 }
 
 function initializeDynamicBindings() {
@@ -365,9 +374,14 @@ function renderModelAliasCards(settings) {
     const entries = getAliasEntries(settings);
     container.innerHTML = entries.filter(item => item.builtIn).map(item => {
         const route = item.route || {};
+        const fallback = route.fallback || {};
         const supportsReasoningEffort = REASONING_EFFORT_PROVIDERS.has(route.provider);
+        const fallbackSupportsReasoningEffort = REASONING_EFFORT_PROVIDERS.has(fallback.provider);
         const reasoningOptions = REASONING_EFFORT_OPTIONS.map(([value, label]) =>
             `<option value="${value}"${route.reasoning_effort === value ? ' selected' : ''}>${label}</option>`
+        ).join('');
+        const fallbackReasoningOptions = REASONING_EFFORT_OPTIONS.map(([value, label]) =>
+            `<option value="${value}"${fallback.reasoning_effort === value ? ' selected' : ''}>${label}</option>`
         ).join('');
         const status = !route.provider || !route.model
             ? { kind: 'missing', text: 'Incomplete route' }
@@ -400,12 +414,37 @@ function renderModelAliasCards(settings) {
                         ${supportsReasoningEffort ? '' : '<small class="description">Not supported by this provider adapter.</small>'}
                     </div>
                 </div>
+                <div class="engine-config-row">
+                    <div class="form-group mini-form-group"><label>Fallback provider <span class="optional-label">optional</span></label>
+                        <select class="premium-select mini-input" data-alias="${item.alias}" data-alias-field="fallback_provider">
+                            <option value="">No fallback</option>${providerOptions}
+                        </select>
+                    </div>
+                    <div class="form-group mini-form-group"><label>Fallback model <span class="optional-label">optional</span></label>
+                        <input class="premium-input mini-input" value="${escapeHtml(fallback.model || '')}" data-alias="${item.alias}" data-alias-field="fallback_model">
+                    </div>
+                </div>
+                <div class="engine-config-row">
+                    <div class="form-group mini-form-group"><label>Fallback subprovider <span class="optional-label">optional</span></label>
+                        <input class="premium-input mini-input" value="${escapeHtml(fallback.subprovider || '')}" data-alias="${item.alias}" data-alias-field="fallback_subprovider">
+                    </div>
+                    <div class="form-group mini-form-group"><label>Fallback thinking effort</label>
+                        <select class="premium-select mini-input" data-alias="${item.alias}" data-alias-field="fallback_reasoning_effort"${fallback.provider && !fallbackSupportsReasoningEffort ? ' disabled' : ''}>${fallbackReasoningOptions}</select>
+                        ${fallback.provider && !fallbackSupportsReasoningEffort ? '<small class="description">Not supported by this provider adapter.</small>' : ''}
+                    </div>
+                </div>
                 <div class="alias-route-summary">${escapeHtml(getRouteSummary(settings, item.alias))}</div>
             </article>`;
     }).join('');
 
     container.querySelectorAll('[data-alias-field="provider"]').forEach(select => {
         select.value = getAliasRegistry(settings)[select.dataset.alias]?.provider || '';
+    });
+    container.querySelectorAll('[data-alias-field="fallback_provider"]').forEach(select => {
+        select.value = getAliasRegistry(settings)[select.dataset.alias]?.fallback?.provider || '';
+    });
+    container.querySelectorAll('[data-alias-field="fallback_reasoning_effort"]').forEach(select => {
+        select.value = getAliasRegistry(settings)[select.dataset.alias]?.fallback?.reasoning_effort || '';
     });
 
     const custom = entries.filter(item => !item.builtIn);
@@ -428,6 +467,10 @@ function saveAliasCard(alias) {
     const model = card.querySelector('[data-alias-field="model"]')?.value?.trim() || '';
     const subprovider = card.querySelector('[data-alias-field="subprovider"]')?.value?.trim() || '';
     const reasoningEffort = card.querySelector('[data-alias-field="reasoning_effort"]')?.value?.trim() || '';
+    const fallbackProvider = card.querySelector('[data-alias-field="fallback_provider"]')?.value?.trim() || '';
+    const fallbackModel = card.querySelector('[data-alias-field="fallback_model"]')?.value?.trim() || '';
+    const fallbackSubprovider = card.querySelector('[data-alias-field="fallback_subprovider"]')?.value?.trim() || '';
+    const fallbackReasoningEffort = card.querySelector('[data-alias-field="fallback_reasoning_effort"]')?.value?.trim() || '';
     if (!provider || !model) {
         showNotify(`Alias "${alias}" requires both a provider and a model.`, 'error');
         return;
@@ -435,6 +478,16 @@ function saveAliasCard(alias) {
     const route = { provider, model };
     if (subprovider) route.subprovider = subprovider;
     if (reasoningEffort) route.reasoning_effort = reasoningEffort;
+    if (fallbackProvider || fallbackModel) {
+        if (!fallbackProvider || !fallbackModel) {
+            // Fallback fields are edited independently; wait until the route is complete
+            // before persisting so an intermediate UI edit cannot break the active alias.
+            return;
+        }
+        route.fallback = { provider: fallbackProvider, model: fallbackModel };
+        if (fallbackSubprovider) route.fallback.subprovider = fallbackSubprovider;
+        if (fallbackReasoningEffort) route.fallback.reasoning_effort = fallbackReasoningEffort;
+    }
     setNestedValue(currentSettingsCache, `infrastructure.llm_routing.aliases.${alias}`, route);
     socket.emit('update-global-setting', { path: `infrastructure.llm_routing.aliases.${alias}`, value: route });
     scheduleProviderDependentRefresh();

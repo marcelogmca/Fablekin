@@ -117,7 +117,7 @@ test('agent-specific context remains in suffixes and Writer CoT precedes current
   const context = createContext();
   const directorData = await promptBuilder.buildDirectorPromptData(context);
   const writerMessages = await promptBuilder.buildWriterMessages(context);
-  const writerSuffix = writerMessages.at(-1).content;
+  const writerSuffix = writerMessages.at(-2).content;
 
   assert.match(directorData.simulation, /private long-term plan/);
   assert.match(directorData.directives, /Director-only planning constraint/);
@@ -126,6 +126,9 @@ test('agent-specific context remains in suffixes and Writer CoT precedes current
   assert.match(writerSuffix, /Reveal the old telescope/);
   assert.ok(writerSuffix.indexOf('# EXECUTION PROTOCOL') < writerSuffix.indexOf('# CURRENT ACTION'));
   assert.match(writerSuffix, /internal_cognitive_framework/);
+  assert.equal(writerMessages.at(-1).role, 'assistant');
+  assert.equal(writerMessages.at(-1).content, 'Alright, Let me work through the cognitive framework step by step.');
+  assert.doesNotMatch(writerSuffix, /Alright, Let me work through the cognitive framework step by step\./);
   assert.equal(context.processed.promptBuilder.writerPromptSnapshot.schemaVersion, WRITER_PROMPT_SNAPSHOT_SCHEMA_VERSION);
   assert.equal(context.processed.promptBuilder.writerPromptSnapshot.sharedPrefix.hash, getSharedNarrativePrefix(context).prefixHash);
 });

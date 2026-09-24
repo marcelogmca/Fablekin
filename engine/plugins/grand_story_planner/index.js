@@ -61,6 +61,31 @@ function addWriterCotStep(turnContext, tools, config = {}) {
     });
 }
 
+async function requestNarrativeArchitectBatch(turnContext, tools, settings = {}) {
+    if (settings.architect_integration === false) return false;
+    if (!tools.plugins?.isInstalled?.('narrative_architect')) {
+        tools.logger.runtime('Grand Story Planner is due, but Narrative Architect is unavailable; continuing without a fresh tag batch.');
+        return false;
+    }
+
+    const isDue = await researchAgent.shouldRunAutomatically(turnContext, tools, settings);
+    if (!isDue) return false;
+
+    const architectState = tools.pluginState
+        .forPlugin('narrative_architect')
+        .runtime();
+    architectState.taggingRequest = {
+        schema: 'narrative_architect_tagging_request_v1',
+        requestedBy: 'grand_story_planner',
+        requestedAtTurn: Number(turnContext.turnNumber || 0),
+        batchEndTurn: Math.max(0, Number(turnContext.turnNumber || 0) - 1),
+        status: 'requested'
+    };
+
+    tools.logger.runtime(`Grand Story Planner requested a Narrative Architect tag batch through Chapter ${architectState.taggingRequest.batchEndTurn}.`);
+    return true;
+}
+
 function addDirectorGrandPlannerEditorialSteps(turnContext, tools) {
     const steps = [
         {
@@ -591,6 +616,19 @@ module.exports = {
     },
 
     hooks: {
+        /**
+         * Advertise an upcoming editorial run early enough for Narrative Architect
+         * to prepare a batched tag analysis without blocking Director or Writer.
+         */
+        'HOOK_NARRATIVE_START': {
+            priority: 1,
+            mode: 'sequential',
+            run: async (turnContext, tools) => {
+                const settings = { ...tools.settings.get(), ...await tools.settings.getSelf() };
+                await requestNarrativeArchitectBatch(turnContext, tools, settings);
+            }
+        },
+
         /**
          * Registers the custom file mode for the Content Manager.
          */

@@ -40,7 +40,7 @@ const NATIVE_HELPER_GROUPS = [
     },
     {
         label: 'VN Presentation',
-        ids: ['dialogue_processor', 'asset_selector', 'emotion_classifier', 'gaze_director', 'sprite_variant_orchestrator'],
+        ids: ['dialogue_processor', 'asset_selector', 'emotion_classifier', 'reaction_director', 'conversation_staging_classifier', 'gaze_director', 'sprite_variant_orchestrator'],
         note: 'These translate the written scene into a cleaner visual novel presentation: readable dialogue, assets, emotions, variants, and camera-facing behavior.'
     },
     {
@@ -61,7 +61,9 @@ const NATIVE_HELPER_EXECUTION_NOTES = {
     dialogue_processor: 'Makes a model call only when the Writer output needs conversion or cleanup. If the Writer already produced clean character dialogue, it uses the fast path and makes no LLM call.',
     asset_selector: 'Makes selection calls only for enabled asset types that have files to choose from. No backgrounds means no background-selection call; no OST means no music-selection call.',
     emotion_classifier: 'Makes a model call only when the scene contains dialogue and this module is enabled. It can classify against a neutral fallback, so it is not automatically skipped just because a project has no emotion sprites.',
-    gaze_director: 'Makes a model call only when rotation-capable sprites and dialogue are present. Without usable rotations, Fablekin skips gaze analysis entirely.',
+    reaction_director: 'Runs after speaker emotions are known and makes one sparse call only when present characters have real expression choices. It updates listeners and narration-driven reactions without changing TTS mood.',
+    conversation_staging_classifier: 'Makes one compact blocking call when NPC dialogue is present. It reads narration for context, then assigns natural voice timing and the primary addressee for each NPC line.',
+    gaze_director: 'Makes a model call only when rotation-capable sprites are present. It handles exceptional reactions and deliberate gaze overrides while ordinary speaker-facing comes from Conversation Staging.',
     sprite_variant_orchestrator: 'Makes a model call only when the scene contains a character with real outfit or variant choices. Single-image sprites and scenes without dialogue skip it.',
     scene_phase_classifier: 'Makes a model call only when gameplay capabilities are registered and the current turn is inside an allowed handoff window. Otherwise it exits before calling a model.',
     gender_classifier: 'Never makes an LLM call. It checks known character facts first, then uses a local name-based fallback.'

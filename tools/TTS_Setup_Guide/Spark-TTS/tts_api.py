@@ -418,7 +418,8 @@ def resolve_voice_paths(
     """
     Tiered Priority: Project Voices > Local API Voices > Global Voices.
     Supports .wav, .mp3, .ogg.
-    Moods are supported by searching for [Character]_[Mood].[ext].
+    Moods are supported by searching for [Character]_[Mood].[ext], then the
+    shared [emotion]_[Mood].[ext] reference.
     """
     char_lower = character.lower()
     gender_lower = gender.lower() if gender else "male"
@@ -491,6 +492,16 @@ def resolve_voice_paths(
             mood_p = os.path.join(parent_dir, f"{name_no_ext}_{mood.lower()}{ext}")
             if os.path.exists(mood_p):
                 return mood_p, f"{name_no_ext}_{mood.lower()}{ext}"
+
+        # Shared mood references deliberately use a reserved prefix so they
+        # cannot be mistaken for a character called e.g. "happy".
+        for d in search_dirs:
+            if not d or not os.path.exists(d):
+                continue
+            for ext in ['.wav', '.mp3', '.ogg']:
+                mood_p = os.path.join(d, f"emotion_{mood.lower()}{ext}")
+                if os.path.exists(mood_p):
+                    return mood_p, f"emotion_{mood.lower()}{ext}"
 
     return base_path, base_voice
 

@@ -204,7 +204,6 @@ async function gatherArchitectGuidance(turnContext, tools, settings, options = {
             [turnContext, tools, {
                 mode: 'planner',
                 limit,
-                allowFreshExtraction: options.allowFreshExtraction === true,
                 forceReselect: options.forceReselect === true,
                 tags: Array.isArray(options.tags) ? options.tags : [],
                 series: Array.isArray(options.series) ? options.series : []
@@ -1392,7 +1391,6 @@ async function getOrInitializePlan(turnContext, tools) {
         const architectGuidance = await gatherArchitectGuidance(turnContext, tools, settings, {
             tags: storyNeeds.neededTags,
             series: storyNeeds.seriesPreferences,
-            allowFreshExtraction: false,
             forceReselect: storyNeeds.usedClassifier && ((storyNeeds.neededTags || []).length > 0 || (storyNeeds.seriesPreferences || []).length > 0)
         });
 
@@ -1514,7 +1512,6 @@ async function updatePlan(turnContext, tools) {
     const architectGuidance = await gatherArchitectGuidance(turnContext, tools, settings, {
         tags: storyNeeds.neededTags,
         series: storyNeeds.seriesPreferences,
-        allowFreshExtraction: false,
         forceReselect: storyNeeds.usedClassifier && ((storyNeeds.neededTags || []).length > 0 || (storyNeeds.seriesPreferences || []).length > 0)
     });
 

@@ -529,7 +529,7 @@ runTest('quest line gating prompt and Pixi notification frontend contracts are p
     const pixiJs = fs.readFileSync(path.join(__dirname, 'pixi_quest_notification.js'), 'utf8');
 
     assert.match(prompt, /outcome_line_number/);
-    assert.match(prompt, /zero-based `\[Line N\]`/);
+    assert.match(prompt, /zero-based `N\.` prefix/);
     assert.doesNotMatch(uiJs, /quest-tracker-notification-root/);
     assert.doesNotMatch(uiJs, /sessionStorage/);
     assert.match(uiCss, /\.quest-log-grid\s*\{[\s\S]*align-items:\s*start/);

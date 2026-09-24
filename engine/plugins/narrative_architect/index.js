@@ -43,7 +43,6 @@ function createNarrativeArchitectAgentTool(turnContext, tools) {
                 limit: clampAgentLimit(parsed.options.limit, 4),
                 tags: isSearch ? parseAgentList(parsed.options.tags) : [],
                 series: isSearch ? parseAgentList(parsed.options.series) : [],
-                allowFreshExtraction: false,
                 forceReselect: isSearch
             });
 
@@ -83,13 +82,13 @@ module.exports = {
             type: 'metrics',
             narrative_impact: 'High',
             immersion: 'None',
-            cost: 'Medium',
-            latency: 'Medium'
+            cost: 'Low',
+            latency: 'Low'
         },
         model_def: {
             type: 'select',
             label: 'Tag Extraction Model',
-            description: 'The cheap LLM model used to analyze narrative context and extract structural tags.',
+            description: 'The cheap LLM model used to analyze a chapter batch when Grand Story Planner requests it.',
             options: 'llm-aliases',
             allowVnBackgroundModel: true,
             default: { inherit: 'vn_background' }
@@ -104,11 +103,27 @@ module.exports = {
         },
         context_depth: {
             type: 'number',
-            label: 'Context Depth',
-            description: 'How many recent chapters to analyze for structural matching.',
+            label: 'Legacy Context Depth',
+            description: 'Legacy fallback for batch size when Batch Chapter Limit is unavailable.',
             default: 3,
             min: 1,
             max: 10
+        },
+        batch_max_chapters: {
+            type: 'number',
+            label: 'Batch Chapter Limit',
+            description: 'Maximum number of chapters to analyze together when Grand Story Planner requests a tag refresh.',
+            default: 12,
+            min: 1,
+            max: 50
+        },
+        batch_chapter_max_chars: {
+            type: 'number',
+            label: 'Chars Per Chapter',
+            description: 'Maximum digest length per chapter in the batched tag-extraction prompt.',
+            default: 900,
+            min: 200,
+            max: 2400
         },
         enable_quality_mode: {
             type: 'checkbox',
@@ -146,15 +161,29 @@ module.exports = {
     },
     hooks: {
         /**
-         * Analyze the current turn in the background to prepare the guide for the NEXT turn.
+         * Narrative Architect never schedules itself. Grand Story Planner places a
+         * request in this plugin's TurnContext runtime slot when its own run is due.
          */
-        'HOOK_VN_BACKGROUND_TASKS': {
-            priority: 50,
-            mode: 'parallel',
-            useSharedVnLlm: true,
+        'HOOK_NARRATIVE_START': {
+            priority: 2,
+            mode: 'background',
             run: async (turnContext, tools) => {
+                const state = tools.pluginState.runtime();
+                const request = state.taggingRequest;
+                if (!request || request.requestedBy !== 'grand_story_planner') return;
+                if (Number(request.requestedAtTurn) !== Number(turnContext.turnNumber)) return;
+                if (request.status !== 'requested') return;
+
+                request.status = 'running';
+                request.startedAt = new Date().toISOString();
                 const settings = await tools.settings.getSelf();
-                await logic.processTurnAnalysis(turnContext, tools, settings).catch(err => {
+                await logic.processRequestedBatch(turnContext, tools, settings, request).then(result => {
+                    request.status = result?.status || 'completed';
+                    request.result = result || null;
+                    request.completedAt = new Date().toISOString();
+                }).catch(err => {
+                    request.status = 'failed';
+                    request.error = err.message;
                     tools.logger.error('Architect', `Error in Narrative Architect analysis: ${err.message}`);
                 });
             }

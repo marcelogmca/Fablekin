@@ -23,9 +23,12 @@ async function identifyFocusInstructions(turnContext) {
     return [];
   }
 
-  const dialogueLines = turnContext.processed.dialogueProcessor.processedLines.filter(line => line.type === 'dialogue');
+  const sceneLines = turnContext.processed.dialogueProcessor.processedLines.filter(line => {
+    if (!line || line.type === 'empty') return false;
+    return Boolean(line.text || line.line || line.character);
+  });
 
-  if (dialogueLines.length === 0) {
+  if (sceneLines.length === 0) {
     return [];
   }
 
@@ -35,15 +38,15 @@ async function identifyFocusInstructions(turnContext) {
     if (!focusPrompt) {
       throw new Error(`Failed to load gaze instructions from ${CONFIG.PROMPT_PATH}`);
     }
-    focusPrompt = focusPrompt.replace('{{playerName}}', playerCharacterName);
+    focusPrompt = focusPrompt.replace(/\{\{playerName\}\}/g, playerCharacterName);
     const projectDirectives = turnContext.getFormattedDirective('focus_analyzer', { header: '=== PROJECT DIRECTIVES ===' });
     
     focusPrompt = focusPrompt
-      .replace('{{dialogues}}', 'Use the CURRENT DIALOGUE-ONLY SCENE message above')
+      .replace('{{dialogues}}', 'Use the CURRENT INDEXED SCENE message above')
       .replace('${project_directives}', projectDirectives);
-    const messages = buildCoreVnLlmMessages(turnContext, focusPrompt, { scene: 'dialogue' });
+    const messages = buildCoreVnLlmMessages(turnContext, focusPrompt, { scene: 'indexedScene' });
 
-    Logger.log('FocusAnalyzer', 'Request', `Identifying gaze for ${dialogueLines.length} lines...`, 'start');
+    Logger.log('FocusAnalyzer', 'Request', `Identifying exceptional gaze for ${sceneLines.length} scene lines...`, 'start');
     TurnLogger.logRequest('Gaze Director', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);
 
     const { content: responseContent, model: actualModel } = await callLLM({

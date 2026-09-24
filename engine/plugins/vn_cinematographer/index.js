@@ -12,6 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 const { parseCommandToUCP } = require('../../modules/vn_manager/ucp_parser.js');
+const { formatIndexedSceneLine } = require('../../modules/vn_manager/scene_prompt_formatter.js');
 
 const CAMERA_SILENT_DIRECTOR_PASS = fs.readFileSync(
     path.join(__dirname, 'prompts', 'camera_silent_director_pass.txt'),
@@ -56,14 +57,14 @@ Output a Director Track as atomic UCP commands that elevate pacing, blocking, te
 
 You operate on a "Less is More" philosophy:
 - Do not spam commands.
-- Keep the camera stable unless the narrative beat justifies movement.
+- Keep camera MODES stable; "cam:auto" supplies dynamic speaker coverage without requiring a command on every line.
 - Use visual/audio changes as punctuation, not constant noise.
 `.trim();
 
 const CRITICAL_RULES = `
 === CINEMATOGRAPHY RULES (CRITICAL) ===
-1. PACING: Do not cut between wide and close focus every line.
-2. HOLD: After a deliberate camera choice, let it breathe for multiple lines.
+1. PACING: Do not toggle manually between wide and auto every line. Auto already follows each visible non-POV speaker.
+2. HOLD: Treat camera commands as persistent coverage modes. Enter the mode that serves the beat, then let it work for multiple lines.
 3. ESTABLISHING SHOT: New location beats should often anchor with environment framing first.
 4. HARSH EFFECT SAFETY: Assume heavy effects must be short-lived for viewer comfort.
 5. CAST FLUSH: "cast:flush" is rare and only for hard scene cuts or full party exits.
@@ -77,8 +78,11 @@ CAMERA:
 - For "cam:background", zoom is a scalar multiplier (not percent). Use values like 1.04, 1.08, 1.12. Keep zoom in 1.00-1.35.
 
 CAMERA GUIDANCE:
-- Use "cam:wide" for neutral dialogue stretches or scene resets.
-- Use "cam:auto" for emotional spikes, threats, confessions, or punchlines.
+- "cam:auto" is the normal, commonly used coverage mode for character-led conversation. It automatically follows each current visible non-POV speaker, so emit it once when dialogue coverage begins and keep it active across the exchange.
+- Do NOT reserve "cam:auto" only for emotional spikes. Ordinary banter, explanations, questions, replies, and conversational back-and-forth usually benefit from it too.
+- "cam:wide" should also feel common, but use it when the space or group matters: establishing a location, showing a group tableau or physical action, restoring spatial context, or giving a scene a visual breath/release.
+- A typical dialogue scene may establish in "cam:wide", enter "cam:auto" near the first sustained character exchange, remain in auto for several speakers, and return to wide for a meaningful spatial or release beat.
+- Avoid leaving a character-led multi-line conversation entirely in wide unless group blocking, action, or environment is genuinely more important than the speakers.
 - Use "cam:background" for scenery reverence, awe, world-lore reveals, location identity, or travel beats.
 - Avoid "cam:background" during direct back-and-forth dialogue unless the line explicitly calls for environmental focus.
 `.trim();
@@ -371,9 +375,7 @@ function buildScriptLinesForPrompt(turnContext) {
             }
         }
         const scene = sequence[i] || {};
-        const charName = scene.character || 'Narrator';
-        const content = (scene.type === 'dialogue' && scene.text) ? scene.text : scene.line;
-        lines.push(`[Line ${i}] ${charName}: ${content || ''}`);
+        lines.push(formatIndexedSceneLine(scene, i));
     }
 
     return lines.join('\n');
@@ -431,7 +433,8 @@ function buildOutputExampleForCategories(categories) {
   "reasoning": "Briefly explain your camera and composition choices.",
   "script": [
     {"line": 0, "commands": ["cam:wide"]},
-    {"line": 8, "commands": ["comp:intimate:Stella:Beatrice", "cam:auto"]}
+    {"line": 2, "commands": ["cam:auto"]},
+    {"line": 11, "commands": ["cam:wide"]}
   ]
 }`;
     }
@@ -450,7 +453,8 @@ function buildOutputExampleForCategories(categories) {
   "reasoning": "Briefly explain your choices.",
   "script": [
     {"line": 0, "commands": ["cam:wide", "sfx:start:wind.mp3"]},
-    {"line": 8, "commands": ["comp:intimate:Stella:Beatrice", "cam:auto"]}
+    {"line": 2, "commands": ["cam:auto"]},
+    {"line": 11, "commands": ["cam:wide"]}
   ]
 }`;
 }

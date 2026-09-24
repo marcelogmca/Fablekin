@@ -48,3 +48,17 @@ test('named variant lock remains restricted to its own folder', async () => {
 
   assert.equal(result.image, 'sprites/Frieren/Nightgown/Frieren_Happy.webp');
 });
+
+test('variant schedules use global zero-based scene line indexes', async () => {
+  const catalog = buildSpriteCatalog(sprites);
+  const turnContext = buildTurnContext('default');
+  turnContext.processed.vnManager.spriteVariantLockSchedule = [
+    { line: 3, character: 'frieren', variant: 'nightgown' }
+  ];
+
+  const before = await findSprite('Frieren', 'happy', catalog.global.baseSprites, null, turnContext, catalog.global.allSprites, 2);
+  const atChange = await findSprite('Frieren', 'happy', catalog.global.baseSprites, null, turnContext, catalog.global.allSprites, 3);
+
+  assert.equal(before.image, 'sprites/Frieren_Happy.webp');
+  assert.equal(atChange.image, 'sprites/Frieren/Nightgown/Frieren_Happy.webp');
+});

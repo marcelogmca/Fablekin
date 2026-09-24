@@ -35,7 +35,7 @@ function normalizeProviderKey(providerKey) {
   return key;
 }
 
-function normalizeModelRoute(route) {
+function normalizeModelRouteCore(route) {
   if (!route || typeof route !== 'object' || Array.isArray(route)) return {};
   const normalized = {
     provider: normalizeProviderKey(route.provider),
@@ -50,6 +50,13 @@ function normalizeModelRoute(route) {
     : '';
   const reasoningEffort = REASONING_EFFORT_LEVELS.includes(explicitEffort) ? explicitEffort : inferredEffort;
   if (reasoningEffort) normalized.reasoning_effort = reasoningEffort;
+  return normalized;
+}
+
+function normalizeModelRoute(route) {
+  const normalized = normalizeModelRouteCore(route);
+  const fallback = normalizeModelRouteCore(route?.fallback);
+  if (Object.keys(fallback).length > 0) normalized.fallback = fallback;
   return normalized;
 }
 
@@ -123,13 +130,30 @@ function resolveModelAlias(settings, rawAlias) {
     throw new Error(`Model alias '${alias}' references unknown provider '${route.provider}'. Configure it in Settings > Models & Routing.`);
   }
 
-  return {
+  const resolved = {
     alias,
     provider: route.provider,
     model: route.model,
     ...(route.subprovider ? { subprovider: route.subprovider } : {}),
     ...(route.reasoning_effort ? { reasoning_effort: route.reasoning_effort } : {})
   };
+
+  if (route.fallback) {
+    if (!route.fallback.provider || !route.fallback.model) {
+      throw new Error(`Model alias '${alias}' has an incomplete fallback route. Set both fallback provider and model, or clear both.`);
+    }
+    if (!Object.prototype.hasOwnProperty.call(providers, route.fallback.provider)) {
+      throw new Error(`Model alias '${alias}' fallback references unknown provider '${route.fallback.provider}'. Configure it in Settings > Models & Routing.`);
+    }
+    resolved.fallback = {
+      provider: route.fallback.provider,
+      model: route.fallback.model,
+      ...(route.fallback.subprovider ? { subprovider: route.fallback.subprovider } : {}),
+      ...(route.fallback.reasoning_effort ? { reasoning_effort: route.fallback.reasoning_effort } : {})
+    };
+  }
+
+  return resolved;
 }
 
 function applyStarterProfile(settings, provider, profile) {

@@ -1,5 +1,8 @@
 // engine/views/vn_viewer/js/modules/audio_manager.js
 let volumeFadeInterval = null;
+const activeVoicePlaybacks = new Map();
+const talkingReferenceCounts = new Map();
+let primaryVoicePlayback = null;
 
 import { state, runtime } from '../state.js';
 import { elements } from '../elements.js';
@@ -35,7 +38,12 @@ export function setOstVolumeFade(targetVolume, durationMs) {
 }
 
 export function updateVoiceVolume() {
-    if (elements.voicePlayer) elements.voicePlayer.volume = state.vnSettings.audio?.tts_volume ?? 0.5;
+    const volume = state.vnSettings.audio?.tts_volume ?? 0.5;
+    for (const player of getVoicePlayers()) player.volume = volume;
+}
+
+function getVoicePlayers() {
+    return [elements.voicePlayer, elements.voicePlayerSecondary].filter(Boolean);
 }
 
 function emitMissingTtsUpdate() {
@@ -149,126 +157,247 @@ export function stopAudio() {
     if (elements.musicPlayPauseBtn) elements.musicPlayPauseBtn.innerHTML = '<i>▶</i>';
 }
 
-export function stopVoice() {
-    state.voicePlaybackToken++;
-    state.isAudioPlaying = false;
-    state.isVoiceAudioPlaybackActive = false;
-    state.currentTalkingCharacter = null;
-    if (state.emulatedTalkingTimeout) {
-        clearTimeout(state.emulatedTalkingTimeout);
-        state.emulatedTalkingTimeout = null;
-    }
-    if (elements.voicePlayer) {
-        elements.voicePlayer.pause();
-        if (state.audioEndedPromiseResolver) {
-            const previousResolver = state.audioEndedPromiseResolver;
-            state.audioEndedPromiseResolver = null;
-            previousResolver();
-        }
-        elements.voicePlayer.src = '';
-    }
-    stopAllTalking();
-    pixiSpriteManager.stopAllTalking();
+function syncVoiceState() {
+    const active = Array.from(activeVoicePlaybacks.values()).filter(playback => !playback.finished && playback.started);
+    const primary = primaryVoicePlayback && !primaryVoicePlayback.finished ? primaryVoicePlayback : active.at(-1) || null;
+    if (!primaryVoicePlayback || primaryVoicePlayback.finished) primaryVoicePlayback = primary;
+
+    state.isAudioPlaying = active.length > 0;
+    state.isVoiceAudioPlaybackActive = !!primary?.actualAudioPlaying;
+    state.currentTalkingCharacter = primary?.character || null;
+    state.activeTalkingCharacters = Object.fromEntries(talkingReferenceCounts.entries());
 }
 
-export function playVoice(crc, resolveAudioEnded, talkingCharacterRaw, text) {
-    if (isPixiTakeoverActive()) {
-        state.isAudioPlaying = false;
-        state.isVoiceAudioPlaybackActive = false;
-        state.currentTalkingCharacter = null;
-        if (resolveAudioEnded) resolveAudioEnded();
+function startTalkingForPlayback(playback) {
+    if (!playback?.character || playback.talkingStarted) return;
+    playback.talkingStarted = true;
+    const count = (talkingReferenceCounts.get(playback.character) || 0) + 1;
+    talkingReferenceCounts.set(playback.character, count);
+    if (count === 1) {
+        if (state.activeAnimators[playback.character]) state.activeAnimators[playback.character].startTalking();
+        pixiSpriteManager.startTalking(playback.character);
+    }
+    syncVoiceState();
+}
+
+function stopTalkingForPlayback(playback) {
+    if (!playback?.character || !playback.talkingStarted) return;
+    playback.talkingStarted = false;
+    const count = Math.max(0, (talkingReferenceCounts.get(playback.character) || 1) - 1);
+    if (count > 0) {
+        talkingReferenceCounts.set(playback.character, count);
         return;
     }
+    talkingReferenceCounts.delete(playback.character);
+    if (state.activeAnimators[playback.character]) state.activeAnimators[playback.character].stopTalking();
+    pixiSpriteManager.stopTalking(playback.character);
+}
 
-    const sceneData = state.currentVN;
-    const talkingCharacter = normalizeCharacterKey(talkingCharacterRaw);
-    const voiceToken = ++state.voicePlaybackToken;
-    state.isVoiceAudioPlaybackActive = false;
-    const isStaleVoiceSession = () => state.voicePlaybackToken !== voiceToken;
-    let hasResolved = false;
-    let voiceErrorHandler = null;
-    let playAttemptId = 0;
+function estimateTalkingDurationMs(lineText) {
+    const words = (lineText || '').trim().split(/\s+/).filter(Boolean).length;
+    const punctuationPauses = ((lineText || '').match(/[,.!?;:]/g) || []).length;
+    return Math.max(1200, Math.min(15000, 500 + (words * 320) + (punctuationPauses * 140)));
+}
 
+function selectVoicePlayer() {
+    const players = getVoicePlayers();
+    const occupiedPlayers = new Set(
+        Array.from(activeVoicePlaybacks.values())
+            .filter(playback => !playback.finished && playback.player)
+            .map(playback => playback.player)
+    );
+    const available = players.find(player => !occupiedPlayers.has(player));
+    if (available) return available;
+
+    // Two channels are intentionally the maximum. A third overlapping line evicts
+    // the oldest voice instead of creating unbounded conversational polyphony.
+    const oldest = Array.from(activeVoicePlaybacks.values())
+        .filter(playback => !playback.finished && playback.player)
+        .sort((a, b) => a.createdAt - b.createdAt)[0];
+    if (oldest) oldest.finish({ stopPlayer: true, clearSource: true });
+    return players.find(player => !Array.from(activeVoicePlaybacks.values()).some(
+        playback => !playback.finished && playback.player === player
+    )) || players[0] || null;
+}
+
+export function stopVoice() {
+    state.voicePlaybackToken++;
+    for (const playback of Array.from(activeVoicePlaybacks.values())) {
+        playback.finish({ stopPlayer: true, clearSource: true });
+    }
+    for (const player of getVoicePlayers()) {
+        try { player.pause(); } catch (_) { }
+        player.src = '';
+    }
+    activeVoicePlaybacks.clear();
+    primaryVoicePlayback = null;
+    state.currentVoicePlayback = null;
+    state.currentAudioEndedPromise = null;
+    talkingReferenceCounts.clear();
+    state.audioEndedPromiseResolver = null;
+    state.emulatedTalkingTimeout = null;
     stopAllTalking();
     pixiSpriteManager.stopAllTalking();
+    syncVoiceState();
+}
 
-    const estimateTalkingDurationMs = (lineText) => {
-        const words = (lineText || '').trim().split(/\s+/).filter(Boolean).length;
-        const punctuationPauses = ((lineText || '').match(/[,.!?;:]/g) || []).length;
-        return Math.max(1200, Math.min(15000, 500 + (words * 320) + (punctuationPauses * 140)));
+/**
+ * Returns the delay from now until the requested floor-transfer boundary.
+ * Null means there is no playable voice anchor and Auto-Play should use its
+ * ordinary delay fallback.
+ */
+export async function getVoiceBoundaryDelay(playback, offsetMs) {
+    if (!playback || !Number.isFinite(offsetMs)) return null;
+    await playback.readyPromise;
+    if (!playback.actualAudioStarted) return null;
+    if (playback.finished) return Math.max(0, offsetMs);
+
+    const durationMs = Number.isFinite(playback.durationMs)
+        ? playback.durationMs
+        : (Number.isFinite(playback.player?.duration) ? playback.player.duration * 1000 : null);
+    if (!Number.isFinite(durationMs) || durationMs <= 0) return null;
+
+    const currentTimeMs = Number.isFinite(playback.player?.currentTime)
+        ? playback.player.currentTime * 1000
+        : Math.max(0, performance.now() - playback.startedAt);
+    return Math.max(0, (durationMs - currentTimeMs) + offsetMs);
+}
+
+export async function resumePendingVoicePlayback() {
+    const resumable = Array.from(activeVoicePlaybacks.values())
+        .filter(playback => !playback.finished && typeof playback.resume === 'function');
+    if (resumable.length === 0) return false;
+    const results = await Promise.allSettled(resumable.map(playback => playback.resume()));
+    return results.some(result => result.status === 'fulfilled');
+}
+
+export function playVoice(crc, resolveAudioEnded, talkingCharacterRaw, text, options = {}) {
+    const preserveOutgoing = options.preserveOutgoing === true;
+    const emulateMissing = options.emulateMissing !== false;
+
+    if (!preserveOutgoing) stopVoice();
+
+    let resolveEndedPromise;
+    let resolveReadyPromise;
+    const playback = {
+        token: ++state.voicePlaybackToken,
+        character: normalizeCharacterKey(talkingCharacterRaw),
+        crc: crc ? String(crc) : null,
+        player: null,
+        createdAt: performance.now(),
+        startedAt: null,
+        durationMs: null,
+        started: false,
+        actualAudioStarted: false,
+        actualAudioPlaying: false,
+        talkingStarted: false,
+        finished: false,
+        watchdogTimeout: null,
+        voiceErrorHandler: null,
+        playAttemptId: 0,
+        readyResolved: false,
+        endedPromise: new Promise(resolve => { resolveEndedPromise = resolve; }),
+        readyPromise: new Promise(resolve => { resolveReadyPromise = resolve; })
     };
 
-    const startTalkingVisuals = () => {
-        if (talkingCharacter && state.activeAnimators[talkingCharacter]) state.activeAnimators[talkingCharacter].startTalking();
-        pixiSpriteManager.startTalking(talkingCharacter);
+    playback.resolveReady = () => {
+        if (playback.readyResolved) return;
+        playback.readyResolved = true;
+        resolveReadyPromise(playback);
     };
 
-    const scheduleEmulatedTalkingStop = (durationMs) => {
-        if (isStaleVoiceSession()) return;
-        if (state.emulatedTalkingTimeout) clearTimeout(state.emulatedTalkingTimeout);
-        state.emulatedTalkingTimeout = setTimeout(() => {
-            if (state.emulatedTalkingTimeout) { clearTimeout(state.emulatedTalkingTimeout); state.emulatedTalkingTimeout = null; }
-            resolveVoiceEnded();
-        }, Math.max(250, durationMs));
-    };
-
-    const startEmulatedTalking = () => {
-        if (isStaleVoiceSession() || hasResolved) return;
-        state.isAudioPlaying = true;
-        state.isVoiceAudioPlaybackActive = false;
-        state.currentTalkingCharacter = talkingCharacter;
-        startTalkingVisuals();
-        scheduleEmulatedTalkingStop(estimateTalkingDurationMs(text));
-    };
-
-    const armAudioEndWatchdog = () => {
-        if (isStaleVoiceSession()) return;
-        const durationSeconds = elements.voicePlayer?.duration;
-        if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) return;
-        scheduleEmulatedTalkingStop(Math.max(0, (durationSeconds - (elements.voicePlayer.currentTime || 0)) * 1000) + 250);
-    };
-
-    const resolveVoiceEnded = () => {
-        if (hasResolved) return;
-        hasResolved = true;
-        elements.voicePlayer.removeEventListener('ended', resolveVoiceEnded);
-        if (voiceErrorHandler) elements.voicePlayer.removeEventListener('error', voiceErrorHandler);
-        elements.voicePlayer.removeEventListener('loadedmetadata', armAudioEndWatchdog);
-        elements.voicePlayer.removeEventListener('durationchange', armAudioEndWatchdog);
-        if (!isStaleVoiceSession()) {
-            state.isAudioPlaying = false;
-            state.isVoiceAudioPlaybackActive = false;
-            state.currentTalkingCharacter = null;
-            if (state.emulatedTalkingTimeout) { clearTimeout(state.emulatedTalkingTimeout); state.emulatedTalkingTimeout = null; }
-            if (talkingCharacter && state.activeAnimators[talkingCharacter]) state.activeAnimators[talkingCharacter].stopTalking();
-            pixiSpriteManager.stopAllTalking();
-            if (state.audioEndedPromiseResolver === resolveVoiceEnded) state.audioEndedPromiseResolver = null;
+    playback.finish = ({ stopPlayer = false, clearSource = false } = {}) => {
+        if (playback.finished) return;
+        playback.finished = true;
+        playback.actualAudioPlaying = false;
+        if (playback.watchdogTimeout) clearTimeout(playback.watchdogTimeout);
+        playback.watchdogTimeout = null;
+        const player = playback.player;
+        if (player) {
+            player.removeEventListener('ended', playback.onEnded);
+            player.removeEventListener('loadedmetadata', playback.onMetadata);
+            player.removeEventListener('durationchange', playback.onMetadata);
+            if (playback.voiceErrorHandler) player.removeEventListener('error', playback.voiceErrorHandler);
+            if (stopPlayer) {
+                try { player.pause(); } catch (_) { }
+            }
+            if (clearSource) player.src = '';
         }
+        stopTalkingForPlayback(playback);
+        activeVoicePlaybacks.delete(playback.token);
+        if (primaryVoicePlayback === playback) {
+            primaryVoicePlayback = Array.from(activeVoicePlaybacks.values()).filter(item => !item.finished).at(-1) || null;
+        }
+        playback.resolveReady();
+        syncVoiceState();
+        resolveEndedPromise();
         if (resolveAudioEnded) resolveAudioEnded();
     };
 
-    elements.voicePlayer.pause();
-    if (state.audioEndedPromiseResolver) {
-        elements.voicePlayer.removeEventListener('ended', state.audioEndedPromiseResolver);
-        elements.voicePlayer.removeEventListener('error', state.audioEndedPromiseResolver);
-        const previousResolver = state.audioEndedPromiseResolver;
-        state.audioEndedPromiseResolver = null;
-        previousResolver();
+    playback.onEnded = () => playback.finish();
+    playback.onMetadata = () => {
+        if (Number.isFinite(playback.player?.duration) && playback.player.duration > 0) {
+            playback.durationMs = playback.player.duration * 1000;
+            if (!playback.actualAudioStarted) return;
+            if (playback.watchdogTimeout) clearTimeout(playback.watchdogTimeout);
+            playback.watchdogTimeout = setTimeout(
+                () => playback.finish(),
+                Math.max(250, ((playback.player.duration - (playback.player.currentTime || 0)) * 1000) + 250)
+            );
+        }
+    };
+
+    activeVoicePlaybacks.set(playback.token, playback);
+    primaryVoicePlayback = playback;
+    syncVoiceState();
+
+    if (isPixiTakeoverActive() || (!crc && !emulateMissing)) {
+        playback.finish();
+        return playback;
     }
 
-    if (!crc) { startEmulatedTalking(); return; }
+    const startEmulatedTalking = () => {
+        if (playback.finished) return;
+        if (playback.player) {
+            playback.player.removeEventListener('ended', playback.onEnded);
+            playback.player.removeEventListener('loadedmetadata', playback.onMetadata);
+            playback.player.removeEventListener('durationchange', playback.onMetadata);
+            if (playback.voiceErrorHandler) {
+                playback.player.removeEventListener('error', playback.voiceErrorHandler);
+            }
+            try { playback.player.pause(); } catch (_) { }
+            playback.player.src = '';
+        }
+        playback.player = null;
+        playback.started = true;
+        playback.startedAt = performance.now();
+        playback.actualAudioStarted = false;
+        playback.actualAudioPlaying = false;
+        playback.durationMs = estimateTalkingDurationMs(text);
+        startTalkingForPlayback(playback);
+        playback.resolveReady();
+        playback.watchdogTimeout = setTimeout(() => playback.finish(), playback.durationMs);
+        syncVoiceState();
+    };
 
-    state.isAudioPlaying = false;
-    state.currentTalkingCharacter = talkingCharacter;
-    state.audioEndedPromiseResolver = resolveVoiceEnded;
-    elements.voicePlayer.addEventListener('ended', resolveVoiceEnded);
-    elements.voicePlayer.addEventListener('loadedmetadata', armAudioEndWatchdog);
-    elements.voicePlayer.addEventListener('durationchange', armAudioEndWatchdog);
+    if (!crc) {
+        startEmulatedTalking();
+        return playback;
+    }
+
+    const player = selectVoicePlayer();
+    if (!player) {
+        startEmulatedTalking();
+        return playback;
+    }
+    playback.player = player;
+    player.addEventListener('ended', playback.onEnded);
+    player.addEventListener('loadedmetadata', playback.onMetadata);
+    player.addEventListener('durationchange', playback.onMetadata);
 
     const fallbackUrl = `http://127.0.0.1:8000/audio/${crc}.wav`;
-
     const handlePlaybackFailure = (attemptId, isFallback) => {
-        if (isStaleVoiceSession() || hasResolved || attemptId !== playAttemptId) return;
+        if (playback.finished || attemptId !== playback.playAttemptId) return;
         if (!isFallback) {
             tryPlay(fallbackUrl, true);
             return;
@@ -278,28 +407,34 @@ export function playVoice(crc, resolveAudioEnded, talkingCharacterRaw, text) {
     };
 
     const tryPlay = (url, isFallback = false) => {
-        if (isStaleVoiceSession()) return;
-        const attemptId = ++playAttemptId;
-        if (voiceErrorHandler) elements.voicePlayer.removeEventListener('error', voiceErrorHandler);
-        voiceErrorHandler = () => handlePlaybackFailure(attemptId, isFallback);
-        elements.voicePlayer.addEventListener('error', voiceErrorHandler, { once: true });
-        elements.voicePlayer.src = url;
+        if (playback.finished) return;
+        const attemptId = ++playback.playAttemptId;
+        if (playback.voiceErrorHandler) player.removeEventListener('error', playback.voiceErrorHandler);
+        playback.voiceErrorHandler = () => handlePlaybackFailure(attemptId, isFallback);
+        player.addEventListener('error', playback.voiceErrorHandler, { once: true });
+        player.src = url;
         updateVoiceVolume();
-        if (state.pendingVoiceResume) return;
-        elements.voicePlayer.play().then(() => {
-            if (isStaleVoiceSession() || hasResolved || attemptId !== playAttemptId) return;
-            state.isAudioPlaying = true;
-            state.isVoiceAudioPlaybackActive = true;
-            startTalkingVisuals();
-            armAudioEndWatchdog();
+        playback.resume = () => player.play().then(() => {
+            if (playback.finished || attemptId !== playback.playAttemptId) return;
+            playback.started = true;
+            playback.actualAudioStarted = true;
+            playback.actualAudioPlaying = true;
+            playback.startedAt = performance.now();
+            startTalkingForPlayback(playback);
+            playback.onMetadata();
+            playback.resolveReady();
             removeMissingTtsCrc(crc);
-        }).catch(() => {
-            handlePlaybackFailure(attemptId, isFallback);
-        });
+            syncVoiceState();
+        }).catch(() => handlePlaybackFailure(attemptId, isFallback));
+        if (state.pendingVoiceResume) return;
+        playback.resume();
     };
+
+    const sceneData = state.currentVN;
     const storageTurnKey = sceneData?.storageTurnKey || sceneData?.turnNumber;
     const archiveUrl = (sceneData?.projectName && sceneData?.chatFileName && storageTurnKey)
         ? getAssetUrl(`projects/${sceneData.projectName}/plugins/${sceneData.chatFileName}/${storageTurnKey}/tts_core/${crc}.wav`, sceneData.projectName)
         : null;
     archiveUrl ? tryPlay(archiveUrl) : tryPlay(fallbackUrl, true);
+    return playback;
 }

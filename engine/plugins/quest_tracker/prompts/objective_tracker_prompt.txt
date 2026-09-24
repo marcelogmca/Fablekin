@@ -38,8 +38,8 @@ The output is for a minimalist HUD called "Story Threads":
 - Canonical quest `stakes` indicate consequence severity only; they do not make a quest progress or resolve without visible evidence.
 - For each canonical quest that is not already resolved, check whether the current chapter visibly completes, fails, or drops the objective. If it does, emit exactly one `quest_events` item for that quest.
 - Mark a canonical quest `completed` only when the visible story satisfies its Objective. Deadline expiration is handled outside this JSON; do not invent deadline failures.
-- For visible completed, failed, or dropped quest events, include `outcome_line_number` using the zero-based `[Line N]` number from CURRENT CHAPTER SCRIPT, and `outcome_line` as the exact dialogue/narration line where the outcome becomes clear.
-- If several lines contribute, choose the first line where the outcome becomes undeniable. Do not use 1-based numbering; `[Line 0]` means `outcome_line_number: 0`.
+- For visible completed, failed, or dropped quest events, include `outcome_line_number` using the zero-based `N.` prefix from CURRENT CHAPTER SCRIPT, and `outcome_line` as the exact dialogue/narration text where the outcome becomes clear.
+- If several lines contribute, choose the first line where the outcome becomes undeniable. The compact script prefix `0.` means `outcome_line_number: 0`; do not use 1-based numbering.
 - For completed quest events, include `success_summary`: one brief player-safe sentence saying how the quest was successfully completed.
 - For resolved quest events, you may add a small `score_modifier` and `score_reason` for flavor. Reward creative, costly, romantic, clever, or especially satisfying completions; penalize careless, avoidable, trust-breaking, or sloppy resolutions. Keep modifiers small because code will clamp them by stakes.
 - Keep existing goal IDs and labels exactly unless current story evidence justifies changing them.
@@ -84,7 +84,7 @@ Return exactly one JSON object and nothing else.
       "evidence": "visible story evidence for the outcome",
       "turn_number": 123,
       "outcome_line_number": 8,
-      "outcome_line": "[Line 8] Character: exact line where the outcome becomes clear",
+      "outcome_line": "Character: exact line where the outcome becomes clear",
       "success_summary": "one brief sentence saying how it was completed, only for completed quests",
       "score_modifier": 5,
       "score_reason": "short player-safe reason for any modifier"

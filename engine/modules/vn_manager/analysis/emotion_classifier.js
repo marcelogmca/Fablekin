@@ -1,5 +1,9 @@
 const { getFilename, Logger, TurnLogger, readSettings, readFileSync, normalizeText } = require('../../utils.js');
 const { callLLM, resolveModelAlias } = require('../../llm.js');
+const {
+  formatIndexedDialogueWithNarrative,
+  getProcessedSceneLines
+} = require('../scene_prompt_formatter.js');
 
 // #region CONFIGURATION
 const settings = readSettings();
@@ -117,7 +121,7 @@ function extractScheduleDialogueIndex(entry) {
   for (const candidate of candidates) {
     if (candidate == null) continue;
     const parsed = Number.parseInt(candidate, 10);
-    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
   }
 
   return null;
@@ -162,7 +166,7 @@ function resolveCatalogCharacterKey(rawName, spriteCatalog) {
   return '';
 }
 
-function getSceneVariantLock(turnContext, candidateCharacterKeys = [], dialogueIndex = null) {
+function getSceneVariantLock(turnContext, candidateCharacterKeys = [], sceneLineIndex = null) {
   const vnManagerState = turnContext?.processed?.vnManager || {};
   const lockRegistry = vnManagerState.spriteVariantLocks;
   const lockSchedule = Array.isArray(vnManagerState.spriteVariantLockSchedule)
@@ -172,16 +176,16 @@ function getSceneVariantLock(turnContext, candidateCharacterKeys = [], dialogueI
   const keyCandidates = buildCharacterKeyCandidates(candidateCharacterKeys);
   const keySet = new Set(keyCandidates);
 
-  const currentDialogueIndex = Number.isFinite(Number(dialogueIndex))
-    ? Number.parseInt(dialogueIndex, 10)
+  const currentSceneLineIndex = Number.isFinite(Number(sceneLineIndex))
+    ? Number.parseInt(sceneLineIndex, 10)
     : null;
 
-  if (currentDialogueIndex && currentDialogueIndex > 0 && lockSchedule.length > 0) {
+  if (currentSceneLineIndex != null && currentSceneLineIndex >= 0 && lockSchedule.length > 0) {
     let winner = null;
 
     lockSchedule.forEach((entry, scheduleOrder) => {
       const entryDialogue = extractScheduleDialogueIndex(entry);
-      if (!entryDialogue || entryDialogue > currentDialogueIndex) return;
+      if (entryDialogue == null || entryDialogue > currentSceneLineIndex) return;
 
       const entryCharacterKey = extractScheduleCharacterKey(entry);
       if (!entryCharacterKey) return;
@@ -291,7 +295,7 @@ function buildEmotionClassificationContext(dialogues, sprites, turnContext) {
   const characterProfiles = {};
 
   dialogues.forEach((dialogue, index) => {
-    const dialogueIndex = index + 1;
+    const dialogueIndex = Number.isInteger(dialogue?.sceneLineIndex) ? dialogue.sceneLineIndex : index;
     const rawCharacter = dialogue?.character || '';
     const characterKey = resolveCatalogCharacterKey(rawCharacter, spriteCatalog);
     lineCharacterKeys.push(characterKey || '');
@@ -360,12 +364,13 @@ function formatCharacterEmotionProfiles(characterProfiles = {}) {
 function buildMoodClassificationContext(dialogues, turnContext) {
   const moodCatalog = turnContext?.runtime?.ttsVoiceMoodCatalog || null;
   const catalogGlobal = Array.isArray(moodCatalog?.globalMoods) ? moodCatalog.globalMoods : [];
+  const sharedMoods = Array.isArray(moodCatalog?.sharedMoods) ? moodCatalog.sharedMoods : [];
 
   const globalMoodSet = new Set(MOOD_LIST.map(m => normalizeText(m)));
   catalogGlobal.forEach(m => globalMoodSet.add(normalizeText(m)));
   globalMoodSet.add('neutral');
   const globalMoodList = Array.from(globalMoodSet).filter(Boolean);
-  return { globalMoodList };
+  return { globalMoodList, sharedMoods };
 }
 // #endregion
 
@@ -392,18 +397,33 @@ function createEmotionClassificationPrompt(turnContext, dialogues, classificatio
     const allowed = Array.isArray(lineAllowedEmotions[index]) && lineAllowedEmotions[index].length > 0
       ? lineAllowedEmotions[index]
       : globalEmotionList;
-    return `${index + 1}. ${dialogue.character || 'Unknown'} -> ${allowed.join(', ')}`;
+    const lineIndex = Number.isInteger(dialogue?.sceneLineIndex) ? dialogue.sceneLineIndex : index;
+    return `${lineIndex}. ${dialogue.character || 'Unknown'} -> ${allowed.join(', ')}`;
   }).join('\n');
   const characterEmotionProfiles = formatCharacterEmotionProfiles(classificationContext?.characterProfiles || {});
+  const sharedMoods = Array.isArray(classificationContext?.sharedMoods) && classificationContext.sharedMoods.length > 0
+    ? classificationContext.sharedMoods.join(', ')
+    : 'None';
   const projectDirectives = turnContext.getFormattedDirective('emotion_classifier', { header: 'Project-specific creative directives:' });
+  const sceneLines = getProcessedSceneLines(turnContext);
+  const targetLineIndexes = dialogues.map((dialogue, index) => (
+    Number.isInteger(dialogue?.sceneLineIndex) ? dialogue.sceneLineIndex : index
+  ));
+  const narrativeAssistedDialogues = sceneLines.length > 0
+    ? formatIndexedDialogueWithNarrative(sceneLines, { targetLineIndexes })
+    : dialogues.map((dialogue, index) => {
+        const lineIndex = Number.isInteger(dialogue?.sceneLineIndex) ? dialogue.sceneLineIndex : index;
+        return `${lineIndex}. ${dialogue.character || 'Unknown'}: ${dialogue.text || dialogue.line || ''}`;
+      }).join('\n');
 
   return emotionPrompt
     .replace('${emotionList}', globalEmotionList.join(', '))
     .replace('${lineEmotionConstraints}', lineEmotionConstraints)
     .replace('${characterEmotionProfiles}', characterEmotionProfiles)
+    .replace('${sharedTtsMoods}', sharedMoods)
     .replace('${moodList}', currentMoodList.join(', '))
     .replace('${project_directives}', projectDirectives)
-    .replace('${dialogues}', dialogues.map((d, i) => `${i + 1}. ${d.character || 'Unknown'}: ${d.text}`).join('\n'));
+    .replace('${dialogues}', narrativeAssistedDialogues);
 }
 // #endregion
 
@@ -446,8 +466,18 @@ function parseEmotionResponse(response, classificationContext, dialogues, custom
     return match ? normalizeVariantKey(match[1]) : null;
   };
 
+  const indexedLines = new Map();
+  for (const line of lines) {
+    const match = line.match(/^(?:line\s+)?(\d+)\s*[).:\-]\s*(.+)$/i);
+    if (!match) continue;
+    const lineIndex = Number(match[1]);
+    if (!indexedLines.has(lineIndex)) indexedLines.set(lineIndex, match[2].trim());
+  }
+  const mayUseLegacyPosition = indexedLines.size === 0 && lines.length === dialogues.length;
+
   for (let i = 0; i < dialogues.length; i++) {
-    const line = lines[i] || '';
+    const sceneLineIndex = Number.isInteger(dialogues[i]?.sceneLineIndex) ? dialogues[i].sceneLineIndex : i;
+    const line = indexedLines.get(sceneLineIndex) || (mayUseLegacyPosition ? lines[i] : '') || '';
     const parts = line.split(',').map(p => p.trim().toLowerCase());
     const allowedEmotions = Array.isArray(lineAllowedEmotions[i]) && lineAllowedEmotions[i].length > 0
       ? lineAllowedEmotions[i]
@@ -524,6 +554,7 @@ async function batchClassifyEmotions(dialogues, sprites, turnContext) {
   const classificationContext = buildEmotionClassificationContext(dialogues, sprites, turnContext);
   const moodClassificationContext = buildMoodClassificationContext(dialogues, turnContext);
   classificationContext.globalMoodList = moodClassificationContext.globalMoodList;
+  classificationContext.sharedMoods = moodClassificationContext.sharedMoods;
   const customMoods = (turnContext?.runtime?.customTtsMoods && Array.isArray(turnContext.runtime.customTtsMoods))
     ? turnContext.runtime.customTtsMoods
     : null;
@@ -578,6 +609,7 @@ async function batchClassifyEmotions(dialogues, sprites, turnContext) {
       classificationContext: {
         globalEmotionList: Array.from(chunkGlobalSet),
         globalMoodList: Array.from(chunkGlobalMoodSet),
+        sharedMoods: classificationContext.sharedMoods || [],
         lineAllowedEmotions: chunkLineAllowed,
         lineCharacterKeys: chunkLineCharacterKeys,
         characterProfiles: chunkCharacterProfiles
@@ -610,8 +642,12 @@ async function batchClassifyEmotions(dialogues, sprites, turnContext) {
 // #region EXPORTS
 module.exports = {
   batchClassifyEmotions,
+  getAllowedEmotionsForDialogueLine,
+  resolveCatalogCharacterKey,
   _private: {
-    buildEmotionClassificationMessages
+    buildEmotionClassificationMessages,
+    createEmotionClassificationPrompt,
+    parseEmotionResponse
   }
 };
 // #endregion

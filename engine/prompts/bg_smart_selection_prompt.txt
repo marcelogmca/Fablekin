@@ -14,12 +14,12 @@ Based on the scene script and candidate options:
 
 OUTPUT FORMAT:
 Respond with each selected background and its starting line number from the script above. Use the following format:
-Line X: [Background Name]
+X. [Background Name]
 
 Example:
-Line 0: forest_clearing.jpg
-Line 45: dark_cave_entrance.jpg
+0. forest_clearing.jpg
+45. dark_cave_entrance.jpg
 
 ${project_directives}
 
-Respond with ONLY the selection list. No numbers, bullets, brackets, or reasoning.
+Respond with ONLY the numbered selection list. No brackets or reasoning.

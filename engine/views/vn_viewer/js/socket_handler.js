@@ -5,6 +5,7 @@ import { applyVNResult, handleStatusUpdate, resetViewerState, handleWindowFocusC
 import { showPrologueOverlay, hidePrologueOverlay } from './modules/ui_manager.js';
 import { compileSequence } from './vn_ucp_compiler.js';
 import { dispatchUCPCommand } from './vn_ucp_dispatcher.js';
+import { resumePendingVoicePlayback } from './modules/audio_manager.js';
 
 const _injectedPermanentIds = new Set();
 
@@ -381,17 +382,7 @@ export function initSocketHandlers(socket) {
                     }
                     if (state.pendingVoiceResume) {
                         state.pendingVoiceResume = false;
-                        if (elements.voicePlayer && elements.voicePlayer.paused && elements.voicePlayer.src) {
-                            import('./engine.js').then(() => {
-                                elements.voicePlayer.play().then(() => {
-                                    state.isAudioPlaying = true;
-                                    state.isVoiceAudioPlaybackActive = true;
-                                    // Let the existing audio-ended watchdog and visual handlers run
-                                    // Note: If we need visual talking to start perfectly in sync, 
-                                    // engine might need a public method, but for now this resumes the paused dialogue audio.
-                                }).catch(e => debugError('Voice resume on focus fail', e));
-                            });
-                        }
+                        resumePendingVoicePlayback().catch(e => debugError('Voice resume on focus fail', e));
                     }
                 }
             }, 300);

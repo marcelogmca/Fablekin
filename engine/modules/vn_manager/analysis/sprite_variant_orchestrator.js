@@ -117,7 +117,7 @@ function extractScheduleDialogueIndex(entry) {
   for (const candidate of candidates) {
     if (candidate == null) continue;
     const parsed = Number.parseInt(candidate, 10);
-    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
   }
   return null;
 }
@@ -178,7 +178,7 @@ function resolveFinalPreviousVariant(vnManagerState, sceneEntry) {
   let winner = null;
   lockSchedule.forEach((entry, scheduleOrder) => {
     const entryDialogue = extractScheduleDialogueIndex(entry);
-    if (!entryDialogue) return;
+    if (entryDialogue == null) return;
 
     const entryCharacterKey = extractScheduleCharacterKey(entry);
     if (!entryCharacterKey) return;
@@ -292,7 +292,7 @@ function sanitizeVariantSchedule(rawSchedule, sceneResolver) {
     if (!entry || typeof entry !== 'object') return;
 
     const dialogueIndex = extractScheduleDialogueIndex(entry);
-    if (!dialogueIndex) return;
+    if (dialogueIndex == null) return;
 
     const rawCharacter = entry.characterKey ?? entry.character ?? entry.char;
     const sceneEntry = sceneResolver.resolve(rawCharacter);
@@ -307,7 +307,7 @@ function sanitizeVariantSchedule(rawSchedule, sceneResolver) {
     if (!resolvedVariant && !isExplicitClear) return;
 
     sanitized.push({
-      dialogue: dialogueIndex,
+      line: dialogueIndex,
       character: sceneEntry.characterKey,
       variant: resolvedVariant
     });
@@ -408,10 +408,10 @@ async function orchestrateSpriteVariants(turnContext, spriteCatalog = null) {
       .replace('{{charactersAndVariants}}', buildCharactersAndVariantsBlock(sceneEntries))
       .replace('{{lastVariants}}', buildLastVariantsBlock(sceneEntries, lastVariantsByCharacter))
       .replace('{{turnOneIntro}}', getTurnOneIntroContext(turnContext))
-      .replace('{{dialogues}}', 'Use the CURRENT NUMBERED SCENE message above')
+      .replace('{{dialogues}}', 'Use the CURRENT INDEXED SCENE message above')
       .replace('{{worldState}}', getWorldStateHint(turnContext))
       .replace('${project_directives}', turnContext.getFormattedDirective('sprite_variant_orchestrator', { header: '=== PROJECT DIRECTIVES ===' }));
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'numbered' });
+    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'indexedScene' });
 
     Logger.log('SpriteVariantOrchestrator', 'Request', `Analyzing ${sceneEntries.length} variant-aware characters...`, 'start');
     TurnLogger.logRequest('Sprite Variant Orchestrator', messages, CONFIG.MODEL, CONFIG.PROVIDER);

@@ -257,6 +257,7 @@
         },
         "inception/mercury-2.5-preview": {
           "input": 0.04,
+          "cache_read": 0.004,
           "output": 0.15,
           "unit": "USD per 1M tokens",
           "context": 260000
@@ -593,6 +594,7 @@
         },
         "deepseek/deepseek-v4-flash-0731:thinking": {
           "input": 0.14,
+          "cache_read": 0.014,
           "output": 0.28,
           "unit": "USD per 1M tokens",
           "context": 1000000
@@ -617,30 +619,32 @@
       }
     },
     "socket_host": "127.0.0.1",
-    "socket_port": 49399,
-    "socket_url": "http://127.0.0.1:49399",
+    "socket_port": 50943,
+    "socket_url": "http://127.0.0.1:50943",
     "llm_routing": {
       "aliases": {
         "lowendmodel": {
           "provider": "nano_gpt",
-          "model": "inception/mercury-2.5-preview",
-          "reasoning_effort": "high"
+          "model": "inclusionai/ling-3.0-flash:thinking",
+          "reasoning_effort": "high",
+          "fallback": {
+            "provider": "nano_gpt",
+            "model": "inception/mercury-2.5",
+            "reasoning_effort": "high"
+          }
         },
         "mediumendmodel": {
           "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-flash-0731",
-          "subprovider": "CrofAI"
+          "model": "deepseek/deepseek-v4-flash-0731"
         },
         "highendmodel": {
           "provider": "nano_gpt",
           "model": "deepseek/deepseek-v4-flash-0731:thinking",
-          "subprovider": "CrofAI",
           "reasoning_effort": "high"
         },
         "veryhighendmodel": {
           "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-flash-0731:thinking",
-          "subprovider": "CrofAI",
+          "model": "deepseek/deepseek-v4-pro-0813:thinking",
           "reasoning_effort": "high"
         }
       }
@@ -820,6 +824,36 @@
         "injured"
       ]
     },
+    "reaction_director": {
+      "description": "Sparse expression continuity specialist. Corrects stale expressions on listeners and stages meaningful facial reactions from dialogue or narration.",
+      "disabled_behavior": "Non-speaking characters keep their last expression until they speak again or another system changes their sprite.",
+      "metrics": {
+        "narrative_impact": "None",
+        "immersion": "High",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 72,
+        "group": "Visual Novel",
+        "label": "Reaction Director",
+        "recommended_enabled": true,
+        "author_note": "Useful in group scenes. It prevents listeners from carrying an inappropriate expression through major news or action.",
+        "enabled_note": "Silent characters can visibly react to dialogue and narrative events.",
+        "disabled_note": "Only speakers receive automatic expression updates.",
+        "settings_note": "Use a small fast model; output is sparse and limited to meaningful changes.",
+        "toggleable": true
+      },
+      "enabled": true,
+      "model": "lowendmodel",
+      "llm_params": {
+        "max_tokens": 3000,
+        "temperature": 0.1
+      },
+      "retries": 3,
+      "timeout": 120000
+    },
     "dialogue_processor": {
       "description": "Syntactic refinement engine. Processes raw LLM output to clean dialogue tags, format text, and prepare content for the VN viewer interface if the Writer does not already do so.",
       "disabled_behavior": "Syntactic cleanup is disabled. Raw LLM output is used directly, which might include unformatted dialogue tags or thinking blocks.",
@@ -899,6 +933,32 @@
         "enabled_note": "Characters can look toward speakers or scene targets.",
         "disabled_note": "Characters keep default or existing facing directions.",
         "settings_note": "Only matters when directional sprite assets exist.",
+        "toggleable": true
+      },
+      "enabled": true,
+      "model": "lowendmodel",
+      "retries": 3,
+      "timeout": 120000
+    },
+    "conversation_staging_classifier": {
+      "description": "Conversation staging specialist. Classifies natural voice handoff timing and determines whom each NPC speaker is primarily addressing.",
+      "disabled_behavior": "Dynamic floor-transfer timing and explicit speaker targeting are skipped. Autoplay uses its configured delay and speaker-facing uses the legacy fallback.",
+      "metrics": {
+        "narrative_impact": "None",
+        "immersion": "High",
+        "cost": "Low",
+        "latency": "Low"
+      },
+      "wizard": {
+        "include": true,
+        "order": 75,
+        "group": "Visual Novel",
+        "label": "Conversation Staging",
+        "recommended_enabled": true,
+        "author_note": "Recommended for voiced play. It gives exchanges natural pacing and makes speakers face their actual addressee.",
+        "enabled_note": "NPC dialogue receives natural handoff timing and a primary speech target.",
+        "disabled_note": "Voiced exchanges use the normal autoplay timer and legacy speaker-facing.",
+        "settings_note": "Use a small, fast model; this is a compact scene-classification call.",
         "toggleable": true
       },
       "enabled": true,
@@ -1023,6 +1083,7 @@
       "interface": {
         "text_alignment": "center",
         "auto_play_delay": 1450,
+        "natural_conversation_timing": true,
         "show_controls": true,
         "show_music_player": true,
         "show_ost_popup": true,
@@ -1142,16 +1203,18 @@
   },
   "plugins": {
     "relationship_tracker": {
-      "enable_rolling_ledger": true,
-      "ledger_consolidation_interval": 3,
-      "ledger_consolidation_model_def": {
-        "inherit": "vn_background"
-      },
-      "pacing_multiplier": 1.5,
       "generator_model_def": {
         "model": "highendmodel"
       },
       "extractor_model_def": {
+        "inherit": "vn_background"
+      },
+      "retries": 1,
+      "timeout": 120000,
+      "pacing_multiplier": 1.5,
+      "enable_rolling_ledger": true,
+      "ledger_consolidation_interval": 5,
+      "ledger_consolidation_model_def": {
         "inherit": "vn_background"
       }
     },
@@ -1165,8 +1228,11 @@
       "retries": 1,
       "timeout": 120000,
       "significance_threshold": 25,
+      "recall_max_per_turn": 3,
+      "recall_max_per_character": 1,
+      "recall_min_salience": 7,
       "enable_rolling_ledger": true,
-      "ledger_consolidation_interval": 3,
+      "ledger_consolidation_interval": 5,
       "ledger_consolidation_model_def": {
         "inherit": "vn_background"
       }
@@ -1332,7 +1398,7 @@
     },
     "cg_generator": {
       "enableTurnCgGeneration": false,
-      "runOnInterludes": true,
+      "runOnInterludes": false,
       "cgCount": 1,
       "imageProvider": "nanogpt",
       "imageResolution": "4K",
@@ -1571,14 +1637,27 @@
       "min_memory_length": 14
     },
     "post_writer_consistency_checker": {
+      "hq_multipass_enabled": true,
+      "hq_quality_model_def": {
+        "model": "highendmodel"
+      },
+      "hq_corrector_max_tokens": 2000,
+      "hq_max_flags_per_agent": 4,
+      "hq_history_count": 10,
+      "hq_concurrency": 6,
+      "reuse_writer_model": true,
       "model_def": {
         "model": "highendmodel"
       },
-      "retries": 1,
+      "enable_interludes": true,
+      "retries": 4,
       "timeout": 90000,
       "fuzzy_threshold": 0.92,
       "fuzzy_margin": 0.04,
-      "max_patches": 8
+      "max_patches": 8,
+      "speaker_label_audit": true,
+      "dialogue_count_delta_percent": 0.05,
+      "dialogue_count_delta_max": 3
     },
     "arc_cinematics": {
       "enabled": true,

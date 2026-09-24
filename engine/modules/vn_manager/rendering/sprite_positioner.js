@@ -368,6 +368,23 @@ function computeSpritePositions(commands, allSprites = [], options = {}) {
     });
     // ------------------------
 
+    // Sparse Reaction Director changes are explicit presentation instructions.
+    // Apply them after automatic exits so a directed reaction remains visible.
+    for (const reaction of (Array.isArray(cmd.reactionChanges) ? cmd.reactionChanges : [])) {
+      if (!reaction?.character || !reaction.image) continue;
+      handleShowAction(
+        reaction.character,
+        reaction.image,
+        reaction.availableRotations || [],
+        newPositions,
+        characterHeat,
+        characterPositions,
+        getCharacterMetadataScale(reaction.character, spriteMetadata),
+        positionFillOrder,
+        positionReplaceOrder
+      );
+    }
+
     // Update the main positions state for the next iteration
     positions = newPositions;
 
@@ -400,8 +417,10 @@ function computeSpritePositions(commands, allSprites = [], options = {}) {
       return null;
     });
 
+    const outputCommand = { ...cmd };
+    delete outputCommand.reactionChanges;
     return {
-      ...cmd,
+      ...outputCommand,
       sprites: suppressDuplicateSpriteVisuals(finalSpritesArray)
     };
   });
@@ -416,7 +435,7 @@ function computeSpritePositions(commands, allSprites = [], options = {}) {
 /**
  * Applies rotation logic to the final sequence based on the Gaze Director LLM instructions.
  * @param {Array} sequence - The final turn sequence with sprites and slots.
- * @param {Array} focusInstructions - Array from LLM: [{ line: 2, commands: ["focus:away"] }, ...]
+ * @param {Array} focusInstructions - Array from LLM: [{ line: 2, commands: ["focus:away:2"] }, ...]
  * @param {string} playerCharacterName - Name of the player character (off-screen).
  * @param {Set} allSpritesSet - A Set of all available sprite paths for flag recomputation.
  */
@@ -433,15 +452,16 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
   if (Array.isArray(focusInstructions)) {
     Logger.log('SpritePositioner', 'Gaze', `Received ${focusInstructions.length} focus instructions from LLM.`);
     focusInstructions.forEach(inst => {
-      // Handle both 1-indexed (from LLM) and 0-indexed formats just in case
+      // LLM line ids are authoritative global zero-based scene indexes.
       let lineIdx = inst.line;
       if (typeof lineIdx === 'string') lineIdx = parseInt(lineIdx, 10);
       if (isNaN(lineIdx)) return;
-      
-      // Assume 1-indexed from prompt, convert to 0-indexed for array access
-      const zeroIndexed = Math.max(0, lineIdx - 1);
-      activeCommands.set(zeroIndexed, inst.commands || []);
-      Logger.log('SpritePositioner', 'Gaze', `Line ${lineIdx} (idx ${zeroIndexed}) commands: ${JSON.stringify(inst.commands)}`);
+      const sceneLineIndex = Math.max(0, Math.round(lineIdx));
+      if (sceneLineIndex >= sequence.length) return;
+      const existingCommands = activeCommands.get(sceneLineIndex) || [];
+      const incomingCommands = Array.isArray(inst.commands) ? inst.commands : [];
+      activeCommands.set(sceneLineIndex, [...existingCommands, ...incomingCommands]);
+      Logger.log('SpritePositioner', 'Gaze', `Line ${sceneLineIndex} commands: ${JSON.stringify(inst.commands)}`);
     });
   } else {
     Logger.warn('SpritePositioner', 'Gaze', 'focusInstructions is not an array.');
@@ -449,8 +469,7 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
 
   // --- STATE VARIABLES ---
   let groupFocus = { target: 'auto', untilLine: Infinity }; 
-  let activeOverrides = {}; // Format: { "dehya": { target: "candace", untilLine: 15 } }
-  let dialogueLineIndex = 0; 
+  let activeOverrides = {}; // Format: { "dehya": { mode: "avoid", target: "candace", untilLine: 15 } }
   let lastOnScreenSpeakerLower = null;
   let previousSpeaker = null; // Track who spoke BEFORE the current speaker
   // Track the last rotation applied to each character, so non-dialogue lines can inherit it
@@ -459,10 +478,45 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
 
   for (let i = 0; i < sequence.length; i++) {
     const cmd = sequence[i];
+    const currentCommands = activeCommands.get(i) || [];
+
+    // Expiration and command scheduling use global zero-based scene indexes.
+    if (i > groupFocus.untilLine) {
+      groupFocus = { target: 'auto', untilLine: Infinity };
+    }
+    for (const char in activeOverrides) {
+      if (i > activeOverrides[char].untilLine) delete activeOverrides[char];
+    }
+
+    for (const commandStr of currentCommands) {
+      if (typeof commandStr !== 'string') continue;
+      const parts = commandStr.split(':').map(part => part.trim());
+      const action = parts[0].toLowerCase();
+
+      if (action === 'focus' && parts[1]) {
+        const target = parts[1].toLowerCase();
+        const untilLine = parts[2] ? parseInt(parts[2], 10) : Infinity;
+        groupFocus = { target, untilLine: Number.isNaN(untilLine) ? Infinity : untilLine };
+      } else if ((action === 'look' || action === 'avoid') && parts.length >= 4) {
+        const charName = parts[1].toLowerCase();
+        const targetName = parts[2].toLowerCase();
+        const untilLine = parseInt(parts[3], 10);
+        if (!Number.isNaN(untilLine)) {
+          activeOverrides[charName] = { mode: action, target: targetName, untilLine };
+        }
+      } else if (action === 'face' && parts.length >= 4) {
+        const charName = parts[1].toLowerCase();
+        const orientation = parts[2].toLowerCase();
+        const untilLine = parseInt(parts[3], 10);
+        if (['front', 'left', 'right', 'back'].includes(orientation) && !Number.isNaN(untilLine)) {
+          activeOverrides[charName] = { mode: 'face', target: orientation, untilLine };
+        }
+      }
+    }
 
     // For non-dialogue lines that still have sprites (narrative, empty, etc.),
-    // apply the last known rotations without advancing the gaze state machine.
-    if (cmd.type !== 'dialogue') {
+    // preserve the last rotations unless an explicit command begins on this line.
+    if (cmd.type !== 'dialogue' && currentCommands.length === 0) {
       if (cmd.sprites && Object.keys(lastComputedRotations).length > 0) {
         for (const sprite of cmd.sprites) {
           if (!sprite || !sprite.character) continue;
@@ -490,9 +544,8 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
       continue;
     }
 
-    dialogueLineIndex++;
     const speakerLower = (cmd.character || '').toLowerCase();
-    const isNarrator = speakerLower === 'narrator' || speakerLower === 'system' || speakerLower === '' || speakerLower === playerLower;
+    const isNarrator = cmd.type !== 'dialogue' || speakerLower === 'narrator' || speakerLower === 'system' || speakerLower === '' || speakerLower === playerLower;
 
     // Track the last actual character who spoke, to preserve gaze during narrator lines
     if (!isNarrator) {
@@ -502,54 +555,18 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
       lastOnScreenSpeakerLower = speakerLower;
     }
 
-
-    // 1. CLEAN UP EXPIRED STATES
-    // Group Focus Expiration
-    if (dialogueLineIndex > groupFocus.untilLine) {
-       groupFocus = { target: 'auto', untilLine: Infinity };
-    }
-    // Individual Override Expiration
-    for (const char in activeOverrides) {
-      const untilIdx = activeOverrides[char].untilLine - 1;
-      if (dialogueLineIndex > untilIdx) {
-        delete activeOverrides[char];
-      }
-    }
-
-    // 2. PROCESS NEW INSTRUCTIONS FOR THIS LINE
-    const currentCommands = activeCommands.get(dialogueLineIndex) || [];
-    for (const commandStr of currentCommands) {
-      const parts = commandStr.split(':');
-      const action = parts[0];
-
-      if (action === 'focus' && parts[1]) {
-        const target = parts[1].toLowerCase();
-        // focus:auto has no untilLine. Others should.
-        const untilLine = parts[2] ? parseInt(parts[2], 10) - 1 : Infinity;
-        groupFocus = { target: target, untilLine: untilLine };
-      } 
-      else if (action === 'look' && parts.length >= 4) {
-        // look:<character>:<target>:<until_line>
-        const charName = parts[1].toLowerCase();
-        const targetName = parts[2].toLowerCase();
-        const untilLine = parseInt(parts[3], 10);
-        
-        if (!isNaN(untilLine)) {
-          activeOverrides[charName] = { target: targetName, untilLine: untilLine };
-        }
-      }
-    }
-
-    // 3. CALCULATE ROTATION FOR EVERY SPRITE ON SCREEN
-    for (const sprite of cmd.sprites) {
+    // Calculate rotation for every sprite on screen.
+    for (const sprite of (cmd.sprites || [])) {
       if (!sprite || !sprite.character) continue;
 
       const spriteCharLower = sprite.character.toLowerCase();
       let intendedTarget = '';
+      let overrideMode = 'look';
 
       // A. Determine Intended Target (Override > Group Focus)
       if (activeOverrides[spriteCharLower]) {
         intendedTarget = activeOverrides[spriteCharLower].target;
+        overrideMode = activeOverrides[spriteCharLower].mode || 'look';
       } else {
         intendedTarget = groupFocus.target;
       }
@@ -557,7 +574,9 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
 
       // B. Resolve Target to Rotation
       let rotation = 'front';
-      if (intendedTarget === 'player') {
+      if (overrideMode === 'face') {
+        rotation = intendedTarget;
+      } else if (intendedTarget === 'player' || intendedTarget === playerLower) {
         rotation = 'front';
       } else if (intendedTarget === 'away') {
         rotation = 'back';
@@ -567,8 +586,27 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
         if (!effectiveSpeaker) {
           rotation = 'front'; // First line is narrator, no previous speaker
         } else if (spriteCharLower === effectiveSpeaker) {
-          // If the player isn't part of the conversation, try to look at the previous speaker
-          if (!playerIsPresentInDialogue && previousSpeaker && previousSpeaker !== speakerLower) {
+          const conversationalTarget = normalizeActorAlias(cmd.speakerTarget || cmd.speaker_target);
+          if (conversationalTarget && conversationalTarget !== 'auto') {
+            if (conversationalTarget === 'player' || conversationalTarget === playerLower) {
+              rotation = 'front';
+            } else if (conversationalTarget === 'group') {
+              const otherSprites = (cmd.sprites || []).filter(other => other && other !== sprite && other.character);
+              if (otherSprites.length > 0) {
+                const averageSlot = otherSprites.reduce((sum, other) => sum + Number(other.slot || 0), 0) / otherSprites.length;
+                if (averageSlot < sprite.slot) rotation = 'left';
+                else if (averageSlot > sprite.slot) rotation = 'right';
+              }
+            } else {
+              const conversationalTargetSprite = findSpriteRepresentingCharacter(cmd.sprites, conversationalTarget);
+              if (conversationalTargetSprite) {
+                if (conversationalTargetSprite.slot < sprite.slot) rotation = 'left';
+                else if (conversationalTargetSprite.slot > sprite.slot) rotation = 'right';
+              }
+            }
+            // Legacy fallback until Dialogue Choreographer data is present.
+            // If the player isn't part of the conversation, try to look at the previous speaker.
+          } else if (!playerIsPresentInDialogue && previousSpeaker && previousSpeaker !== speakerLower) {
             const targetSprite = findSpriteRepresentingCharacter(cmd.sprites, previousSpeaker);
             if (targetSprite) {
               if (targetSprite.slot < sprite.slot) rotation = 'left';
@@ -611,6 +649,13 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
         }
       }
 
+      if (overrideMode === 'avoid') {
+        if (rotation === 'left') rotation = 'right';
+        else if (rotation === 'right') rotation = 'left';
+        else if (intendedTarget === 'player' || intendedTarget === playerLower || rotation === 'front') rotation = 'back';
+        else if (rotation === 'back') rotation = 'front';
+      }
+
 
       // 4. APPLY ROTATION TO SPRITE PATH
       // Skip rotation for generic NPCs as they only have 3 base files
@@ -619,7 +664,9 @@ function applyRotationLogic(sequence, focusInstructions, playerCharacterName, al
       }
 
       // Safety check: Does this character actually have this angle asset?
-      const availableRotations = cmd.availableRotations || sprite.availableRotations || [];
+      const availableRotations = Array.isArray(sprite.availableRotations)
+        ? sprite.availableRotations
+        : (cmd.availableRotations || []);
       if (rotation !== 'front' && !availableRotations.includes(rotation)) {
          rotation = 'front'; // Fallback if asset is missing
       }

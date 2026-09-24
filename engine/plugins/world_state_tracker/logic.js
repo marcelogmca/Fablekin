@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { formatIndexedScene, formatIndexedSceneLine } = require('../../modules/vn_manager/scene_prompt_formatter.js');
 const START_DAY = 1;
 const START_HOUR = 8;
 
@@ -79,7 +80,8 @@ function getProcessedLines(turnContext) {
 }
 
 function formatScriptLine(line, index, label = 'Line') {
-  return `[${label} ${index}] ${line?.character || 'Narrator'}: ${line?.text || line?.line || ''}`;
+  const formatted = formatIndexedSceneLine(line, index);
+  return label === 'Line' ? formatted : `${label} ${formatted}`;
 }
 
 function getLineCount(turnContext) {
@@ -94,9 +96,7 @@ function clampLineIndex(value, maxLine) {
 
 function buildNumberedScript(turnContext) {
   const processedLines = getProcessedLines(turnContext);
-  return processedLines
-    .map((line, index) => formatScriptLine(line, index))
-    .join('\n');
+  return formatIndexedScene(processedLines);
 }
 
 function createDefaultStructuredData(settings = {}) {
@@ -121,7 +121,7 @@ function formatBackgroundChangeHints(turnContext) {
   return bgChanges.map((change) => {
     const line = Number.isInteger(change.line) ? change.line : 0;
     const bgPath = change.path || '';
-    return `Line ${line}: ${path.basename(bgPath) || bgPath || 'unknown background'}`;
+    return `${line}. ${path.basename(bgPath) || bgPath || 'unknown background'}`;
   }).join('\n');
 }
 
@@ -632,7 +632,7 @@ async function buildPreviousChapterGrounding(turnContext, tools, options = {}) {
   }
 
   lines.push('');
-  lines.push('Previous chapter indexed dialogue with tracked time after each line:');
+  lines.push('Previous chapter indexed scene with tracked time after each line:');
   for (const [index, line] of previousLines.entries()) {
     let stateAtLine = null;
     if (Array.isArray(timeline) && timeline.length > 0) {

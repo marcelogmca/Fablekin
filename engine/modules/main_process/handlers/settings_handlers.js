@@ -7,7 +7,7 @@ let providerSecretSaveQueue = Promise.resolve();
 const DEFAULT_VN_SETTINGS = {
     audio: { ost_volume: 0.5, tts_volume: 0.5, bgm_sfx_volume: 0.3, sfx_volume: 0.5 },
     visuals: { sprite_offset: 0, dialogue_width: 100, dialogue_height: 200, toolbar_vertical_offset: 0, panel_transparency: 0.75, panel_blur: 10, font_size_multiplier: 1.0, sprite_size_multiplier: 1.0, sprite_horizontal_padding: 0, max_sprite_slots: 5, foreground_background_blur_strength: 0, write_speed: 30 },
-    interface: { text_alignment: 'center', auto_play_delay: 500 },
+    interface: { text_alignment: 'center', auto_play_delay: 500, natural_conversation_timing: true },
     performance: { max_fps: 60 }
 };
 

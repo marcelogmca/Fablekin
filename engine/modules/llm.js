@@ -11,6 +11,84 @@ const { jsonrepair } = require('jsonrepair');
 const { extractReasoningContent } = require('./llm_response_metadata.js');
 const { resolveModelAlias: resolveModelAliasFromSettings } = require('./model_routing.js');
 
+const DEFAULT_LLM_TIMEOUT_MS = 300000;
+
+function createLlmTimeoutError(timeoutMs) {
+  const error = new Error(`LLM request timed out after ${timeoutMs}ms.`);
+  error.name = 'TimeoutError';
+  error.code = 'ETIMEDOUT';
+  error.kind = 'timeout';
+  return error;
+}
+
+function createLlmAbortError(reason) {
+  if (reason instanceof Error) return reason;
+  const error = new Error(String(reason || 'LLM request aborted.'));
+  error.name = 'AbortError';
+  error.code = 'ABORT_ERR';
+  return error;
+}
+
+/**
+ * Invokes a LangChain model with an application-owned deadline. Some adapters
+ * accept the `timeout` invocation option without actually terminating a stuck
+ * HTTP request, so the local race is required in addition to aborting the
+ * underlying request.
+ */
+async function invokeModelWithDeadline(configuredModel, messages, options = {}) {
+  const parsedTimeout = Number(options.timeout);
+  const timeoutMs = Number.isFinite(parsedTimeout) && parsedTimeout > 0
+    ? Math.floor(parsedTimeout)
+    : DEFAULT_LLM_TIMEOUT_MS;
+  const externalSignal = options.signal || null;
+  const requestController = typeof globalThis.AbortController === 'function'
+    ? new globalThis.AbortController()
+    : null;
+  const requestSignal = requestController?.signal || externalSignal;
+
+  let timeoutTimer = null;
+  let externalAbortHandler = null;
+
+  const deadlinePromise = new Promise((_, reject) => {
+    timeoutTimer = setTimeout(() => {
+      const error = createLlmTimeoutError(timeoutMs);
+      reject(error);
+      if (requestController && !requestController.signal.aborted) {
+        requestController.abort(error);
+      }
+    }, timeoutMs);
+  });
+
+  const competingPromises = [
+    configuredModel.invoke(messages, requestSignal ? { timeout: timeoutMs, signal: requestSignal } : { timeout: timeoutMs }),
+    deadlinePromise
+  ];
+
+  if (externalSignal) {
+    competingPromises.push(new Promise((_, reject) => {
+      externalAbortHandler = () => {
+        const error = createLlmAbortError(externalSignal.reason);
+        reject(error);
+        if (requestController && !requestController.signal.aborted) {
+          requestController.abort(error);
+        }
+      };
+
+      if (externalSignal.aborted) externalAbortHandler();
+      else externalSignal.addEventListener('abort', externalAbortHandler, { once: true });
+    }));
+  }
+
+  try {
+    return await Promise.race(competingPromises);
+  } finally {
+    clearTimeout(timeoutTimer);
+    if (externalSignal && externalAbortHandler) {
+      externalSignal.removeEventListener('abort', externalAbortHandler);
+    }
+  }
+}
+
 // #region REFUSAL DETECTION
 const levenshtein = require('js-levenshtein');
 
@@ -176,6 +254,24 @@ function resolveCallProviderKey(routeProvider, providerOverride = null) {
     );
   }
   return providerKey;
+}
+
+function isFallbackEligibleError(error) {
+  const candidates = [
+    error?.status,
+    error?.statusCode,
+    error?.response?.status,
+    error?.cause?.status,
+    error?.cause?.statusCode
+  ];
+  const status = candidates.find(value => Number.isInteger(Number(value)));
+  if (status === 408 || status === 429 || (status >= 500 && status <= 599)) return true;
+
+  const message = String(error?.message || error || '');
+  const statusMatch = message.match(/\b(408|429|5\d{2})\b/);
+  if (statusMatch) return true;
+
+  return /\b(?:ECONNRESET|ECONNREFUSED|ECONNABORTED|ETIMEDOUT|ENOTFOUND|EAI_AGAIN)\b|network error|fetch failed|service unavailable|gateway timeout|request timed out/i.test(message);
 }
 
 function normalizeProviderConfig(providerConfig) {
@@ -399,7 +495,7 @@ function normalizeReasoningParamsForProvider(providerKey, extra = {}) {
  * resolve aliases, retry, validate, use the local dev cache, emit generation
  * notifications, or link usage into TurnLogger.
  */
-async function callLLMDirect({ messages, provider, model, timeout = 600000, extra = {}, signal = null }) {
+async function callLLMDirect({ messages, provider, model, timeout = DEFAULT_LLM_TIMEOUT_MS, extra = {}, signal = null }) {
   const settings = readSettings();
   const providerKey = normalizeProviderKey(provider);
   const rawModel = String(model || '').trim();
@@ -451,10 +547,7 @@ async function callLLMDirect({ messages, provider, model, timeout = 600000, extr
   });
 
   const startedAt = Date.now();
-  const response = await configuredModel.invoke(
-    langChainMessages,
-    signal ? { timeout, signal } : { timeout }
-  );
+  const response = await invokeModelWithDeadline(configuredModel, langChainMessages, { timeout, signal });
   let content = response.content;
   const reasoning = extractReasoningContent(response);
 
@@ -700,7 +793,7 @@ function normalizeUsageData(providerKey, response) {
  * @param {Array<{role: 'system'|'user'|'assistant', content: string}>} params.messages - The message payload in standard OpenAI format.
  * @param {string} params.model - A global model alias such as 'veryhighendmodel'. Its route selects the provider and concrete model.
  * @param {number} [params.retries=1] - The number of times to automatically retry on API errors or validation failures. (Total attempts = retries + 1).
- * @param {number} [params.timeout=600000] - The request timeout in milliseconds.
+ * @param {number} [params.timeout=300000] - The enforced per-attempt request timeout in milliseconds.
  * @param {object} [params.extra={}] - Extra parameters (e.g., temperature, topP) to be passed into the `modelKwargs` of the LangChain call.
  * @param {boolean} [params.expectJson=false] - If true, validates and parses the response as JSON.
  * @param {RegExp} [params.validationRegex=null] - If provided, tests the string response against this regex. The call fails and retries if the regex does not match.
@@ -709,78 +802,94 @@ function normalizeUsageData(providerKey, response) {
  * @returns {Promise<{content: (string|object), model: string}>} A promise that resolves to an object containing the LLM's response content (as a string, or a parsed object if expectJson is true) and the final resolved model name used for the call.
  * @throws {Error} Throws an error if the provider is invalid, or if all retry attempts fail. The error will contain the message from the last failed attempt.
  */
-async function callLLM({ messages, model, provider = null, retries = 1, timeout = 600000, extra = {}, expectJson = false, validationRegex = null, validateFn = null, minCharacters = 0, minWords = 0, callingModule = 'LLM', turnLogTitle = null }) {
+async function callLLM({ messages, model, provider = null, retries = 1, timeout = DEFAULT_LLM_TIMEOUT_MS, extra = {}, expectJson = false, validationRegex = null, validateFn = null, minCharacters = 0, minWords = 0, callingModule = 'LLM', turnLogTitle = null }) {
   const safeModule = callingModule || 'LLM';
   const numericMinWords = Number(minWords);
   const effectiveMinWords = Number.isFinite(numericMinWords) ? Math.max(0, Math.floor(numericMinWords)) : 0;
   const settings = readSettings();
   cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
 
-  const route = resolveModelAlias(model);
-  const providerKey = resolveCallProviderKey(route.provider, provider);
-  const baseModelInstance = getProviderInstance(providerKey);
-  const rawResolvedModel = route.model;
-  const routeExtra = applyRouteReasoningEffort(route, extra);
-  const openRouterReasoningModel = providerKey === 'openrouter'
-    ? normalizeOpenRouterReasoningModel(rawResolvedModel, routeExtra)
-    : { model: rawResolvedModel, extra: routeExtra };
-  const resolvedModel = openRouterReasoningModel.model;
-  const normalizedExtra = openRouterReasoningModel.extra;
-  const subprovider = route.subprovider;
-  if (openRouterReasoningModel.reasoningMarker) {
-    Logger.log(
-      safeModule,
-      resolvedModel,
-      `Translated OpenRouter model suffix ${openRouterReasoningModel.reasoningMarker} to reasoning.effort=${openRouterReasoningModel.reasoningEffort}.`
-    );
-  }
-
-  if (!baseModelInstance) {
-    const providerConfig = getProviderConfig(settings, providerKey);
-    if (providerKey !== 'ollama' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
-      throw new Error(`Provider '${providerKey}' is configured but has no API key. Set it in Settings > Secrets.`);
+  const primaryRoute = resolveModelAlias(model);
+  const fallbackRoute = primaryRoute.fallback || null;
+  const buildAttemptRoute = (route, { useProviderOverride = false } = {}) => {
+    const providerKey = useProviderOverride
+      ? resolveCallProviderKey(route.provider, provider)
+      : normalizeProviderKey(route.provider);
+    const baseModelInstance = getProviderInstance(providerKey);
+    if (!baseModelInstance) {
+      const providerConfig = getProviderConfig(settings, providerKey);
+      if (providerKey !== 'ollama' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
+        throw new Error(`Provider '${providerKey}' is configured but has no API key. Set it in Settings > Secrets.`);
+      }
+      const available = getConfiguredProviderKeys(settings).join(', ');
+      throw new Error(`Model alias '${model}' routes through unavailable provider '${providerKey}'. Available providers are: ${available}`);
     }
-    const available = getConfiguredProviderKeys(settings).join(', ');
-    throw new Error(`Model alias '${model}' routes through unavailable provider '${providerKey}'. Available providers are: ${available}`);
-  }
 
-  // --- LOCAL DEV CACHE LOOKUP ---
-  let requestCrc = null;
-  if (settings.infrastructure?.enable_dev_cache) {
-    const requestFingerprint = {
-      messages,
-      provider: providerKey,
-      model: resolvedModel,
-      subprovider,
-      extra: normalizedExtra,
-      expectJson,
-      validationRegex: validationRegex ? validationRegex.source : null,
-      minCharacters
+    const routeExtra = applyRouteReasoningEffort(route, extra);
+    const normalizedRoute = providerKey === 'openrouter'
+      ? normalizeOpenRouterReasoningModel(route.model, routeExtra)
+      : { model: route.model, extra: routeExtra };
+    return {
+      providerKey,
+      baseModelInstance,
+      resolvedModel: normalizedRoute.model,
+      normalizedExtra: normalizedRoute.extra,
+      subprovider: route.subprovider,
+      reasoningMarker: normalizedRoute.reasoningMarker,
+      reasoningEffort: normalizedRoute.reasoningEffort
     };
-    if (effectiveMinWords > 0) requestFingerprint.minWords = effectiveMinWords;
-    requestCrc = calculateCrc(JSON.stringify(requestFingerprint));
-    const cached = await devCache.get(requestCrc, resolvedModel);
-    if (cached) {
-      cancellation.throwIfCancelled(`LLM cache hit for ${safeModule}`);
-      Logger.log(safeModule, resolvedModel, "LOCAL DEV CACHE HIT");
-      const usageData = { is_local_cache: true, cost: 0, prompt_tokens: 0, completion_tokens: 0 };
-      TurnLogger.linkUsage(providerKey, resolvedModel, cached, usageData);
+  };
 
-      return { 
-        content: cached, 
-        model: resolvedModel, 
-        provider: providerKey,
-        usage: usageData 
-      };
-    }
-  }
+  const primaryAttemptRoute = buildAttemptRoute(primaryRoute, { useProviderOverride: true });
+  let usingFallback = false;
 
   const totalAttempts = retries + 1;
 
   try {
     for (let attempt = 1; attempt <= totalAttempts; attempt++) {
       cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
+      let providerKey = primaryAttemptRoute.providerKey;
+      let baseModelInstance = primaryAttemptRoute.baseModelInstance;
+      let resolvedModel = primaryAttemptRoute.resolvedModel;
+      let normalizedExtra = primaryAttemptRoute.normalizedExtra;
+      let subprovider = primaryAttemptRoute.subprovider;
+      let requestCrc = null;
       try {
+        const attemptRoute = usingFallback
+          ? buildAttemptRoute(fallbackRoute)
+          : primaryAttemptRoute;
+        ({ providerKey, baseModelInstance, resolvedModel, normalizedExtra, subprovider } = attemptRoute);
+        if (attemptRoute.reasoningMarker) {
+          Logger.log(
+            safeModule,
+            resolvedModel,
+            `Translated OpenRouter model suffix ${attemptRoute.reasoningMarker} to reasoning.effort=${attemptRoute.reasoningEffort}.`
+          );
+        }
+
+        if (settings.infrastructure?.enable_dev_cache) {
+          const requestFingerprint = {
+            messages,
+            provider: providerKey,
+            model: resolvedModel,
+            subprovider,
+            extra: normalizedExtra,
+            expectJson,
+            validationRegex: validationRegex ? validationRegex.source : null,
+            minCharacters
+          };
+          if (effectiveMinWords > 0) requestFingerprint.minWords = effectiveMinWords;
+          requestCrc = calculateCrc(JSON.stringify(requestFingerprint));
+          const cached = await devCache.get(requestCrc, resolvedModel);
+          if (cached) {
+            cancellation.throwIfCancelled(`LLM cache hit for ${safeModule}`);
+            Logger.log(safeModule, resolvedModel, 'LOCAL DEV CACHE HIT');
+            const usageData = { is_local_cache: true, cost: 0, prompt_tokens: 0, completion_tokens: 0 };
+            TurnLogger.linkUsage(providerKey, resolvedModel, cached, usageData);
+            return { content: cached, model: resolvedModel, provider: providerKey, usage: usageData };
+          }
+        }
+
         const callExtraParams = normalizeReasoningParamsForProvider(providerKey, normalizedExtra);
         // --- REASONING NORMALIZATION ---
         if (callExtraParams.reasoning) {
@@ -872,8 +981,10 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
             model: resolvedModel,
             attempt
           });
-          const invokeOptions = llmAbort.signal ? { timeout, signal: llmAbort.signal } : { timeout };
-          response = await configuredModel.invoke(langChainMessages, invokeOptions);
+          response = await invokeModelWithDeadline(configuredModel, langChainMessages, {
+            timeout,
+            signal: llmAbort.signal
+          });
           llmAbort.throwIfCancelled(`LLM response for ${safeModule}`);
         } finally {
           clearTimeout(slowWarningTimer);
@@ -1027,6 +1138,23 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
           throw error; // Propagate the final error up the call stack
         }
 
+        if (!usingFallback && fallbackRoute && isFallbackEligibleError(error)) {
+          usingFallback = true;
+          Logger.warn(
+            safeModule,
+            resolvedModel,
+            `Transient provider failure detected. Switching immediately to configured fallback ${fallbackRoute.provider}/${fallbackRoute.model} for attempt ${attempt + 1}/${totalAttempts}.`
+          );
+          sendUiNotification({
+            id: `retry_${safeModule}`,
+            message: `⚡ LLM fallback: ${safeModule} is switching to its backup model...`,
+            blocking: true,
+            priority: 110,
+            icon: '⚡'
+          });
+          continue;
+        }
+
         // Notify the user about the retry to keep the UI alive and informative
         sendUiNotification({
           id: `retry_${safeModule}`,
@@ -1111,6 +1239,9 @@ module.exports = {
   normalizeOpenRouterReasoningModel,
   applyRouteReasoningEffort,
   normalizeReasoningParamsForProvider,
-  resolveCallProviderKey
+  resolveCallProviderKey,
+  isFallbackEligibleError,
+  invokeModelWithDeadline,
+  DEFAULT_LLM_TIMEOUT_MS
 };
 // #endregion

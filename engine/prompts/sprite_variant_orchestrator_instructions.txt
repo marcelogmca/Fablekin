@@ -16,22 +16,22 @@ Critical mismatch example:
 This is a strong reason to switch variant.
 
 === LINE NUMBERING RULE ===
-Dialogue numbers below are authoritative for scheduling.
-If you need a mid-scene change, reference those exact dialogue numbers.
+Global zero-based scene line numbers below are authoritative for scheduling.
+If you need a mid-scene change, reference those exact line numbers.
 
 === OUTPUT OBJECTIVE ===
 Return one or both:
 - `spritevariantlock` (scene-level lock map)
-- `spritevariantlockschedule` (timeline lock changes by dialogue number)
+- `spritevariantlockschedule` (timeline lock changes by global scene line number)
 
 Use `spritevariantlock` to establish the variant active at scene start for every listed character.
 Use `spritevariantlockschedule` when variant must change during the scene.
 
 `spritevariantlockschedule` entry format:
-{ "dialogue": <number>, "character": "<character_key>", "variant": "<variant_key_or_default_or_null>" }
+{ "line": <global_zero_based_line_number>, "character": "<character_key>", "variant": "<variant_key_or_default_or_null>" }
 
 Notes:
-- `variant: null` means clear lock from that dialogue onward.
+- `variant: null` means clear lock from that scene line onward.
 - Prefer as few changes as possible.
 - If no critical change is needed, lock each character to their LAST VARIANT and return an empty schedule.
 
@@ -44,10 +44,10 @@ ${project_directives}
 {{lastVariants}}
 
 === TURN 1 INTRO / PROLOGUE OUTFIT BASELINE ===
-This section is populated only on Turn 1. Use explicit attire and end-of-prologue circumstances to choose the scene-starting variant. The CURRENT NUMBERED SCENE remains authoritative if it changes or contradicts the Intro. Do not invent clothing details that neither source supports.
+This section is populated only on Turn 1. Use explicit attire and end-of-prologue circumstances to choose the scene-starting variant. The CURRENT INDEXED SCENE remains authoritative if it changes or contradicts the Intro. Do not invent clothing details that neither source supports.
 {{turnOneIntro}}
 
-=== CHAPTER TEXT (NUMBERED DIALOGUE LINES) ===
+=== CHAPTER TEXT (GLOBAL ZERO-BASED LINE INDEXES) ===
 {{dialogues}}
 
 === OPTIONAL WORLD STATE (MEDIA-RELEVANT) ===
@@ -61,8 +61,8 @@ Return VALID JSON only:
     "character_key": "variant_key"
   },
   "spritevariantlockschedule": [
-    { "dialogue": 12, "character": "character_key", "variant": "winter_clothes" },
-    { "dialogue": 38, "character": "character_key", "variant": null }
+    { "line": 12, "character": "character_key", "variant": "winter_clothes" },
+    { "line": 38, "character": "character_key", "variant": null }
   ]
 }
 

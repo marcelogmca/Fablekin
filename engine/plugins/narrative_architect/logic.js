@@ -201,34 +201,19 @@ function parseCachedGuidancePayload(rawValue) {
 /**
  * Extracts context tags using a cheap LLM.
  */
-async function extractContextTags(turnContext, tools, settings, seriesList = []) {
-    const contextDepth = settings.context_depth || 3;
+async function extractContextTags(turnContext, tools, settings, seriesList = [], batch = {}) {
+    const currentDirection = [
+        turnContext.input?.userPrompt,
+        turnContext.input?.softFeedback,
+        turnContext.input?.directorPrompt
+    ].filter(Boolean).join('\n\n');
 
-    // 1. Gather recent summaries using TurnContext abstraction
-    let recentSummaries = '';
-    try {
-        const { fullchapters, summarychapters, synopsischapters } = await turnContext.retrieveDatedChapters();
-        const allChapters = [...synopsischapters, ...summarychapters, ...fullchapters];
-        const recent = allChapters.slice(-contextDepth);
-
-        if (recent.length > 0) {
-            recentSummaries = recent
-                .map(tc => `Turn ${tc.turnNumber}: ${tc.output.summary || tc.output.synopsis || 'No summary'}`)
-                .join('\n');
-        }
-    } catch (error) {
-        tools.logger.error('Logic', `Failed to gather recent summaries via TurnContext: ${error.message}`);
-    }
-
-    const directorBrief = turnContext.processed.director?.writerBrief || '';
-
-    // 2. Build prompt and call LLM
     const modelDef = settings.model_def || { model: 'mediumendmodel' };
-    const useSharedModel = tools.llm.vnBackground?.isSelected?.(modelDef) === true;
     const systemPrompt = prompts.getTagExtractionPrompt(
-        useSharedModel ? 'Use SELECTED NARRATIVE HISTORY from the shared background context.' : recentSummaries,
-        useSharedModel ? 'Use DIRECTOR BRIEF from the shared background context.' : directorBrief,
-        seriesList
+        batch.promptText || '',
+        currentDirection,
+        seriesList,
+        batch
     );
     const messages = [{ role: 'user', content: systemPrompt }];
     const resolvedModelDef = tools.llm.resolveModelDefinition?.(modelDef) || modelDef;
@@ -250,9 +235,12 @@ async function extractContextTags(turnContext, tools, settings, seriesList = [])
                 series: { type: 'array' }
             }
         };
-        const response = useSharedModel
-            ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'none', suffix: systemPrompt }, schema)
-            : await tools.llm.withSchema({ ...task, messages, model: resolvedModelDef.model, provider: resolvedModelDef.provider }, schema);
+        const response = await tools.llm.withSchema({
+            ...task,
+            messages,
+            model: resolvedModelDef.model,
+            provider: resolvedModelDef.provider
+        }, schema);
 
         const extractedData = response.content || {};
         const validTags = tags.validateTags(extractedData.tags || []);
@@ -263,6 +251,96 @@ async function extractContextTags(turnContext, tools, settings, seriesList = [])
         tools.logger.error('Extraction', `LLM call failed: ${error.message}`);
         return { tags: [], series: [] };
     }
+}
+
+function clampInteger(value, fallback, min, max) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(min, Math.min(max, parsed));
+}
+
+function getChapterNumber(chapter) {
+    const creationTurn = Number.parseInt(chapter?.creationTurnNumber, 10);
+    if (Number.isInteger(creationTurn) && creationTurn > 0) return creationTurn;
+    const turn = Number.parseInt(chapter?.turnNumber, 10);
+    return Number.isInteger(turn) && turn > 0 ? turn : 0;
+}
+
+function buildChapterDigest(chapter, maxChars) {
+    const output = chapter?.output || {};
+    const text = output.summary || output.synopsis || output.fulltext || 'No chapter summary available.';
+    const compact = String(text).replace(/\s+/g, ' ').trim();
+    const bounded = compact.length > maxChars
+        ? `${compact.slice(0, Math.max(1, maxChars - 3)).trim()}...`
+        : compact;
+    return `Chapter ${getChapterNumber(chapter)}: ${bounded}`;
+}
+
+async function getLastBatchCursor(turnContext, tools) {
+    const projectName = String(turnContext.projectName || '').toLowerCase();
+    const currentTurn = Number(turnContext.turnNumber || 0);
+    const batchRows = await tools.db.chat.query(
+        `SELECT turn_number, context FROM facts
+         WHERE project_name = ? AND predicate = 'architect_tag_batch'
+           AND turn_number <= ?
+         ORDER BY turn_number DESC, id DESC LIMIT 1`,
+        [projectName, currentTurn]
+    );
+
+    if (batchRows?.length) {
+        let context = {};
+        try { context = JSON.parse(batchRows[0].context || '{}'); } catch { }
+        return {
+            analysisTurn: Number(batchRows[0].turn_number || 0),
+            batchEndTurn: Number(context.batchEndTurn || 0)
+        };
+    }
+
+    // Migration path: the former autonomous task wrote architect_cache once per chapter.
+    const cacheRows = await tools.db.chat.query(
+        `SELECT turn_number FROM facts
+         WHERE project_name = ? AND predicate = 'architect_cache'
+           AND turn_number < ?
+         ORDER BY turn_number DESC, id DESC LIMIT 1`,
+        [projectName, currentTurn]
+    );
+    const legacyTurn = Number(cacheRows?.[0]?.turn_number || 0);
+    return { analysisTurn: legacyTurn, batchEndTurn: legacyTurn };
+}
+
+async function collectChapterBatch(turnContext, tools, settings, request) {
+    const cursor = await getLastBatchCursor(turnContext, tools);
+    const requestedEndTurn = Math.max(0, Number(request?.batchEndTurn || Number(turnContext.turnNumber || 0) - 1));
+    const legacyDepth = clampInteger(settings.context_depth, 12, 1, 50);
+    const maxChapters = clampInteger(settings.batch_max_chapters, legacyDepth, 1, 50);
+    const maxChars = clampInteger(settings.batch_chapter_max_chars, 900, 200, 2400);
+    const history = await turnContext.retrieveDatedChapters();
+    const byTurn = new Map();
+
+    for (const chapter of [
+        ...(history.synopsischapters || []),
+        ...(history.summarychapters || []),
+        ...(history.fullchapters || [])
+    ]) {
+        const chapterNumber = getChapterNumber(chapter);
+        if (chapterNumber <= cursor.batchEndTurn || chapterNumber > requestedEndTurn) continue;
+        byTurn.set(chapterNumber, chapter);
+    }
+
+    const chapters = Array.from(byTurn.values())
+        .sort((a, b) => getChapterNumber(a) - getChapterNumber(b))
+        .slice(-maxChapters);
+    const startTurn = chapters.length ? getChapterNumber(chapters[0]) : 0;
+    const endTurn = chapters.length ? getChapterNumber(chapters[chapters.length - 1]) : cursor.batchEndTurn;
+
+    return {
+        cursor,
+        chapters,
+        startTurn,
+        endTurn,
+        requestedEndTurn,
+        promptText: chapters.map(chapter => buildChapterDigest(chapter, maxChars)).join('\n')
+    };
 }
 
 /**
@@ -331,11 +409,9 @@ function pickPlannerCandidates(scoredEpisodes, cooldownMap, currentTurn, maxCool
 
 async function selectStructuralPatternPayload(turnContext, tools, settings = {}, options = {}) {
     let episodes;
-    let seriesList;
     try {
         const loaded = await loadEpisodes(tools);
         episodes = loaded.episodes;
-        seriesList = loaded.seriesList;
     } catch (error) {
         tools.logger.error('ArchitectService', `Failed to load episode corpus: ${error.message}`);
         return null;
@@ -346,8 +422,6 @@ async function selectStructuralPatternPayload(turnContext, tools, settings = {},
     const limit = Math.max(1, Math.min(8, parseInt(options.limit || settings.planner_reference_limit || 4, 10) || 4));
     const maxCooldown = settings.max_cooldown || 15;
     const currentTurn = turnContext.turnNumber || 0;
-    const allowFreshExtraction = options.allowFreshExtraction === true;
-
     let requestedTags = tags.validateTags(options.tags || []);
     let requestedSeries = Array.isArray(options.series) ? options.series : [];
     let selectionMode = 'fallback_random';
@@ -399,15 +473,6 @@ async function selectStructuralPatternPayload(turnContext, tools, settings = {},
         }
     }
 
-    if (requestedTags.length === 0 && requestedSeries.length === 0 && allowFreshExtraction && !settings.disable_llm) {
-        const extraction = await extractContextTags(turnContext, tools, settings, seriesList);
-        requestedTags = extraction.tags;
-        requestedSeries = extraction.series;
-        if (requestedTags.length > 0 || requestedSeries.length > 0) {
-            selectionMode = 'fresh_extraction';
-        }
-    }
-
     let scoredEpisodes = scoreEpisodes(requestedTags, requestedSeries, episodes);
     if (selectionMode === 'fallback_random') {
         scoredEpisodes = [...episodes]
@@ -433,44 +498,6 @@ async function selectStructuralPatternPayload(turnContext, tools, settings = {},
         patterns,
         guidanceBlock
     };
-}
-
-/**
- * Selects the best episode based on score and cooldown.
- */
-async function selectBestEpisode(turnContext, tools, scoredEpisodes, settings) {
-    if (scoredEpisodes.length === 0) return null;
-
-    const maxCooldown = settings.max_cooldown || 15;
-    const currentTurn = turnContext.turnNumber || 0;
-    const cooldownMap = await buildCooldownMap(turnContext, tools);
-
-    let candidates = scoredEpisodes.filter(ep =>
-        isEpisodeOffCooldown(ep.filename, cooldownMap, currentTurn, maxCooldown)
-    );
-
-    if (candidates.length === 0 && scoredEpisodes.length > 0) {
-        tools.logger.warn('Logic', 'All episodes on cooldown. Retrying with reduced window.');
-        const reducedCooldown = Math.floor(maxCooldown / 2);
-        candidates = scoredEpisodes.filter(ep =>
-            isEpisodeOffCooldown(ep.filename, cooldownMap, currentTurn, reducedCooldown)
-        );
-    }
-
-    if (candidates.length === 0) return scoredEpisodes[0];
-
-    if (settings.enable_quality_mode && candidates.length > 1) {
-        const top3 = candidates.slice(0, 3);
-        const margin = top3[0].score - top3[1].score;
-        if (margin < 0.1) {
-            tools.logger.log('Selection', 'Quality mode: Top candidates tied. Refining with LLM...');
-            try {
-                // Placeholder for optional refinement call.
-            } catch { }
-        }
-    }
-
-    return candidates[0];
 }
 
 async function getPlannerStructuralGuidance(turnContext, tools, settings = {}, options = {}) {
@@ -501,11 +528,27 @@ async function getStructuralPatterns(turnContext, tools, settings = {}, options 
 }
 
 /**
- * Main background task orchestration.
+ * Processes a Grand Planner-requested batch. This function is intentionally not
+ * called by any autonomous Narrative Architect cadence.
  */
-async function processTurnAnalysis(turnContext, tools, settings) {
-    // Ensure no leftover architect data from a retried turn
-    await tools.facts.cleanUpFactsDb();
+async function processRequestedBatch(turnContext, tools, settings = {}, request = {}) {
+    if (request.requestedBy !== 'grand_story_planner') {
+        return { status: 'ignored', reason: 'missing_grand_planner_request' };
+    }
+
+    const batch = await collectChapterBatch(turnContext, tools, settings, request);
+    if (batch.cursor.analysisTurn === Number(turnContext.turnNumber || 0)) {
+        return { status: 'already_completed', batchEndTurn: batch.cursor.batchEndTurn };
+    }
+    if (batch.chapters.length === 0) {
+        tools.logger.log('Logic', 'Grand Planner requested tagging, but no completed chapters were added since the last Architect batch.');
+        return { status: 'no_new_chapters', batchEndTurn: batch.cursor.batchEndTurn };
+    }
+
+    // Clear only this plugin's current-turn outputs so a retried request is idempotent.
+    await tools.facts.cleanUpFactsDb({
+        predicates: ['architect_cache', 'architect_used', 'architect_tag_batch']
+    });
 
     let episodes = [];
     let seriesList = [];
@@ -515,10 +558,10 @@ async function processTurnAnalysis(turnContext, tools, settings) {
         seriesList = loaded.seriesList;
     } catch (error) {
         tools.logger.error('Logic', `Failed to read episodes.db at ${path.join(__dirname, 'episodes.db')}: ${error.message}`);
-        return;
+        return { status: 'failed', reason: 'episode_corpus_unavailable' };
     }
 
-    if (episodes.length === 0) return;
+    if (episodes.length === 0) return { status: 'failed', reason: 'episode_corpus_empty' };
 
     let requestedTags = [];
     let requestedSeries = [];
@@ -526,31 +569,41 @@ async function processTurnAnalysis(turnContext, tools, settings) {
     if (settings.disable_llm) {
         tools.logger.log('Logic', 'LLM analysis disabled. Proceeding with random selection.');
     } else {
-        const extraction = await extractContextTags(turnContext, tools, settings, seriesList);
+        const extraction = await extractContextTags(turnContext, tools, settings, seriesList, batch);
         requestedTags = extraction.tags;
         requestedSeries = extraction.series;
     }
 
-    let winner = null;
+    let scored = [];
     if (settings.disable_llm) {
-        const scored = episodes
+        scored = episodes
             .map(ep => ({ ...ep, score: Math.random(), matchedTags: [], matchedSeries: [] }))
             .sort((a, b) => b.score - a.score);
-        winner = await selectBestEpisode(turnContext, tools, scored, settings);
     } else {
-        if (requestedTags.length === 0 && requestedSeries.length === 0) return;
-        const scored = scoreEpisodes(requestedTags, requestedSeries, episodes);
-        winner = await selectBestEpisode(turnContext, tools, scored, settings);
+        if (requestedTags.length === 0 && requestedSeries.length === 0) {
+            return { status: 'failed', reason: 'tag_extraction_returned_no_signal' };
+        }
+        scored = scoreEpisodes(requestedTags, requestedSeries, episodes);
     }
 
-    if (winner) {
-        tools.logger.log('Selection', `Selected episode structural reference: ${winner.filename} (Score: ${winner.score.toFixed(2)})`);
+    const limit = clampInteger(settings.planner_reference_limit, 4, 1, 8);
+    const cooldownMap = await buildCooldownMap(turnContext, tools);
+    const selected = pickPlannerCandidates(
+        scored,
+        cooldownMap,
+        Number(turnContext.turnNumber || 0),
+        settings.max_cooldown || 15,
+        limit
+    );
+
+    if (selected.length > 0) {
+        tools.logger.log('Selection', `Prepared ${selected.length} structural reference(s) for the upcoming Grand Planner run.`);
         const turnNumber = turnContext.turnNumber;
-        const pattern = buildPlannerPatternObjects([winner])[0];
-        const guidanceBlock = buildPlannerGuidanceBlock([pattern], {
+        const patterns = buildPlannerPatternObjects(selected);
+        const guidanceBlock = buildPlannerGuidanceBlock(patterns, {
             requestedTags,
             requestedSeries,
-            selectionMode: 'turn_analysis_winner'
+            selectionMode: 'grand_planner_requested_batch'
         });
 
         const payload = {
@@ -558,38 +611,66 @@ async function processTurnAnalysis(turnContext, tools, settings) {
             type: 'planner_structural_guidance',
             requestedTags: requestedTags || [],
             requestedSeries: requestedSeries || [],
-            patterns: [pattern],
+            patterns,
             guidanceBlock,
-            generatedAtTurn: turnNumber
+            generatedAtTurn: turnNumber,
+            batchStartTurn: batch.startTurn,
+            batchEndTurn: batch.endTurn,
+            chapterCount: batch.chapters.length
         };
 
         const contextData = {
             requestedTags: requestedTags || [],
             requestedSeries: requestedSeries || [],
-            tags: winner.matchedTags || [],
-            series: winner.matchedSeries || [],
-            schema: payload.schema
+            schema: payload.schema,
+            batchStartTurn: batch.startTurn,
+            batchEndTurn: batch.endTurn,
+            chapterCount: batch.chapters.length
         };
 
         await tools.facts.appendToFactsDb({
             source: 'architect',
-            target: winner.filename,
+            target: selected[0].filename,
             predicate: 'architect_cache',
             fact_value: JSON.stringify(payload),
             context: JSON.stringify(contextData)
         }, { turn_number: turnNumber });
 
-        await tools.facts.appendToFactsDb({
+        for (const episode of selected) await tools.facts.appendToFactsDb({
             source: 'architect',
-            target: winner.filename,
+            target: episode.filename,
             predicate: 'architect_used',
             fact_value: turnNumber.toString()
         }, { turn_number: turnNumber });
+
+        await tools.facts.appendToFactsDb({
+            source: 'architect',
+            target: `${batch.startTurn}-${batch.endTurn}`,
+            predicate: 'architect_tag_batch',
+            fact_value: JSON.stringify({ tags: requestedTags, series: requestedSeries }),
+            context: JSON.stringify({
+                requestedBy: request.requestedBy,
+                batchStartTurn: batch.startTurn,
+                batchEndTurn: batch.endTurn,
+                chapterCount: batch.chapters.length
+            })
+        }, { turn_number: turnNumber });
+
+        return {
+            status: 'completed',
+            batchStartTurn: batch.startTurn,
+            batchEndTurn: batch.endTurn,
+            chapterCount: batch.chapters.length,
+            referenceCount: selected.length
+        };
     }
+
+    return { status: 'failed', reason: 'no_structural_references_available' };
 }
 
 module.exports = {
-    processTurnAnalysis,
+    processRequestedBatch,
     getPlannerStructuralGuidance,
-    getStructuralPatterns
+    getStructuralPatterns,
+    collectChapterBatch
 };

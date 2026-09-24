@@ -6,6 +6,7 @@ const path = require('path');
 const fuzzysort = require('fuzzysort');
 const { filterForegroundOcclusionAssets } = require('./background_asset_helpers.js');
 const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { formatIndexedScene } = require('../scene_prompt_formatter.js');
 
 // #region MODULE IMPORTS
 // #endregion
@@ -132,11 +133,11 @@ function formatSelectedBackgroundSignal(turnContext) {
     .map(change => {
       const rawLine = Number(change.line);
       const line = Number.isFinite(rawLine) ? Math.max(0, Math.round(rawLine)) : 0;
-      return `Line ${line}: ${getFilename(change.path) || path.basename(change.path)}`;
+      return `${line}. ${getFilename(change.path) || path.basename(change.path)}`;
     });
 
-  if (draftBackground && !entries.some(entry => entry.startsWith('Line 0:'))) {
-    entries.unshift(`Line 0: ${getFilename(draftBackground) || path.basename(draftBackground)}`);
+  if (draftBackground && !entries.some(entry => entry.startsWith('0.'))) {
+    entries.unshift(`0. ${getFilename(draftBackground) || path.basename(draftBackground)}`);
   }
 
   if (entries.length === 0) return '';
@@ -245,7 +246,7 @@ function buildSchemaDescription(metadataList) {
 }
 
 /**
- * Shared helper to parse LLM responses that follow the "Line X: [AssetName]" format.
+ * Shared helper to parse line-addressed asset selections such as "12. asset.png".
  * Returns { path: string, changes: Array<{line, path}> }
  */
 function parseMultiAssetSelection(llmSelection, assets, filenames, defaultPath = null) {
@@ -268,12 +269,9 @@ function parseMultiAssetSelection(llmSelection, assets, filenames, defaultPath =
   const allChanges = [];
 
   for (const line of lines) {
-    // Accept common markdown wrappers such as:
-    // - "**Line 10:** Track.mp3"
-    // - "* Line 10: Track.mp3"
-    // - "- Line 10: Track.mp3"
+    // Accept the compact canonical form ("10. Track.mp3") and legacy "Line 10:" forms.
     const normalizedLine = String(line || '').trim();
-    const lineMatch = normalizedLine.match(/^(?:[-*]\s*)?(?:\*{1,2}\s*)?Line\s+(\d+)\s*:\s*(?:\*{1,2}\s*)?(.*)$/i);
+    const lineMatch = normalizedLine.match(/^(?:[-*]\s*)?(?:\*{1,2}\s*)?(?:Line\s+)?(\d+)\s*[).:]\s*(?:\*{1,2}\s*)?(.*)$/i);
     if (!lineMatch) continue;
 
     const lineIdx = parseInt(lineMatch[1], 10);
@@ -556,7 +554,7 @@ function createBackgroundSelectionPrompt(
   if (!bgBasicPrompt) return "";
 
   const processedDialogue = turnContext.processed.vnManager.processedLines || [];
-  const numberedScript = processedDialogue.map((line, i) => `[Line ${i}] ${line.character || 'Narrator'}: ${line.text || line.line}`).join('\n');
+  const numberedScript = formatIndexedScene(processedDialogue);
   // Creative direction for background selection
   const projectDirectives = turnContext.getFormattedDirective('bg_selector', { header: 'CREATIVE DIRECTIVES:' });
 
@@ -654,7 +652,7 @@ async function selectMetadataDrivenBackground(turnContext, backgrounds, metadata
     if (!bgSmartSelectionPrompt) throw new Error("bg_smart_selection_prompt.txt not found");
 
     const processedDialogue = turnContext.processed.vnManager.processedLines || [];
-    const numberedScript = processedDialogue.map((line, i) => `[Line ${i}] ${line.character || 'Narrator'}: ${line.text || line.line}`).join('\n');
+    const numberedScript = formatIndexedScene(processedDialogue);
 
     const selectionPrompt = bgSmartSelectionPrompt
       .replace('${numberedScript}', numberedScript)
@@ -971,7 +969,7 @@ function createOstCategorySplitPrompt(turnContext, sceneDescription, candidatePa
   if (!ostCategorySplitPrompt) return "";
 
   const processedDialogue = turnContext.processed.vnManager.processedLines || [];
-  const numberedScript = processedDialogue.map((line, i) => `[Line ${i}] ${line.character || 'Narrator'}: ${line.text || line.line}`).join('\n');
+  const numberedScript = formatIndexedScene(processedDialogue);
   const backgroundSelectionSignal = formatSelectedBackgroundSignal(turnContext);
 
   const recentHistorySignal = recentSongs.length > 0
@@ -1192,10 +1190,14 @@ async function selectBestOST(turnContext) {
     TurnLogger.logResponse('Select Best Ost', responseContent, resolvedModel, resolveModelAlias(CONFIG.OST_MODEL).provider);
     Logger.log('AssetSelector', 'OST', `OST selection response received.`, 'end');
 
-    const selectedOST = findMatchingOST(responseContent, ostList);
-    Logger.log('AssetSelector', 'OST', `Selected OST: ${getFilename(selectedOST)}`);
+    const result = parseMultiAssetSelection(responseContent, ostList, ostList.map(getFilename), prevOST);
+    if (result) {
+      Logger.log('AssetSelector', 'OST', `Selected OST: ${getFilename(result.path)}`);
+      return result;
+    }
 
-    return { path: selectedOST, changes: [{ line: 0, path: selectedOST }] };
+    const fallback = ostList[0] || '';
+    return { path: fallback, changes: [{ line: 0, path: fallback }] };
   } catch (error) {
     Logger.error('AssetSelector', 'OST', 'OST selection error:', error);
     const fallback = ostList[0] || '';
@@ -1228,7 +1230,7 @@ function createOSTSelectionPrompt(turnContext, sceneDescription, filenames, hist
   if (!ostBasicPrompt) return "";
 
   const processedDialogue = turnContext.processed.vnManager.processedLines || [];
-  const numberedScript = processedDialogue.map((line, i) => `[Line ${i}] ${line.character || 'Narrator'}: ${line.text || line.line}`).join('\n');
+  const numberedScript = formatIndexedScene(processedDialogue);
   const backgroundSelectionSignal = formatSelectedBackgroundSignal(turnContext);
   // Creative direction for music selection
   const projectDirectives = turnContext.getFormattedDirective('ost_selector', { header: 'CREATIVE DIRECTIVES:' });
@@ -1246,31 +1248,6 @@ function createOSTSelectionPrompt(turnContext, sceneDescription, filenames, hist
     .replace('${project_directives}', projectDirectives)
     .replace('${recentOSTHistory}', recentHistorySignal)
     .replace('${filenames}', filenames.map(ost => `- ${getFilename(ost)}`).join('\n'));
-}
-
-/**
- * Finds the best matching OST file path from the available list based on the LLM's response.
- * @param {string} response - The LLM's response containing the selected filename.
- * @param {string[]} ostList - An array of available OST file paths.
- * @returns {string} The path to the selected OST file, or a fallback.
- */
-function findMatchingOST(response, ostList) {
-  const filenames = ostList.map(getFilename);
-
-  const escapedFilenames = filenames.map(f => f.replace(/[.*+?^${}()|[\]]/g, '\\$&'));
-  const filenameRegex = new RegExp(`(${escapedFilenames.join('|')})`, 'i');
-  const match = response.match(filenameRegex);
-
-  if (match) {
-    const found = ostList.find(ost => getFilename(ost).toLowerCase() === match[1].toLowerCase());
-    if (found) return found;
-  }
-
-  const cleaned = response.replace(/["']/g, '').trim();
-  const close = ostList.find(ost => getFilename(ost).toLowerCase() === cleaned.toLowerCase());
-  if (close) return close;
-
-  return ostList[0] || '';
 }
 
 // #region SMART METADATA-DRIVEN OST SELECTION
@@ -1380,7 +1357,7 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
     if (!ostSmartSelectionPrompt) throw new Error("ost_smart_selection_prompt.txt not found");
 
     const processedDialogue = turnContext.processed.vnManager.processedLines || [];
-    const numberedScript = processedDialogue.map((line, i) => `[Line ${i}] ${line.character || 'Narrator'}: ${line.text || line.line}`).join('\n');
+    const numberedScript = formatIndexedScene(processedDialogue);
 
     const recentHistorySignal = recentSongs.length > 0
       ? `### RECENTLY PLAYED TRACKS (AVOID repeating these unless the scene truly demands it):\n${recentSongs.map((s, i) => `- ${path.parse(s).name} (${i + 1} turns ago)`).join('\n')}\n\n`
@@ -1439,6 +1416,9 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
 // #region EXPORTS
 module.exports = {
   selectBestBackground,
-  selectBestOST
+  selectBestOST,
+  _private: {
+    parseMultiAssetSelection
+  }
 };
 // #endregion

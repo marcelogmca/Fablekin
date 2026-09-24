@@ -866,7 +866,7 @@ async function buildWriterMessages(turnContext) {
     ].filter(Boolean).join('\n\n');
     const directiveText = pc.writer.directives.join('\n\n').trim();
     const executionParts = [...pc.writer.protocol];
-    if (writerCoTEnabled) executionParts.push(WRITER_COT_EXECUTION_REMINDER, WRITER_COT_FINAL_INVOCATION);
+    if (writerCoTEnabled) executionParts.push(WRITER_COT_EXECUTION_REMINDER);
     const protocolText = executionParts.length > 0
         ? `# EXECUTION PROTOCOL\n${executionParts.join('\n\n')}`
         : '';
@@ -882,7 +882,11 @@ async function buildWriterMessages(turnContext) {
     writerSuffix = applyGlobalReplacements(replaceAll(writerSuffix, 'z_virtual_', ''), turnContext);
 
     const sharedPrefix = getSharedNarrativePrefix(turnContext);
-    const messages = [...getSharedNarrativeMessages(turnContext), { role: 'user', content: writerSuffix }];
+    const messages = [
+        ...getSharedNarrativeMessages(turnContext),
+        { role: 'user', content: writerSuffix },
+        ...(writerCoTEnabled ? [{ role: 'assistant', content: WRITER_COT_FINAL_INVOCATION }] : [])
+    ];
     turnContext.processed.promptBuilder.writerPromptSnapshot = buildWriterPromptSnapshotPayload(turnContext, {
         part1Canon: wrap('canon_data', [...pc.root.canon, ...pc.writer.canon]),
         part2DynamicKnowledge: wrap('dynamic_knowledge', [...pc.root.dynamic_knowledge, ...pc.writer.dynamic_knowledge]),

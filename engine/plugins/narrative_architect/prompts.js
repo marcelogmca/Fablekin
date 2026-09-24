@@ -6,25 +6,31 @@ module.exports = {
     /**
      * Prompt for extracting structural tags from the current story context.
      */
-    getTagExtractionPrompt: (recentSummaries, directorBrief, seriesList = []) => {
+    getTagExtractionPrompt: (chapterBatch, currentDirection, seriesList = [], batch = {}) => {
         const seriesContext = seriesList.length > 0
             ? `## AVAILABLE SERIES\nBelow is a list of series available in our database. Rank the top 3 series that best match the current narrative tone and needs:\n- ${seriesList.join('\n- ')}\n`
             : '';
 
-        return `You are a narrative structure analyst. Your goal is to determine the optimal structural "DNA" for the upcoming story chapter.
+        const startTurn = Number(batch.startTurn || 0);
+        const endTurn = Number(batch.endTurn || 0);
+        const rangeLabel = startTurn > 0 && endTurn >= startTurn
+            ? `CHAPTERS ${startTurn}-${endTurn}`
+            : 'AVAILABLE COMPLETED CHAPTERS';
+
+        return `You are a narrative structure analyst. Analyze a batch of completed chapters and determine the optimal structural "DNA" for the story's next planning horizon.
 
 ## CURRENT STORY CONTEXT
-### RECENT CHAPTERS (LAST 3)
-${recentSummaries || "No previous chapters yet."}
+### COMPLETED CHAPTER BATCH (${rangeLabel})
+${chapterBatch || "No completed chapters are available for this batch."}
 
-### DIRECTOR'S GUIDANCE
-${directorBrief || "No specific director's guidance for this turn."}
+### CURRENT PLAYER DIRECTION
+${currentDirection || "No new player direction is available."}
 
 ${seriesContext}
 
 ## TASK
-Analyze the flow, tension, and narrative needs of the story. 
-1. Select 8-12 structural tags from the taxonomy below that best describe the ideal "craft pattern" for the NEXT chapter.
+Judge the batch as a sequence: identify what changed across it, its repeated scene shapes, unresolved pressure, pacing trajectory, and the most useful contrast for the upcoming planning horizon.
+1. Select 8-12 structural tags from the taxonomy below that best describe the ideal craft pattern for the NEXT FEW chapters.
 2. Identify the top 3 series names (from the available list) that most closely align with the current situation.
 
 ## TAG TAXONOMY

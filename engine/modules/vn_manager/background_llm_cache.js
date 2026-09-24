@@ -2,6 +2,11 @@ const crypto = require('crypto');
 const { readSettings } = require('../utils.js');
 const cancellation = require('../pipeline_cancellation.js');
 const { resolveModelAlias } = require('../llm.js');
+const {
+  formatIndexedDialogueWithNarrative,
+  formatIndexedScene,
+  getProcessedSceneLines
+} = require('./scene_prompt_formatter.js');
 
 const SHARED_MODEL_INHERITANCE = 'vn_background';
 const DEFAULT_MODEL = 'highendmodel';
@@ -16,29 +21,20 @@ function joinSlot(slot) {
   return typeof slot === 'string' ? slot : '';
 }
 
-function buildFinalDialogue(turnContext) {
-  const lines = Array.isArray(turnContext?.processed?.vnManager?.processedLines)
-    ? turnContext.processed.vnManager.processedLines
-    : [];
-  return lines
-    .map((line, index) => `[Line ${index}] ${line?.character || 'Narrator'}: ${line?.text || line?.line || ''}`)
-    .filter(line => !/^\[Line \d+\]\s+[^:]+:\s*$/.test(line))
-    .join('\n');
+function buildIndexedScene(turnContext) {
+  return formatIndexedScene(getProcessedSceneLines(turnContext));
 }
 
 function buildSceneMessage(turnContext, scene = 'none') {
   switch (scene) {
     case 'raw':
       return `=== CURRENT WRITER CHAPTER ===\n${turnContext?.processed?.narrativeEngine?.writerResponse || '(empty)'}`;
+    case 'indexedScene':
     case 'numbered':
-      return `=== CURRENT NUMBERED SCENE ===\n${buildFinalDialogue(turnContext) || '(empty)'}`;
-    case 'dialogue': {
-      const dialogue = (turnContext?.processed?.vnManager?.processedLines || [])
-        .filter(line => line?.type === 'dialogue')
-        .map((line, index) => `[Dialogue ${index}] ${line?.character || 'Unknown'}: ${line?.text || line?.line || ''}`)
-        .join('\n');
-      return `=== CURRENT DIALOGUE-ONLY SCENE ===\n${dialogue || '(empty)'}`;
-    }
+      return `=== CURRENT INDEXED SCENE ===\n${buildIndexedScene(turnContext) || '(empty)'}`;
+    case 'indexedDialogueWithNarrative':
+    case 'dialogue':
+      return `=== CURRENT NARRATIVE-ASSISTED INDEXED DIALOGUE ===\n${formatIndexedDialogueWithNarrative(getProcessedSceneLines(turnContext)) || '(empty)'}`;
     case 'none':
     case undefined:
     case null:
@@ -225,7 +221,7 @@ module.exports = {
   waitForVnBackgroundCacheSlot,
   _private: {
     buildBackgroundCapsule,
-    buildFinalDialogue,
+    buildIndexedScene,
     buildSceneMessage,
     normalizeSuffix
   }

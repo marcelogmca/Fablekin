@@ -14,6 +14,7 @@ const DEFAULT_LEASE_TTL_SECONDS = 20;
 const LEASE_RENEW_INTERVAL_MS = 5000;
 const VOICE_EXTENSIONS = ['.wav', '.mp3', '.ogg'];
 const BASE_GENERIC_VOICE_PROFILE_KEYS = new Set(['generic', 'male', 'female']);
+const SHARED_MOOD_PREFIX = 'emotion_';
 
 // Runtime registry so callbacks are bound to the exact job that created them.
 const ACTIVE_TTS_JOBS = new Map(); // jobId -> jobState
@@ -356,9 +357,17 @@ function extractGenericVoiceProfileKey(stem) {
     return normalizeGenericVoiceProfileKey(profileParts.join('_'));
 }
 
+function extractSharedMoodFromStem(stem) {
+    const normalizedStem = normalizeVoiceToken(stem);
+    if (!normalizedStem || !normalizedStem.startsWith(SHARED_MOOD_PREFIX)) return '';
+
+    return normalizeVoiceToken(normalizedStem.slice(SHARED_MOOD_PREFIX.length));
+}
+
 function buildVoiceCatalogFromFilenames(filenames = [], voicesDir = null) {
     const byCharacter = {};
     const globalMoodSet = new Set(['neutral']);
+    const sharedMoodSet = new Set();
     const genericProfileMap = new Map();
     const voiceFiles = filenames.filter(filename =>
         VOICE_EXTENSIONS.some(ext => String(filename || '').toLowerCase().endsWith(ext))
@@ -371,6 +380,12 @@ function buildVoiceCatalogFromFilenames(filenames = [], voicesDir = null) {
 
     for (const filename of voiceFiles) {
         const stem = path.parse(filename).name;
+        const sharedMood = extractSharedMoodFromStem(stem);
+        if (sharedMood) {
+            sharedMoodSet.add(sharedMood);
+            globalMoodSet.add(sharedMood);
+            continue;
+        }
         const genericProfileKey = extractGenericVoiceProfileKey(stem);
         if (!genericProfileKey) continue;
 
@@ -383,6 +398,8 @@ function buildVoiceCatalogFromFilenames(filenames = [], voicesDir = null) {
     for (const stem of stems) {
         const normalizedStem = normalizeVoiceToken(stem);
         if (!normalizedStem) continue;
+        // `emotion_happy.wav` is a shared delivery reference, never a character.
+        if (extractSharedMoodFromStem(stem)) continue;
 
         const separatorIndex = stem.lastIndexOf('_');
         if (separatorIndex <= 0) {
@@ -421,11 +438,13 @@ function buildVoiceCatalogFromFilenames(filenames = [], voicesDir = null) {
     }
     const genericProfileKeys = naturalSort(Object.keys(genericProfiles));
     const globalMoods = naturalSort(Array.from(globalMoodSet));
+    const sharedMoods = naturalSort(Array.from(sharedMoodSet));
 
     return {
         sourceDir: voicesDir,
         totalVoiceFiles: voiceFiles.length,
         globalMoods,
+        sharedMoods,
         byCharacter: serializedByCharacter,
         genericProfiles,
         summary: {
@@ -1066,6 +1085,7 @@ module.exports = {
                 turnContext.runtime.ttsVoiceMoodCatalog = {
                     sourceDir: catalog.sourceDir,
                     globalMoods: catalog.globalMoods,
+                    sharedMoods: catalog.sharedMoods,
                     byCharacter: catalog.byCharacter,
                     updatedAt: new Date().toISOString()
                 };
@@ -1334,6 +1354,7 @@ function isValidCharacterName(character, settings = {}) {
 
 module.exports._test = {
     extractGenericVoiceProfileKey,
+    extractSharedMoodFromStem,
     buildVoiceCatalogFromFilenames,
     resolveGenericVoiceProfileForCharacter
 };

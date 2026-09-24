@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { elements } from './elements.js';
-import { debugLog, debugError, getCharacterNameFromPath, getSpriteCharacterKey, getAssetUrl } from './utils.js';
+import { debugLog, debugError, getCharacterNameFromPath, getSpriteCharacterKey, getAssetUrl, normalizeCharacterKey } from './utils.js';
 import { SpriteAnimator } from './sprite_animator.js';
 
 export function stopAllTalking() {
@@ -108,8 +108,8 @@ export function renderSpriteInContainer(container, charName, spritePath, config,
         container.style.opacity = '1';
         if (isEntrance) container.classList.add('sprite-enter-anim');
 
-        const talkingCharacter = state.currentTalkingCharacter;
-        if (talkingCharacter === charName && state.isAudioPlaying) {
+        const isCharacterTalking = !!state.activeTalkingCharacters?.[normalizeCharacterKey(charName)];
+        if (isCharacterTalking && state.isAudioPlaying) {
             state.activeAnimators[charName].startTalking();
         }
 

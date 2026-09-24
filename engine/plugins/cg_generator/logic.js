@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const sharp = require('sharp');
 const { compressString } = require('../../modules/utils.js');
 const chaptermgmt = require('../../modules/chaptermanagement.js');
+const { formatIndexedSceneLine } = require('../../modules/vn_manager/scene_prompt_formatter.js');
 const providers = require('./providers.js');
 const {
     normalizeCharacterNameForLookup,
@@ -498,9 +499,9 @@ async function extractCGPlan(turnContext, tools) {
 
     let sceneText = '';
     for (let i = 0; i < sequence.length; i++) {
-        const textToDisplay = sequence[i].text || sequence[i].line || '';
-        if (textToDisplay.trim() !== '') {
-            sceneText += `[Line ${i}] ${textToDisplay}\n`;
+        const formattedLine = formatIndexedSceneLine(sequence[i], i);
+        if (formattedLine) {
+            sceneText += `${formattedLine}\n`;
         } else {
             sceneText += `\n`;
         }

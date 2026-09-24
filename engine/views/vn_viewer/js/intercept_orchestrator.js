@@ -962,13 +962,14 @@ function createAudioBridge({ lifecycle, assets }) {
             vnPlaybackSnapshot = {
                 ost: snapshotPlayer(elements.audioPlayer),
                 voice: snapshotPlayer(elements.voicePlayer),
+                voiceSecondary: snapshotPlayer(elements.voicePlayerSecondary),
                 currentTalkingCharacter: state.currentTalkingCharacter || null
             };
         }
 
         const shouldPause = options.pause !== false;
         const shouldMute = options.mute === true;
-        for (const player of [elements.audioPlayer, elements.voicePlayer]) {
+        for (const player of [elements.audioPlayer, elements.voicePlayer, elements.voicePlayerSecondary]) {
             if (!player) continue;
             if (shouldMute) player.volume = 0;
             if (shouldPause && !player.paused) {
@@ -986,7 +987,8 @@ function createAudioBridge({ lifecycle, assets }) {
         vnPlaybackSnapshot = null;
         restorePlayer(elements.audioPlayer, snapshot.ost);
         restorePlayer(elements.voicePlayer, snapshot.voice);
-        if (snapshot.voice?.wasPlaying) {
+        restorePlayer(elements.voicePlayerSecondary, snapshot.voiceSecondary);
+        if (snapshot.voice?.wasPlaying || snapshot.voiceSecondary?.wasPlaying) {
             state.currentTalkingCharacter = snapshot.currentTalkingCharacter || null;
             state.isAudioPlaying = true;
         }

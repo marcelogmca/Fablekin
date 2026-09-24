@@ -853,6 +853,11 @@ export function initUIEvents(socket) {
         debouncedSaveVNSettings(socket);
     });
 
+    elements.naturalConversationTimingCheckbox?.addEventListener('change', (e) => {
+        state.vnSettings.interface.natural_conversation_timing = e.target.checked;
+        debouncedSaveVNSettings(socket);
+    });
+
     elements.toggleControlsBtn?.addEventListener('click', () => {
         state.vnSettings.interface.show_controls = !state.vnSettings.interface.show_controls;
         const show = state.vnSettings.interface.show_controls;

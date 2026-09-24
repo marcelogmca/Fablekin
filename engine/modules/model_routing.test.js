@@ -62,3 +62,26 @@ test('normalizes explicit reasoning effort and infers legacy suffixes', () => {
   assert.equal(resolveModelAlias(settings, 'lowendmodel').reasoning_effort, 'none');
   assert.equal(resolveModelAlias(settings, 'mediumendmodel').reasoning_effort, 'low');
 });
+
+test('resolves an optional fallback route independently of the primary route', () => {
+  const settings = makeSettings();
+  settings.infrastructure.llm_routing.aliases.highendmodel.fallback = {
+    provider: 'openrouter',
+    model: 'vendor/backup',
+    subprovider: 'upstream-b',
+    reasoning_effort: 'low'
+  };
+
+  assert.deepEqual(resolveModelAlias(settings, 'highendmodel').fallback, {
+    provider: 'openrouter',
+    model: 'vendor/backup',
+    subprovider: 'upstream-b',
+    reasoning_effort: 'low'
+  });
+});
+
+test('rejects incomplete fallback routes', () => {
+  const settings = makeSettings();
+  settings.infrastructure.llm_routing.aliases.highendmodel.fallback = { provider: 'openrouter' };
+  assert.throws(() => resolveModelAlias(settings, 'highendmodel'), /incomplete fallback route/);
+});

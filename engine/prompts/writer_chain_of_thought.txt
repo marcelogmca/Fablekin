@@ -136,6 +136,7 @@ Asking the "Why" for something that should be familiar and obvious should genera
 - **Beat Map Dialogue Check:** [Review the locked beat map. Which beats are currently only narration or silent action? Convert many of them into spoken exchanges, interruptions, reactions, questions, banter, disagreement, teasing, concern, logistics, or emotional shorthand.]
 - **Present Character Voice Check:** [Every major on-camera character should speak repeatedly across the scene unless physically unable. Avoid having present companions become background props or only contribute one token reply.]
 - **Narration Balance:** [Use narration for action, sensory grounding, and micro-expressions, but keep it lean. If fewer than roughly 1/2 of total lines are voice lines, rewrite the beat map so dialogue carries more of the scene's movement.]
+- **Flow:** [If this is a scene that is around banter, less action, do not interrupt conversations with narrative unless necessary. Keep characters talking uninterrupted.]
 
 CRITICAL: If you are given any word count constraints (e.g. minimum word count) you MUST adhere to it.
 

@@ -36,13 +36,13 @@ test('background context excludes the current scene and shares an exact prefix',
   turnContext.processed.vnManager.processedLines[0].line = 'Changed later.';
 
   const relationship = buildVnBackgroundMessages(turnContext, 'Extract relationships.', { scene: 'raw' });
-  const objective = buildVnBackgroundMessages(turnContext, 'Extract objectives.', { scene: 'numbered' });
+  const objective = buildVnBackgroundMessages(turnContext, 'Extract objectives.', { scene: 'indexedScene' });
 
   assert.equal(initializeVnBackgroundLlmContext(turnContext), shared);
   assert.deepEqual(relationship.slice(0, 2), objective.slice(0, 2));
   assert.doesNotMatch(relationship[1].content, /Ari opens the door|Mira: Careful/);
   assert.match(relationship[2].content, /Ari opens the door/);
-  assert.match(objective[2].content, /\[Line 0\] Narrator: Changed later\./);
+  assert.match(objective[2].content, /0\. Changed later\./);
   assert.notEqual(relationship[3].content, objective[3].content);
 });
 

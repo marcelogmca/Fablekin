@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { formatIndexedScene } = require('../../modules/vn_manager/scene_prompt_formatter.js');
 
 const PLUGIN_ID = 'quest_tracker';
 const DEFAULT_MAX_ACTIVE_GOALS = 3;
@@ -547,9 +548,7 @@ function getProcessedLines(turnContext) {
 function buildNumberedScript(turnContext) {
     const processedLines = getProcessedLines(turnContext);
     if (processedLines.length > 0) {
-        return processedLines
-            .map((line, index) => `[Line ${index}] ${line.character || 'Narrator'}: ${line.text || line.line || ''}`)
-            .join('\n');
+        return formatIndexedScene(processedLines);
     }
 
     return normalizeWhitespace(
@@ -1521,7 +1520,7 @@ async function updateQuestTracker(turnContext, tools, settingsOverride = null) {
         canonicalQuests,
         compressedHistory: useSharedModel ? 'Use SELECTED NARRATIVE HISTORY from the shared background context.' : getCompressedHistory(turnContext, historyPreset),
         currentUserPrompt: useSharedModel ? 'Use CURRENT USER INPUT from the shared background context.' : normalizeWhitespace(turnContext?.input?.userPrompt || ''),
-        currentScript: useSharedModel ? 'Use CURRENT NUMBERED SCENE from the dedicated scene message above.' : buildNumberedScript(turnContext),
+        currentScript: useSharedModel ? 'Use CURRENT INDEXED SCENE from the dedicated scene message above.' : buildNumberedScript(turnContext),
         maxActiveGoals
     });
     const resolvedModelDef = tools.llm.resolveModelDefinition?.(modelDef) || modelDef;
@@ -1534,7 +1533,7 @@ async function updateQuestTracker(turnContext, tools, settingsOverride = null) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'numbered', suffix: prompt }, isPlausibleRawState)
+            ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'indexedScene', suffix: prompt }, isPlausibleRawState)
             : await tools.llm.withSchema({
                 ...task,
                 messages: [{ role: 'user', content: prompt }],

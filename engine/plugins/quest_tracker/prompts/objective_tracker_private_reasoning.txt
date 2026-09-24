@@ -1,6 +1,6 @@
 Reason privately in this order:
 
-1. EXTRACT: List only visible actions, decisions, promises, discoveries, and unresolved concerns from the current chapter. Attach exact [Line N] evidence.
+1. EXTRACT: List only visible actions, decisions, promises, discoveries, and unresolved concerns from the current chapter. Attach evidence using the exact compact `N.` line prefix.
 2. DEFAULT TO KEEP: Copy the previous state unless new evidence requires a change.
 3. CHECK QUESTS: For each unresolved canonical quest, compare only its Objective against visible evidence. Mark completed/failed/dropped only if undeniable; otherwise emit nothing.
 4. UPDATE HUD:

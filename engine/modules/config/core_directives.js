@@ -4,10 +4,20 @@ const CORE_DIRECTIVES = {
         description: 'Directs how characters express their feelings. Define unique emotional quirks and mood swings.',
         placeholder: 'e.g., "Fern tends to pout when mad; Stark gets scared easily; Frieren is always calm but has silly moments."'
     },
+    'reaction_director': {
+        name: 'Reaction Director',
+        description: 'Guides sparse expression changes for non-speaking characters during important dialogue and narrative beats.',
+        placeholder: 'e.g., "Dehya masks fear with annoyance; Candace stays composed unless someone she protects is threatened."'
+    },
     'focus_analyzer': {
         name: 'Cinematic Gaze & Focus',
-        description: 'Controls character eye-contact and focus. Define when characters should look at each other or the player.',
-        placeholder: 'e.g., "Characters should avoid eye contact when lying. Focus on the character being addressed."'
+        description: 'Directs exceptional gaze and reactive facing for dramatic dialogue and narrative beats.',
+        placeholder: 'e.g., "Characters who hear the abyss whisper should face away; liars avoid the player only when confronted."'
+    },
+    'conversation_staging_classifier': {
+        name: 'Conversation Staging',
+        description: 'Guides conversational pacing and whom NPC speakers primarily address.',
+        placeholder: 'e.g., "Keep courtly exchanges measured; reserve interruptions for open challenges or emergencies."'
     },
     'bg_selector': {
         name: 'Background Selection',

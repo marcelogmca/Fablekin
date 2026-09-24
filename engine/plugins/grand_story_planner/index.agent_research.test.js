@@ -145,6 +145,55 @@ async function runTestAsync(name, fn) {
         }
     });
 
+    await runTestAsync('due planner requests Narrative Architect through its TurnContext runtime slot', async () => {
+        const originalShouldRun = researchAgent.shouldRunAutomatically;
+        researchAgent.shouldRunAutomatically = async () => true;
+        const architectState = {};
+        try {
+            await plugin.hooks.HOOK_NARRATIVE_START.run(
+                { projectName: 'Test', turnNumber: 11, runtime: {} },
+                {
+                    settings: { get: () => ({}), getSelf: async () => ({ architect_integration: true }) },
+                    plugins: { isInstalled: id => id === 'narrative_architect' },
+                    pluginState: {
+                        forPlugin: id => {
+                            assert.strictEqual(id, 'narrative_architect');
+                            return { runtime: () => architectState };
+                        }
+                    },
+                    logger: { runtime: () => {} }
+                }
+            );
+
+            assert.strictEqual(architectState.taggingRequest.requestedBy, 'grand_story_planner');
+            assert.strictEqual(architectState.taggingRequest.requestedAtTurn, 11);
+            assert.strictEqual(architectState.taggingRequest.batchEndTurn, 10);
+            assert.strictEqual(architectState.taggingRequest.status, 'requested');
+        } finally {
+            researchAgent.shouldRunAutomatically = originalShouldRun;
+        }
+    });
+
+    await runTestAsync('planner does not request Narrative Architect when its editorial run is not due', async () => {
+        const originalShouldRun = researchAgent.shouldRunAutomatically;
+        researchAgent.shouldRunAutomatically = async () => false;
+        let stateAccessed = false;
+        try {
+            await plugin.hooks.HOOK_NARRATIVE_START.run(
+                { projectName: 'Test', turnNumber: 8, runtime: {} },
+                {
+                    settings: { get: () => ({}), getSelf: async () => ({ architect_integration: true }) },
+                    plugins: { isInstalled: () => true },
+                    pluginState: { forPlugin: () => { stateAccessed = true; return { runtime: () => ({}) }; } },
+                    logger: { runtime: () => {} }
+                }
+            );
+            assert.strictEqual(stateAccessed, false);
+        } finally {
+            researchAgent.shouldRunAutomatically = originalShouldRun;
+        }
+    });
+
     await runTestAsync('published research artifacts inject compact Director and Writer cards with CoT steps', async () => {
         const originalPlan = logic.getOrInitializePlan;
         const originalLoad = researchAgent.loadLatestPublishedResearchArtifact;

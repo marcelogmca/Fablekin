@@ -2,6 +2,9 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   applyRouteReasoningEffort,
+  DEFAULT_LLM_TIMEOUT_MS,
+  isFallbackEligibleError,
+  invokeModelWithDeadline,
   normalizeOpenRouterReasoningModel,
   normalizeReasoningParamsForProvider,
   resolveCallProviderKey
@@ -81,4 +84,41 @@ test('normalizes reasoning payloads for router and direct providers', () => {
     normalizeReasoningParamsForProvider('anthropic', { reasoning: { effort: 'high' } }),
     {}
   );
+});
+
+test('identifies only transient provider failures as fallback eligible', () => {
+  assert.equal(isFallbackEligibleError(new Error('503 The requested service is temporarily unavailable.')), true);
+  assert.equal(isFallbackEligibleError({ status: 429, message: 'rate limited' }), true);
+  assert.equal(isFallbackEligibleError(new Error('fetch failed: ECONNRESET')), true);
+  assert.equal(isFallbackEligibleError(new Error('Failed to parse JSON')), false);
+  assert.equal(isFallbackEligibleError(new Error('Custom validation function returned false')), false);
+});
+
+test('uses a five-minute default LLM deadline', () => {
+  assert.equal(DEFAULT_LLM_TIMEOUT_MS, 300000);
+});
+
+test('enforces the application deadline even when the model never settles', async () => {
+  let receivedSignal = null;
+  const stuckModel = {
+    invoke: (messages, options) => {
+      receivedSignal = options.signal;
+      return new Promise(() => {});
+    }
+  };
+
+  await assert.rejects(
+    invokeModelWithDeadline(stuckModel, [], { timeout: 20 }),
+    error => error?.code === 'ETIMEDOUT' && error?.kind === 'timeout'
+  );
+  assert.equal(receivedSignal?.aborted, true);
+});
+
+test('clears the deadline after a successful model response', async () => {
+  const model = {
+    invoke: async () => ({ content: 'ok' })
+  };
+
+  const result = await invokeModelWithDeadline(model, [], { timeout: 1000 });
+  assert.equal(result.content, 'ok');
 });

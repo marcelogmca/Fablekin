@@ -4,9 +4,20 @@ const stringSimilarity = require('string-similarity');
 
 const PLUGIN_ID = 'post_writer_consistency_checker';
 const DEFAULT_PROMPT_PATH = path.join(__dirname, 'prompt.txt');
+const HQ_PROMPT_DIR = path.join(__dirname, 'hq');
 const PATCH_REGEX = /<<<<<<< SEARCH\s*[\r\n]+([\s\S]*?)[\r\n]+=======\s*[\r\n]+([\s\S]*?)[\r\n]+>>>>>>> REPLACE/g;
 const REVIEW_TARGET_OPEN_TAG = '<draft_to_validate>';
 const REVIEW_TARGET_CLOSE_TAG = '</draft_to_validate>';
+const HQ_FINDINGS_OPEN_TAG = '<flagged_findings>';
+const HQ_FINDINGS_CLOSE_TAG = '</flagged_findings>';
+
+const HQ_QUALITY_CATEGORIES = [
+  { key: 'cat1_banned_phrases', label: 'Banned Phrases & Cliches', promptFile: 'cat1_banned_phrases.txt' },
+  { key: 'cat2_repetition', label: 'Repetition & Rotation', promptFile: 'cat2_repetition.txt' },
+  { key: 'cat3_dialogue', label: 'Dialogue Dynamics', promptFile: 'cat3_dialogue.txt' },
+  { key: 'cat4_familiarity', label: 'Familiarity & Relationships', promptFile: 'cat4_familiarity.txt' },
+  { key: 'cat5_prose', label: 'Prose Discipline', promptFile: 'cat5_prose.txt' }
+];
 
 const DEFAULT_SETTINGS = {
   reuse_writer_model: true,
@@ -18,7 +29,13 @@ const DEFAULT_SETTINGS = {
   max_patches: 8,
   speaker_label_audit: true,
   dialogue_count_delta_percent: 0.05,
-  dialogue_count_delta_max: 3
+  dialogue_count_delta_max: 3,
+  hq_multipass_enabled: false,
+  hq_quality_model_def: { model: 'lowendmodel' },
+  hq_corrector_max_tokens: 2000,
+  hq_max_flags_per_agent: 4,
+  hq_history_count: 10,
+  hq_concurrency: 6
 };
 
 function normalizeText(value) {
@@ -94,8 +111,29 @@ function resolveSettings(settings = {}) {
     max_patches: normalizePositiveInteger(source.max_patches, DEFAULT_SETTINGS.max_patches),
     speaker_label_audit: source.speaker_label_audit !== false,
     dialogue_count_delta_percent: normalizeNumber(source.dialogue_count_delta_percent, DEFAULT_SETTINGS.dialogue_count_delta_percent, 0, 1),
-    dialogue_count_delta_max: normalizePositiveInteger(source.dialogue_count_delta_max, DEFAULT_SETTINGS.dialogue_count_delta_max)
+    dialogue_count_delta_max: normalizePositiveInteger(source.dialogue_count_delta_max, DEFAULT_SETTINGS.dialogue_count_delta_max),
+    hq_multipass_enabled: source.hq_multipass_enabled === true,
+    hq_quality_model_def: normalizeModelDef(source.hq_quality_model_def, DEFAULT_SETTINGS.hq_quality_model_def),
+    hq_corrector_max_tokens: normalizePositiveInteger(source.hq_corrector_max_tokens, DEFAULT_SETTINGS.hq_corrector_max_tokens),
+    hq_max_flags_per_agent: normalizePositiveInteger(source.hq_max_flags_per_agent, DEFAULT_SETTINGS.hq_max_flags_per_agent),
+    hq_history_count: normalizePositiveInteger(source.hq_history_count, DEFAULT_SETTINGS.hq_history_count),
+    hq_concurrency: normalizePositiveInteger(source.hq_concurrency, DEFAULT_SETTINGS.hq_concurrency)
   };
+}
+
+function normalizeModelDef(value, fallback) {
+  const fallbackModel = fallback && typeof fallback === 'object' ? fallback.model : undefined;
+  const fallbackProvider = fallback && typeof fallback === 'object' ? fallback.provider : undefined;
+  if (value && typeof value === 'object') {
+    return {
+      model: value.model || fallbackModel,
+      provider: value.provider || fallbackProvider
+    };
+  }
+  if (typeof value === 'string' && value.trim()) {
+    return { model: value.trim(), provider: fallbackProvider };
+  }
+  return { model: fallbackModel, provider: fallbackProvider };
 }
 
 function isDialogueScriptLine(line) {
@@ -496,6 +534,456 @@ function readPromptText(promptPath = DEFAULT_PROMPT_PATH) {
   return fs.readFileSync(promptPath, 'utf8');
 }
 
+function readHqPromptText(fileName) {
+  return fs.readFileSync(path.join(HQ_PROMPT_DIR, fileName), 'utf8');
+}
+
+function formatTaggedFindings(findingsPayload) {
+  return [
+    HQ_FINDINGS_OPEN_TAG,
+    normalizeText(findingsPayload).trim(),
+    HQ_FINDINGS_CLOSE_TAG
+  ].join('\n');
+}
+
+function collectActiveCharacterNames(turnContext) {
+  const names = new Set();
+  const lines = getCanonicalLines(turnContext);
+  for (const line of lines) {
+    if (line && line.type === 'dialogue' && typeof line.character === 'string' && line.character.trim()) {
+      names.add(line.character.trim());
+    }
+  }
+  const active = turnContext?.processed?.plugins?.character_sheets?.activeCharacters;
+  if (Array.isArray(active)) {
+    for (const name of active) {
+      if (typeof name === 'string' && name.trim()) names.add(name.trim());
+    }
+  }
+  return [...names];
+}
+
+function collectCharacterGenders(turnContext) {
+  const genders = turnContext?.processed?.characterGenders;
+  if (genders && typeof genders === 'object' && !Array.isArray(genders)) return genders;
+  const legacy = turnContext?.characterGenders;
+  if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) return legacy;
+  return {};
+}
+
+function collectWorldStateSummary(turnContext) {
+  const synthesized = turnContext?.output?.worldStateSynthesized;
+  if (typeof synthesized === 'string' && synthesized.trim()) return synthesized.trim();
+  const worldState = turnContext?.processed?.worldState;
+  if (worldState && typeof worldState === 'object') {
+    try {
+      return JSON.stringify(worldState).slice(0, 2000);
+    } catch {
+      return '';
+    }
+  }
+  return '';
+}
+
+function collectPromptHistoryFallback(turnContext) {
+  const slots = turnContext?.promptComponents?.writer?.history
+    || turnContext?.promptComponents?.root?.history;
+  if (Array.isArray(slots)) {
+    const joined = slots.filter(item => typeof item === 'string' && item.trim()).join('\n\n').trim();
+    if (joined) return joined;
+  }
+  const snapshotHistory = turnContext?.processed?.promptBuilder?.writerPromptSnapshot?.parts?.part3History;
+  if (typeof snapshotHistory === 'string' && snapshotHistory.trim()) return snapshotHistory.trim();
+  return '';
+}
+
+async function collectCompressedContext(turnContext, settings) {
+  const canonicalLines = getCanonicalLines(turnContext);
+  const dialogueText = turnContext?.processed?.dialogueProcessor?.dialogue || buildScriptFromLines(canonicalLines);
+
+  let historyText = '';
+  if (turnContext && typeof turnContext.getFormattedHistory === 'function') {
+    try {
+      historyText = await turnContext.getFormattedHistory({ count: settings.hq_history_count, skip: 1 });
+    } catch {
+      historyText = '';
+    }
+  }
+  if (!historyText || !String(historyText).trim()) {
+    historyText = collectPromptHistoryFallback(turnContext) || 'No older chapters available.';
+  }
+
+  return {
+    dialogueText,
+    historyText: String(historyText),
+    activeCharacters: collectActiveCharacterNames(turnContext),
+    characterGenders: collectCharacterGenders(turnContext),
+    worldStateSummary: collectWorldStateSummary(turnContext)
+  };
+}
+
+function buildCompressedFlagMessages(categoryPromptText, compressedContext, settingsInput = {}) {
+  const settings = resolveSettings(settingsInput);
+  const context = compressedContext || {};
+  const sections = [
+    String(categoryPromptText || '').trim(),
+    '',
+    '<compact_history>',
+    String(context.historyText || 'No older chapters available.').trim(),
+    '</compact_history>',
+    '',
+    '<compact_world_state>',
+    String(context.worldStateSummary || 'No world state summary available.').trim(),
+    '</compact_world_state>'
+  ];
+  const activeCharacters = Array.isArray(context.activeCharacters) ? context.activeCharacters : [];
+  if (activeCharacters.length > 0) {
+    sections.push('', `<active_characters>${activeCharacters.join(', ')}</active_characters>`);
+  }
+  const taggedDraft = formatTaggedReviewTarget(context.dialogueText || '');
+  return [
+    { role: 'user', content: `${sections.join('\n')}\n\n${taggedDraft}` }
+  ];
+}
+
+function normalizeFlagFinding(raw, category, maxQuoteLength = 2000) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const quote = String(raw.quote || '').trim();
+  const reason = String(raw.reason || '').trim();
+  const rewriteHint = String(raw.rewrite_hint || raw.rewriteHint || '').trim();
+  if (!quote || !reason || !rewriteHint) return null;
+  return {
+    category: String(category || 'unknown'),
+    quote: quote.slice(0, maxQuoteLength),
+    reason: reason.slice(0, 1000),
+    rewrite_hint: rewriteHint.slice(0, 1000)
+  };
+}
+
+function parseFlagFindings(content, category, maxFlags) {
+  const text = String(content || '').trim();
+  if (!text) return [];
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    const startBracket = text.indexOf('[');
+    const endBracket = text.lastIndexOf(']');
+    if (startBracket === -1 || endBracket === -1 || endBracket <= startBracket) return [];
+    try {
+      parsed = JSON.parse(text.slice(startBracket, endBracket + 1));
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  const findings = [];
+  for (const raw of parsed) {
+    const finding = normalizeFlagFinding(raw, category);
+    if (!finding) continue;
+    findings.push(finding);
+    if (findings.length >= maxFlags) break;
+  }
+  return findings;
+}
+
+function formatFindingsForCorrector(findingsByAgent) {
+  const sections = [];
+  for (const agent of findingsByAgent) {
+    const list = Array.isArray(agent.findings) ? agent.findings : [];
+    if (list.length === 0) {
+      sections.push(`## ${agent.label} (${agent.key}): no findings`);
+      continue;
+    }
+    const lines = list.map((finding, index) => {
+      return `${index + 1}. quote: ${JSON.stringify(finding.quote)}\n   reason: ${finding.reason}\n   rewrite_hint: ${finding.rewrite_hint}`;
+    });
+    sections.push(`## ${agent.label} (${agent.key}):\n${lines.join('\n')}`);
+  }
+  return sections.join('\n\n');
+}
+
+function buildCorrectorMessages(turnContext, correctorPromptText, findingsByAgent, settingsInput = {}) {
+  const baseMessages = buildCheckerMessages(turnContext, '', settingsInput);
+  const reviewMessage = baseMessages[baseMessages.length - 1];
+  const baseContent = reviewMessage && reviewMessage.role === 'user' ? String(reviewMessage.content || '') : '';
+  const taggedDraft = baseContent.includes(REVIEW_TARGET_OPEN_TAG)
+    ? baseContent.slice(baseContent.indexOf(REVIEW_TARGET_OPEN_TAG))
+    : formatTaggedReviewTarget('');
+  const findingsPayload = formatFindingsForCorrector(findingsByAgent);
+  const reviewPayload = `${String(correctorPromptText || '').trim()}\n\n${formatTaggedFindings(findingsPayload)}\n\n${taggedDraft}`;
+  return [
+    ...baseMessages.slice(0, -1),
+    { role: 'user', content: reviewPayload }
+  ];
+}
+
+function resolveQualityModelAssignment(settings, tools) {
+  const pluginAssignment = tools?.llm?.getPluginModel?.(PLUGIN_ID, 'hq_quality_model_def');
+  if (pluginAssignment?.model) {
+    return {
+      model: pluginAssignment.model,
+      provider: pluginAssignment.provider || null,
+      resolvedModel: pluginAssignment.resolvedModel || null,
+      subprovider: pluginAssignment.subprovider || null,
+      source: 'hq_quality'
+    };
+  }
+  return {
+    model: settings.hq_quality_model_def.model,
+    provider: settings.hq_quality_model_def.provider || null,
+    resolvedModel: null,
+    subprovider: null,
+    source: 'hq_quality'
+  };
+}
+
+function logModelAssignment(tools, label, assignment) {
+  tools?.logger?.runtime?.(
+    `${label} model source: ${assignment.source}; `
+    + `model=${assignment.resolvedModel || assignment.model}; provider=${assignment.provider}`
+    + `${assignment.subprovider ? `; subprovider=${assignment.subprovider}` : ''}`
+  );
+}
+
+async function runSingleFlagAgent({ key, label, messages, modelAssignment, settings, tools }) {
+  const response = await tools.llm.runTask({
+    msg: `Post Writer HQ Flag: ${label}`,
+    messages,
+    model: modelAssignment.model,
+    provider: modelAssignment.provider,
+    params: {
+      retries: settings.retries,
+      timeout: settings.timeout,
+      temperature: 0.2,
+      max_tokens: 1200,
+      callingModule: `Plugin:${PLUGIN_ID}:HQ:${key}`
+    }
+  });
+  const findings = parseFlagFindings(response?.content, key, settings.hq_max_flags_per_agent);
+  return { key, label, findings };
+}
+
+async function runHqCheck(turnContext, tools, settingsInput = null) {
+  const settings = resolveSettings(settingsInput || tools?.settings?.getSelf?.() || {});
+  const lines = getCanonicalLines(turnContext);
+  const emptyStats = {
+    mode: 'hq',
+    rawPatchCount: 0,
+    acceptedCount: 0,
+    rejectedCount: 0,
+    fuzzyCount: 0,
+    dialogueCountDelta: 0,
+    allowedDialogueDelta: getAllowedDialogueDelta(0, settings),
+    rejections: [],
+    perAgent: [],
+    flagCount: 0
+  };
+
+  if (!Array.isArray(lines) || lines.length === 0) {
+    storeStats(turnContext, tools, emptyStats);
+    storeHqFindings(turnContext, tools, []);
+    logCorrectionSummary(tools, emptyStats);
+    return emptyStats;
+  }
+
+  syncDialogueProcessor(turnContext, lines);
+
+  const consistencyAssignment = resolveCheckerModelAssignment(settings, tools);
+  const qualityAssignment = resolveQualityModelAssignment(settings, tools);
+  logModelAssignment(tools, 'Post Writer HQ consistency', consistencyAssignment);
+  logModelAssignment(tools, 'Post Writer HQ quality', qualityAssignment);
+
+  const compressedContext = await collectCompressedContext(turnContext, settings);
+  const consistencyMessages = buildCheckerMessages(turnContext, readHqPromptText('consistency.txt'), settings);
+  const categoryPrompts = HQ_QUALITY_CATEGORIES.map(category => ({
+    ...category,
+    promptText: readHqPromptText(category.promptFile)
+  }));
+
+  const flagTasks = [
+    {
+      key: 'consistency',
+      label: 'Consistency',
+      messages: consistencyMessages,
+      modelAssignment: consistencyAssignment
+    },
+    ...categoryPrompts.map(category => ({
+      key: category.key,
+      label: category.label,
+      messages: buildCompressedFlagMessages(category.promptText, compressedContext, settings),
+      modelAssignment: qualityAssignment
+    }))
+  ];
+
+  const concurrency = Math.max(1, Math.min(flagTasks.length, settings.hq_concurrency));
+  const buildFlagTaskPayload = (flagTask) => ({
+    msg: `Post Writer HQ Flag: ${flagTask.label}`,
+    messages: flagTask.messages,
+    model: flagTask.modelAssignment.model,
+    provider: flagTask.modelAssignment.provider,
+    params: {
+      retries: settings.retries,
+      timeout: settings.timeout,
+      temperature: 0.2,
+      max_tokens: 1200,
+      callingModule: `Plugin:${PLUGIN_ID}:HQ:${flagTask.key}`
+    }
+  });
+  const settleFlagTask = async (flagTask) => {
+    try {
+      const payload = buildFlagTaskPayload(flagTask);
+      const runTask = tools?.llm?.runTask;
+      if (typeof runTask !== 'function') {
+        throw new Error('tools.llm.runTask is not available.');
+      }
+      const response = await runTask.call(tools.llm, payload);
+      const findings = parseFlagFindings(response?.content, flagTask.key, settings.hq_max_flags_per_agent);
+      return { status: 'fulfilled', value: { key: flagTask.key, label: flagTask.label, findings } };
+    } catch (error) {
+      return { status: 'rejected', reason: error };
+    }
+  };
+  let flagResults = [];
+  if (tools?.llm?.batch) {
+    const batchResults = await tools.llm.batch(
+      flagTasks,
+      async (flagTask) => buildFlagTaskPayload(flagTask),
+      { concurrency, settle: true, json: false }
+    );
+    const settledResults = [];
+    for (let index = 0; index < flagTasks.length; index++) {
+      const entry = batchResults[index];
+      if (entry && entry.status === 'fulfilled' && entry.value && typeof entry.value === 'object' && typeof entry.value.content === 'string') {
+        settledResults.push({
+          status: 'fulfilled',
+          value: {
+            key: flagTasks[index].key,
+            label: flagTasks[index].label,
+            findings: parseFlagFindings(entry.value.content, flagTasks[index].key, settings.hq_max_flags_per_agent)
+          }
+        });
+      } else if (entry && entry.status === 'fulfilled') {
+        settledResults.push({ status: 'fulfilled', value: entry.value });
+      } else if (entry && entry.status === 'rejected') {
+        settledResults.push({ status: 'rejected', reason: entry.reason });
+      } else {
+        settledResults.push(await settleFlagTask(flagTasks[index]));
+      }
+    }
+    flagResults = settledResults.map((result, index) => ({ result, task: flagTasks[index] }));
+  } else {
+    const settled = await Promise.allSettled(flagTasks.map(flagTask => runSingleFlagAgent({
+      key: flagTask.key,
+      label: flagTask.label,
+      messages: flagTask.messages,
+      modelAssignment: flagTask.modelAssignment,
+      settings,
+      tools
+    })));
+    flagResults = settled.map((entry, index) => {
+      const task = flagTasks[index];
+      if (entry.status === 'fulfilled') {
+        return { result: { status: 'fulfilled', value: entry.value, index }, task };
+      }
+      return { result: { status: 'rejected', reason: entry.reason, index }, task };
+    });
+  }
+
+  const findingsByAgent = [];
+  for (const { result, task } of flagResults) {
+    if (result && result.status === 'fulfilled') {
+      const value = result.value;
+      if (value && typeof value === 'object' && Array.isArray(value.findings)) {
+        findingsByAgent.push({
+          key: value.key || task.key,
+          label: value.label || task.label,
+          findings: value.findings.slice(0, settings.hq_max_flags_per_agent)
+        });
+      } else if (value && typeof value === 'object' && typeof value.content === 'string') {
+        findingsByAgent.push({
+          key: task.key,
+          label: task.label,
+          findings: parseFlagFindings(value.content, task.key, settings.hq_max_flags_per_agent)
+        });
+      } else {
+        findingsByAgent.push({ key: task.key, label: task.label, findings: [] });
+      }
+    } else {
+      const reason = result?.reason;
+      tools?.logger?.log?.('ConsistencyChecker', `HQ flag agent ${task.key} failed: ${reason?.message || reason || 'unknown error'}`);
+      findingsByAgent.push({ key: task.key, label: task.label, findings: [], error: String(reason?.message || reason || 'unknown error') });
+    }
+  }
+
+  const flagCount = findingsByAgent.reduce((total, agent) => total + agent.findings.length, 0);
+  storeHqFindings(turnContext, tools, findingsByAgent);
+
+  const correctorMessages = buildCorrectorMessages(turnContext, readHqPromptText('corrector.txt'), findingsByAgent, settings);
+  const correctorAssignment = resolveCheckerModelAssignment(settings, tools);
+  logModelAssignment(tools, 'Post Writer HQ corrector', correctorAssignment);
+  const correctorResponse = await tools.llm.runTask({
+    msg: 'Post Writer HQ Corrector',
+    messages: correctorMessages,
+    model: correctorAssignment.model,
+    provider: correctorAssignment.provider,
+    params: {
+      retries: settings.retries,
+      timeout: settings.timeout,
+      temperature: 0.1,
+      max_tokens: settings.hq_corrector_max_tokens,
+      callingModule: `Plugin:${PLUGIN_ID}:HQ:corrector`
+    }
+  });
+
+  const content = String(correctorResponse?.content || '');
+  const perAgent = findingsByAgent.map(agent => ({
+    key: agent.key,
+    label: agent.label,
+    flagCount: agent.findings.length,
+    failed: Boolean(agent.error)
+  }));
+  if (!content.includes('<<<<<<< SEARCH')) {
+    const stats = { ...emptyStats, perAgent, flagCount };
+    storeStats(turnContext, tools, stats);
+    logCorrectionSummary(tools, stats);
+    return stats;
+  }
+
+  const result = applySearchReplaceScriptToLines(lines, content, settings, tools);
+  turnContext.processed.vnManager.processedLines = lines;
+  syncDialogueProcessor(turnContext, lines);
+  const stats = { ...result.stats, mode: 'hq', perAgent, flagCount };
+  storeStats(turnContext, tools, stats);
+  logCorrectionSummary(tools, stats);
+  return stats;
+}
+
+function storeHqFindings(turnContext, tools, findingsByAgent) {
+  const compact = (Array.isArray(findingsByAgent) ? findingsByAgent : []).map(agent => ({
+    key: agent.key,
+    label: agent.label,
+    findings: (Array.isArray(agent.findings) ? agent.findings : []).map(finding => ({
+      quote: String(finding.quote || '').slice(0, 500),
+      reason: String(finding.reason || '').slice(0, 500),
+      rewrite_hint: String(finding.rewrite_hint || '').slice(0, 500)
+    }))
+  }));
+  if (tools?.pluginState?.turn) {
+    const state = tools.pluginState.turn();
+    state.hqFindings = compact;
+    return;
+  }
+  if (!turnContext?.processed) return;
+  if (!turnContext.processed.plugins || typeof turnContext.processed.plugins !== 'object') {
+    turnContext.processed.plugins = {};
+  }
+  if (!turnContext.processed.plugins[PLUGIN_ID] || typeof turnContext.processed.plugins[PLUGIN_ID] !== 'object') {
+    turnContext.processed.plugins[PLUGIN_ID] = {};
+  }
+  turnContext.processed.plugins[PLUGIN_ID].hqFindings = compact;
+}
+
 function storeStats(turnContext, tools, stats) {
   if (tools?.pluginState?.turn) {
     const state = tools.pluginState.turn();
@@ -540,6 +1028,9 @@ function logCorrectionSummary(tools, stats) {
 
 async function runConsistencyCheck(turnContext, tools, settingsInput = null) {
   const settings = resolveSettings(settingsInput || tools?.settings?.getSelf?.() || {});
+  if (settings.hq_multipass_enabled) {
+    return runHqCheck(turnContext, tools, settings);
+  }
   const lines = getCanonicalLines(turnContext);
   const emptyStats = {
     rawPatchCount: 0,
@@ -600,18 +1091,27 @@ async function runConsistencyCheck(turnContext, tools, settingsInput = null) {
 module.exports = {
   PLUGIN_ID,
   DEFAULT_SETTINGS,
+  HQ_QUALITY_CATEGORIES,
   parseSearchReplacePatches,
   countScriptLines,
   buildScriptFromLines,
   mutateLinesFromScript,
   applySearchReplaceScriptToLines,
   buildCheckerMessages,
+  buildCompressedFlagMessages,
+  buildCorrectorMessages,
+  collectCompressedContext,
+  parseFlagFindings,
+  formatFindingsForCorrector,
   resolveSettings,
+  resolveQualityModelAssignment,
   runConsistencyCheck,
+  runHqCheck,
   _private: {
     applySinglePatch,
     findFuzzyWindow,
     formatTaggedReviewTarget,
+    formatTaggedFindings,
     collectSpeakerLabelCandidates,
     formatSpeakerLabelAudit,
     getAllowedDialogueDelta,
@@ -619,6 +1119,9 @@ module.exports = {
     logCorrectionSummary,
     resolveCheckerModelAssignment,
     syncDialogueProcessor,
-    readPromptText
+    readPromptText,
+    readHqPromptText,
+    normalizeFlagFinding,
+    storeHqFindings
   }
 };

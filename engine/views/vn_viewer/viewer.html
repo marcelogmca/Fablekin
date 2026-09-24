@@ -164,6 +164,8 @@
     <audio id="audio-player" style="display:none;" loop></audio>
     <audio id="voice-player" style="display:none;"></audio>
 
+    <audio id="voice-player-secondary" style="display:none;"></audio>
+
     <div id="unified-status-popup" style="display:none;">
         <div id="unified-status-popup-content">
             <h3 id="unified-status-popup-title">Generating Narrative</h3>
@@ -309,6 +311,13 @@
             <label for="auto-play-delay-slider">Auto-Play Delay <span id="auto-play-delay-value"
                     class="setting-value">500ms</span></label>
             <input type="range" id="auto-play-delay-slider" min="0" max="5000" step="50">
+        </div>
+
+        <div class="setting-item">
+            <label class="checkbox-container" title="In Auto-Play, use scene-specific pauses and subtle voice overlap when provided by the story. Falls back to Auto-Play Delay when timing data is unavailable.">
+                <input type="checkbox" id="natural-conversation-timing-checkbox">
+                <span class="checkbox-label">Natural conversation timing</span>
+            </label>
         </div>
 
         <div class="setting-item">

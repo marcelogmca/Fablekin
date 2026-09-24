@@ -3,7 +3,7 @@
 import { state, runtime } from '../state.js';
 import { elements } from '../elements.js';
 import { normalizeCharacterKey } from '../utils.js';
-import { playVoice } from './audio_manager.js';
+import { getVoiceBoundaryDelay, playVoice, stopVoice } from './audio_manager.js';
 import { syncDialogueLog, addToLog, setInputsEnabled, updateNavigationUI, showGameOverScreen } from './ui_manager.js';
 import { runSceneEntryInterceptors, runDuringUserInputInterceptors } from '../intercept_orchestrator.js';
 import { pixiSpriteManager } from '../pixi_sprite_manager.js';
@@ -46,6 +46,26 @@ function getAutoPlayDelay() {
     return Number.isFinite(configuredDelay) ? Math.max(0, configuredDelay) : 500;
 }
 
+const MIN_FTO_MS = -500;
+const MAX_FTO_MS = 5000;
+
+/**
+ * FTO belongs to the incoming line: it describes when that speaker takes the
+ * floor relative to the end of the preceding line. The object form is the
+ * canonical payload; numeric and snake_case aliases keep the boundary tolerant.
+ */
+export function getSceneFtoOffset(scene) {
+    const fto = scene?.fto;
+    const rawValue = typeof fto === 'number'
+        ? fto
+        : fto?.offsetMs ?? fto?.offset_ms
+            ?? scene?.floorTransferOffsetMs
+            ?? scene?.floor_transfer_offset_ms;
+    const parsed = Number(rawValue);
+    if (!Number.isFinite(parsed)) return null;
+    return Math.min(MAX_FTO_MS, Math.max(MIN_FTO_MS, Math.round(parsed)));
+}
+
 export function cancelAutoPlaySchedule(resetProgress = true) {
     state.autoPlayScheduleToken += 1;
     if (state.autoPlayTimeout) {
@@ -59,10 +79,12 @@ export function cancelAutoPlaySchedule(resetProgress = true) {
     if (resetProgress && elements.progressBar) elements.progressBar.style.width = '0%';
 }
 
-function scheduleAutoAdvance(index, requestID) {
+function scheduleAutoAdvance(index, requestID, options = {}) {
     cancelAutoPlaySchedule();
     const scheduleToken = state.autoPlayScheduleToken;
-    const delay = getAutoPlayDelay();
+    const configuredDelay = Number(options.delayMs);
+    const delay = Number.isFinite(configuredDelay) ? Math.max(0, configuredDelay) : getAutoPlayDelay();
+    const preserveOutgoingVoice = options.preserveOutgoingVoice === true;
 
     if (delay > 0) {
         let width = 0;
@@ -88,7 +110,7 @@ function scheduleAutoAdvance(index, requestID) {
         }
 
         state.autoPlayTimeout = null;
-        showNextMessage({ expectedIndex: index });
+        showNextMessage({ expectedIndex: index, preserveOutgoingVoice });
     }, delay);
     state.autoPlayTimeout = autoPlayTimeout;
 }
@@ -116,9 +138,25 @@ export async function checkCompletion(index, requestID = state.lastMessageReques
         updateNavigationUI();
     }
     if (state.autoPlay && !isLast) {
-        const audioEndedPromise = state.isVoiceAudioPlaybackActive
-            ? state.currentAudioEndedPromise
-            : null;
+        const naturalTimingEnabled = state.vnSettings.interface?.natural_conversation_timing !== false;
+        const nextScene = state.currentVN.sequence[index + 1];
+        const ftoOffsetMs = naturalTimingEnabled ? getSceneFtoOffset(nextScene) : null;
+
+        if (ftoOffsetMs !== null) {
+            const boundaryDelayMs = await getVoiceBoundaryDelay(state.currentVoicePlayback, ftoOffsetMs);
+            if (!state.autoPlay
+                || requestID !== state.lastMessageRequestID
+                || index !== state.currentIndex) return;
+            if (boundaryDelayMs !== null) {
+                scheduleAutoAdvance(index, requestID, {
+                    delayMs: boundaryDelayMs,
+                    preserveOutgoingVoice: ftoOffsetMs < 0
+                });
+                return;
+            }
+        }
+
+        const audioEndedPromise = state.isVoiceAudioPlaybackActive ? state.currentAudioEndedPromise : null;
         if (audioEndedPromise) await audioEndedPromise;
         if (!state.autoPlay
             || requestID !== state.lastMessageRequestID
@@ -137,14 +175,18 @@ export function resumeAutoPlayForCurrentMessage() {
     }
 }
 
-export async function showMessage(index, skipAudio = false) {
+export async function showMessage(index, options = {}) {
     if (!state.currentVN?.sequence?.[index]) return;
+    const normalizedOptions = typeof options === 'boolean' ? { skipAudio: options } : (options || {});
+    const skipAudio = normalizedOptions.skipAudio === true;
+    const preserveOutgoingVoice = normalizedOptions.preserveOutgoingVoice === true;
     state.charactersDisplayed = 0;
     const requestID = ++state.lastMessageRequestID;
     state.dialogueTransitionRequestID = requestID;
 
     clearInterval(state.typewriterInterval);
     cancelAutoPlaySchedule();
+    if (!preserveOutgoingVoice) stopVoice();
 
     const scene = state.currentVN.sequence[index];
     const character = scene.character || 'Narrator';
@@ -169,7 +211,14 @@ export async function showMessage(index, skipAudio = false) {
         }));
         syncDialogueLog(index, isSequentialAdvance);
 
-        state.currentAudioEndedPromise = new Promise(resolve => playVoice(skipAudio ? null : scene.crc, resolve, talkingCharacter, text));
+        const voicePlayback = playVoice(skipAudio ? null : scene.crc, null, talkingCharacter, text, {
+            // The orchestrator already applied the transition's stop/preserve policy
+            // before interceptors ran, so playback itself must not stop again here.
+            preserveOutgoing: true,
+            emulateMissing: !skipAudio
+        });
+        state.currentVoicePlayback = voicePlayback;
+        state.currentAudioEndedPromise = voicePlayback?.endedPromise || Promise.resolve();
 
         await pixiSpriteManager.updateSprites(scene.sprites, {
             focusCharacter: getSceneFocusCharacter(scene)
@@ -305,7 +354,9 @@ export function showNextMessage(options = {}) {
     if (state.currentVN && state.currentIndex < state.currentVN.sequence.length - 1) {
         const nextIndex = state.currentIndex + 1;
         state.currentIndex = nextIndex;
-        return showMessage(nextIndex);
+        return showMessage(nextIndex, {
+            preserveOutgoingVoice: options.preserveOutgoingVoice === true
+        });
     }
 }
 

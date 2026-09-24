@@ -33,8 +33,61 @@ module.exports = {
       type: 'metrics',
       narrative_impact: 'Medium',
       immersion: 'Medium',
-      cost: 'Low',
-      latency: 'Low'
+      cost: 'Low (High with HQ multi-agent)',
+      latency: 'Low (High with HQ multi-agent)'
+    },
+    HQ_SECTION: {
+      type: 'header',
+      label: 'Higher Quality - Multi Agent'
+    },
+    HQ_DESCRIPTION: {
+      type: 'description',
+      content: 'When enabled, the single checker pass is replaced by 6 parallel flag agents (1 consistency-only + 1 per writing-quality category) followed by a final corrector that applies minimal SEARCH/REPLACE patches. Costs ~7 LLM calls per turn instead of 1.'
+    },
+    hq_multipass_enabled: {
+      type: 'checkbox',
+      label: 'Enable Higher Quality Multi-Agent Mode',
+      description: 'Run 6 parallel flag agents plus a final corrector instead of the single checker pass.',
+      default: false
+    },
+    hq_quality_model_def: {
+      type: 'select',
+      label: 'HQ Quality Flagger Model',
+      description: 'Model used by the 5 writing-quality flag agents (they receive a compressed context, so a cheaper model is fine).',
+      options: 'llm-aliases',
+      default: { model: 'lowendmodel' }
+    },
+    hq_corrector_max_tokens: {
+      type: 'number',
+      label: 'HQ Corrector Max Tokens',
+      description: 'Maximum output tokens for the final HQ corrector call.',
+      min: 256,
+      max: 8000,
+      default: 2000
+    },
+    hq_max_flags_per_agent: {
+      type: 'number',
+      label: 'HQ Max Flags Per Agent',
+      description: 'Maximum findings accepted from each flag agent before truncation.',
+      min: 1,
+      max: 10,
+      default: 4
+    },
+    hq_history_count: {
+      type: 'number',
+      label: 'HQ Compressed History Count',
+      description: 'Number of prior chapters included in the compressed context sent to the quality flag agents.',
+      min: 1,
+      max: 30,
+      default: 10
+    },
+    hq_concurrency: {
+      type: 'number',
+      label: 'HQ Flag Concurrency',
+      description: 'Maximum parallel flag agent calls. The 6 agents fan out up to this limit.',
+      min: 1,
+      max: 6,
+      default: 6
     },
     reuse_writer_model: {
       type: 'checkbox',
@@ -142,6 +195,10 @@ module.exports = {
   exports: {
     applySearchReplaceScriptToLines: logic.applySearchReplaceScriptToLines,
     buildCheckerMessages: logic.buildCheckerMessages,
-    parseSearchReplacePatches: logic.parseSearchReplacePatches
+    buildCompressedFlagMessages: logic.buildCompressedFlagMessages,
+    buildCorrectorMessages: logic.buildCorrectorMessages,
+    parseFlagFindings: logic.parseFlagFindings,
+    parseSearchReplacePatches: logic.parseSearchReplacePatches,
+    runHqCheck: logic.runHqCheck
   }
 };

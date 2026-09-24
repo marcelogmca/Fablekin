@@ -39,6 +39,7 @@ export const elements = {
     writeSpeedValue: null,
     autoPlayDelaySlider: null,
     autoPlayDelayValue: null,
+    naturalConversationTimingCheckbox: null,
     toggleControlsBtn: null,
     controls: null,
     dialogueIndexIndicator: null,
@@ -50,6 +51,7 @@ export const elements = {
     nameLine: null,
     audioPlayer: null,
     voicePlayer: null,
+    voicePlayerSecondary: null,
     logMessages: null,
     prevChapterNav: null,
     nextChapterNav: null,
@@ -161,6 +163,7 @@ export function initElements() {
     elements.writeSpeedValue = document.getElementById('write-speed-value');
     elements.autoPlayDelaySlider = document.getElementById('auto-play-delay-slider');
     elements.autoPlayDelayValue = document.getElementById('auto-play-delay-value');
+    elements.naturalConversationTimingCheckbox = document.getElementById('natural-conversation-timing-checkbox');
     elements.toggleControlsBtn = document.getElementById('toggle-controls-btn');
     elements.controls = document.getElementById('controls');
     elements.dialogueIndexIndicator = document.getElementById('dialogue-index-indicator');
@@ -172,6 +175,7 @@ export function initElements() {
     elements.nameLine = document.getElementById('name-line');
     elements.audioPlayer = document.getElementById('audio-player');
     elements.voicePlayer = document.getElementById('voice-player');
+    elements.voicePlayerSecondary = document.getElementById('voice-player-secondary');
     elements.logMessages = document.getElementById('log-messages');
     elements.prevChapterNav = document.getElementById('prev-chapter-nav');
     elements.nextChapterNav = document.getElementById('next-chapter-nav');

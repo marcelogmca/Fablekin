@@ -8,6 +8,7 @@ const {
 const { callLLM, resolveModelAlias } = require("../../llm.js");
 const { getStore } = require("../storage/vector_store_manager");
 const { getDiagnosticContext, runWithDiagnosticContext } = require("../../diagnostic_context.js");
+const { buildCoreVnLlmMessages } = require("../../vn_manager/shared_llm_context.js");
 
 // #region MODULE IMPORTS
 const settings = readSettings();

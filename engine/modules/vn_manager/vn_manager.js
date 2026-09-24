@@ -10,6 +10,11 @@ const { processDialogueLines } = require('./analysis/dialogue_processor.js');
 const { generateThumbnail } = require('./rendering/thumbnail_generator.js');
 const pluginManager = require('../plugin_manager/plugin_manager.js');
 const { identifyFocusInstructions } = require('./analysis/focus_analyzer.js');
+const {
+  applyConversationStaging,
+  classifyConversationStaging
+} = require('./analysis/conversation_staging_classifier.js');
+const { directReactions } = require('./analysis/reaction_director.js');
 const { orchestrateSpriteVariants } = require('./analysis/sprite_variant_orchestrator.js');
 const { classifyScenePhaseHandoff } = require('./analysis/scene_phase_classifier.js');
 const { workQueue } = require('../plugin_manager/runtime/hook_executor.js');
@@ -65,6 +70,8 @@ function getTurnPipelineFlags(turnContext) {
 
   return {
     gazeDirectorEnabled: settings.narrative_agents?.gaze_director?.enabled === true,
+    conversationStagingEnabled: settings.narrative_agents?.conversation_staging_classifier?.enabled !== false,
+    reactionDirectorEnabled: settings.narrative_agents?.reaction_director?.enabled !== false,
     spriteVariantOrchestratorEnabled: settings.narrative_agents?.sprite_variant_orchestrator?.enabled !== false,
     assetSelectorEnabled: settings.narrative_agents?.asset_selector?.enabled !== false,
     summarizerEnabled: settings.narrative_agents?.summarizer?.enabled !== false,
@@ -140,10 +147,13 @@ function getCorePipelineTaskComponent(key) {
     dialogueDerivedState: 'DialogueState',
     spriteVariantOrchestration: 'SpriteVariantOrchestrator',
     emotionClassification: 'EmotionClassifier',
+    reactionClassification: 'ReactionDirector',
+    reactionSpriteResolution: 'SpriteResolver',
     spriteResolution: 'SpriteResolver',
     finalBackground: 'AssetSelector',
     finalOst: 'AssetSelector',
     newCharacterIdentification: 'CharacterBootstrapper',
+    conversationStaging: 'ConversationStagingClassifier',
     focusInstructions: 'GazeDirector',
     scenePhaseClassification: 'ScenePhaseClassifier',
     currentTurnSummary: 'Summarizer',
@@ -347,7 +357,9 @@ async function classifyLineEmotions(turnContext, sprites, dialogueLines = getCan
   Logger.log('VNManager', 'EmotionClassification', 'Starting batch emotion classification...', 'start');
   const classifyEmotions = deps.batchClassifyEmotions || batchClassifyEmotions;
   const lines = Array.isArray(dialogueLines) ? dialogueLines : [];
-  const dialoguesToClassify = lines.filter(line => line.type === 'dialogue');
+  const dialoguesToClassify = lines
+    .map((line, sceneLineIndex) => ({ ...line, sceneLineIndex }))
+    .filter(line => line.type === 'dialogue');
 
   const results = await classifyEmotions(dialoguesToClassify, sprites, turnContext);
 
@@ -379,13 +391,12 @@ async function resolveLineSprites(turnContext, sprites, allSprites, dialogueLine
   const mainCharacter = turnContext.input.playerCharacterName;
   const lines = Array.isArray(dialogueLines) ? dialogueLines : [];
 
-  let dialogueIndex = 0;
-  for (const line of lines) {
+  for (let sceneLineIndex = 0; sceneLineIndex < lines.length; sceneLineIndex += 1) {
+    const line = lines[sceneLineIndex];
     if (line.type !== 'dialogue') continue;
 
-    dialogueIndex++;
     const emotion = line.emotion || 'neutral';
-    const spriteResult = await spriteFinder(line.character, emotion, sprites, mainCharacter, turnContext, allSprites, dialogueIndex);
+    const spriteResult = await spriteFinder(line.character, emotion, sprites, mainCharacter, turnContext, allSprites, sceneLineIndex);
     if (spriteResult && spriteResult.image) {
       line.image = relativize(spriteResult.image, turnContext.runtime.rootDirectory);
     }
@@ -396,6 +407,45 @@ async function resolveLineSprites(turnContext, sprites, allSprites, dialogueLine
   turnContext.processed.vnManager.processedLines = lines;
   syncDialogueProcessorFromCanonicalLines(turnContext, lines);
   Logger.log('VNManager', 'SpriteResolution', 'Sprite resolution complete.', 'end');
+  return lines;
+}
+
+async function resolveReactionSprites(turnContext, sprites, allSprites, reactions = null, deps = {}) {
+  const spriteFinder = deps.findSprite || findSprite;
+  const relativize = deps.relativizeAssetPath || relativizeAssetPath;
+  const mainCharacter = turnContext.input.playerCharacterName;
+  const lines = getCanonicalDialogueLines(turnContext);
+  const directives = Array.isArray(reactions)
+    ? reactions
+    : (turnContext?.processed?.vnManager?.reactionDirector?.reactions || []);
+
+  for (const reaction of directives) {
+    const sceneLineIndex = Number(reaction?.line);
+    if (!Number.isInteger(sceneLineIndex) || sceneLineIndex < 0 || sceneLineIndex >= lines.length) continue;
+    const line = lines[sceneLineIndex];
+    if (!line || (line.type === 'dialogue'
+      && String(line.character || '').trim().toLowerCase() === String(reaction.character || '').trim().toLowerCase())) continue;
+
+    const spriteResult = await spriteFinder(
+      reaction.character,
+      reaction.emotion,
+      sprites,
+      mainCharacter,
+      turnContext,
+      allSprites,
+      sceneLineIndex
+    );
+    if (!spriteResult?.image) continue;
+
+    if (!Array.isArray(line.reactionChanges)) line.reactionChanges = [];
+    line.reactionChanges.push({
+      character: reaction.character,
+      emotion: reaction.emotion,
+      image: relativize(spriteResult.image, turnContext.runtime.rootDirectory),
+      availableRotations: Array.isArray(spriteResult.rotations) ? spriteResult.rotations : []
+    });
+  }
+
   return lines;
 }
 
@@ -590,11 +640,31 @@ async function transformVNProject(turnContext) {
         }
       },
       {
+        key: 'reactionClassification',
+        blocking: true,
+        after: ['emotionClassification'],
+        fn: async () => {
+          const reactions = pipelineFlags.reactionDirectorEnabled
+            ? await directReactions(turnContext, spriteCatalog)
+            : [];
+          turnContext.processed.vnManager.reactionDirector = { reactions };
+          return reactions;
+        }
+      },
+      {
         key: 'spriteResolution',
         blocking: true,
         after: ['emotionClassification', 'newCharacterIdentification'],
         fn: async () => {
           return await resolveLineSprites(turnContext, baseSprites, allSprites);
+        }
+      },
+      {
+        key: 'reactionSpriteResolution',
+        blocking: true,
+        after: ['reactionClassification', 'newCharacterIdentification'],
+        fn: async () => {
+          return await resolveReactionSprites(turnContext, baseSprites, allSprites);
         }
       },
       {
@@ -636,6 +706,13 @@ async function transformVNProject(turnContext) {
         key: 'newCharacterIdentification', blocking: true, after: ['dialogueDerivedState'], fn: async () => {
           // Refactored to helper function
           return await handleNewCharacterExtraction(turnContext);
+        }
+      },
+      {
+        key: 'conversationStaging', blocking: true, after: ['dialogueDerivedState'],
+        fn: async () => {
+          if (!pipelineFlags.conversationStagingEnabled) return [];
+          return await classifyConversationStaging(turnContext);
         }
       },
       {
@@ -853,7 +930,12 @@ async function transformVNProject(turnContext) {
 
     // Store the enriched lines in TurnContext for plugins to access.
     const finalProcessedLines = resultObj.spriteResolution || getCanonicalDialogueLines(turnContext);
+    const conversationStaging = Array.isArray(resultObj.conversationStaging)
+      ? resultObj.conversationStaging
+      : [];
+    applyConversationStaging(finalProcessedLines, conversationStaging);
     turnContext.processed.vnManager.processedLines = finalProcessedLines;
+    turnContext.processed.vnManager.conversationStaging = conversationStaging;
     turnContext.thumbnail = resultObj.thumbnail || null;
 
     // ###### PLUGIN HOOK: HOOK_VN_DIALOGUE_READY ####################################
@@ -874,13 +956,19 @@ async function transformVNProject(turnContext) {
     Logger.log('VNManager', 'VNTransformation', 'Computing sprite positions...', 'start');
     const maxSpriteSlots = getMaxSpriteSlotsFromSettings(readSettings() || {});
     const finalOutput = computeSpritePositions(finalProcessedLines, allSprites, { spriteMetadata, maxSpriteSlots });
+    for (const line of finalProcessedLines) {
+      if (line && typeof line === 'object') delete line.reactionChanges;
+    }
     cancellation.throwIfCancelled('sprite positioning');
 
     // --- Apply Focus Rotations ---
-    if (hasRotations && resultObj.focusInstructions && pipelineFlags.gazeDirectorEnabled) {
+    if (hasRotations && (pipelineFlags.conversationStagingEnabled || pipelineFlags.gazeDirectorEnabled)) {
       Logger.log('VNManager', 'VNTransformation', 'Applying sprite rotations based on focus...', 'start');
       const allSpritesSet = new Set(allSprites);
-      applyRotationLogic(finalOutput, resultObj.focusInstructions, playerCharacterName, allSpritesSet);
+      const focusInstructions = pipelineFlags.gazeDirectorEnabled && Array.isArray(resultObj.focusInstructions)
+        ? resultObj.focusInstructions
+        : [];
+      applyRotationLogic(finalOutput, focusInstructions, playerCharacterName, allSpritesSet);
       Logger.log('VNManager', 'VNTransformation', 'Sprite rotations applied.', 'end');
     }
 
@@ -1152,6 +1240,7 @@ module.exports = {
     runBlockingTaskGraph,
     classifyLineEmotions,
     resolveLineSprites,
+    resolveReactionSprites,
     updateDialogueDerivedState,
     getCanonicalDialogueLines,
     syncDialogueProcessorFromCanonicalLines

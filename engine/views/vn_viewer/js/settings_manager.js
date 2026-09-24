@@ -67,6 +67,7 @@ export function applyVNSettings() {
 
     if (elements.audioPlayer) elements.audioPlayer.volume = audio.ost_volume ?? 0.5;
     if (elements.voicePlayer) elements.voicePlayer.volume = audio.tts_volume ?? 0.5;
+    if (elements.voicePlayerSecondary) elements.voicePlayerSecondary.volume = audio.tts_volume ?? 0.5;
     if (elements.characterContainer) {
         elements.characterContainer.style.setProperty('--sprite-vertical-offset', `${visuals.sprite_offset ?? 0}px`);
     }
@@ -145,6 +146,9 @@ export function applyVNSettings() {
 
     if (elements.autoPlayDelaySlider) elements.autoPlayDelaySlider.value = inter.auto_play_delay ?? 500;
     if (elements.autoPlayDelayValue) elements.autoPlayDelayValue.textContent = `${inter.auto_play_delay ?? 500}ms`;
+    if (elements.naturalConversationTimingCheckbox) {
+        elements.naturalConversationTimingCheckbox.checked = inter.natural_conversation_timing !== false;
+    }
     
     if (elements.hideMainSpritesCheckbox) {
         elements.hideMainSpritesCheckbox.checked = !!visuals.hide_main_sprites;

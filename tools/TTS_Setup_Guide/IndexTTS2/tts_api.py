@@ -5,6 +5,12 @@ import re
 import asyncio
 import hashlib
 import time
+import inspect
+import multiprocessing
+import math
+from collections import OrderedDict
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import suppress
 from uuid import uuid4
 import uvicorn
 import aiohttp
@@ -16,7 +22,7 @@ from typing import List, Optional
 # --- Directory Configuration ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = SCRIPT_DIR
-BASE_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))  # Root: G:\Locker\TTS
+BASE_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 VOICES_DIR = os.path.join(BASE_DIR, "voices")
@@ -37,19 +43,272 @@ JOB_RETENTION_SECONDS = 300
 if PROJECT_DIR not in sys.path:
     sys.path.append(PROJECT_DIR)
 
-# --- Import IndexTTS2 ---
-try:
-    from indextts.infer_v2 import IndexTTS2
-    INDEX_AVAILABLE = True
-except ImportError as e:
-    print(f"Error importing IndexTTS2: {e}")
-    INDEX_AVAILABLE = False
-
 # --- Global Objects ---
-model = None
-tts_semaphore = None
+inference_service = None
+callback_session = None
+callback_tasks = set()
+cleanup_task = None
+voice_catalogue = OrderedDict()
 jobs = {}
 jobs_lock = asyncio.Lock()
+
+# Torch and IndexTTS are imported only in the spawned worker. Stopping that
+# process releases weights, conditioning tensors, allocator pools AND CUDA context.
+worker_runtime = None
+worker_load_error = None
+
+
+class ReferenceCache:
+    """Byte- and entry-bounded LRU of complete upstream conditioning bundles."""
+
+    SPEAKER_FIELDS = ('cache_spk_cond', 'cache_s2mel_style', 'cache_s2mel_prompt', 'cache_mel')
+    EMOTION_FIELDS = ('cache_emo_cond',)
+
+    def __init__(self, max_entries=32, max_bytes=256 * 1024 * 1024):
+        self.max_entries = max_entries
+        self.max_bytes = max_bytes
+        self.entries = OrderedDict()
+        self.bytes_used = 0
+
+    @staticmethod
+    def file_key(kind, path):
+        path = os.path.normcase(os.path.realpath(path))
+        stat = os.stat(path)
+        return kind, path, stat.st_mtime_ns, stat.st_size
+
+    def _remove(self, key):
+        _, size = self.entries.pop(key)
+        self.bytes_used -= size
+
+    def get(self, key):
+        # Replacing a reference in place must never keep its old conditioning.
+        for old in list(self.entries):
+            if old[:2] == key[:2] and old != key:
+                self._remove(old)
+        entry = self.entries.get(key)
+        if entry is None:
+            return None
+        self.entries.move_to_end(key)
+        return entry[0]
+
+    def put(self, key, values):
+        if key in self.entries:
+            self._remove(key)
+        if any(value is None for value in values):
+            return
+        # Account for underlying storages, including views, without retaining
+        # copies or autograd graphs. Shared storage is counted once per bundle.
+        storages = {}
+        for value in values:
+            storage = value.untyped_storage()
+            storages[(str(value.device), storage.data_ptr())] = storage.nbytes()
+        size = sum(storages.values())
+        if self.max_entries <= 0 or size > self.max_bytes:
+            return
+        while self.entries and (len(self.entries) >= self.max_entries or self.bytes_used + size > self.max_bytes):
+            self._remove(next(iter(self.entries)))
+        self.entries[key] = (values, size)
+        self.bytes_used += size
+
+    @classmethod
+    def clear_model_slots(cls, model):
+        for field in cls.SPEAKER_FIELDS + cls.EMOTION_FIELDS + ('cache_spk_audio_prompt', 'cache_emo_audio_prompt'):
+            setattr(model, field, None)
+
+    def restore(self, model, speaker_key, emotion_key):
+        self.clear_model_slots(model)
+        hits = {}
+        for kind, key, fields, path_field in (
+            ('speaker', speaker_key, self.SPEAKER_FIELDS, 'cache_spk_audio_prompt'),
+            ('emotion', emotion_key, self.EMOTION_FIELDS, 'cache_emo_audio_prompt'),
+        ):
+            values = self.get(key)
+            hits[kind] = values is not None
+            if values is not None:
+                for field, value in zip(fields, values):
+                    setattr(model, field, value)
+                setattr(model, path_field, key[1])
+        return hits
+
+    def capture(self, model, speaker_key, emotion_key):
+        self.put(speaker_key, tuple(getattr(model, field) for field in self.SPEAKER_FIELDS))
+        self.put(emotion_key, tuple(getattr(model, field) for field in self.EMOTION_FIELDS))
+
+
+class InferenceRuntime:
+    """Lives entirely in one worker process; never used concurrently."""
+
+    def __init__(self, options):
+        import yaml
+        import torch
+        self.torch = torch
+        self.duration_factor = options.get('duration_factor', 0.90)
+        self.emotion_alpha = options.get('emotion_alpha', 0.75)
+        model_dir = options['model_dir']
+        cfg_path = os.path.join(model_dir, 'config.yaml')
+        with open(cfg_path, encoding='utf-8') as config_file:
+            config = yaml.safe_load(config_file)
+        self.version = options['model_version']
+        if self.version == 'auto':
+            self.version = '2.5' if str(config.get('version', '')).startswith('2.5') else '2'
+        if self.version == '2.5':
+            from indextts.infer_v2_5 import IndexTTS2
+        else:
+            from indextts.infer_v2 import IndexTTS2
+        kwargs = dict(cfg_path=cfg_path, model_dir=model_dir,
+                      use_cuda_kernel=options['cuda_kernel'], use_deepspeed=False)
+        kwargs['use_bf16' if self.version == '2.5' else 'use_fp16'] = True
+        parameters = inspect.signature(IndexTTS2).parameters
+        if 'use_qwen_emo' in parameters:
+            kwargs['use_qwen_emo'] = False
+        for flag in ('use_accel', 'use_torch_compile'):
+            if options[flag]:
+                if flag not in parameters:
+                    raise RuntimeError(f'This IndexTTS checkout does not support {flag}.')
+                kwargs[flag] = True
+        print(f'[IndexTTS] Loading {self.version} in worker {os.getpid()}...', flush=True)
+        self.model = IndexTTS2(**kwargs)
+        self.language = options['language']
+        self.cache = ReferenceCache(options['cache_entries'], options['cache_mb'] * 1024 * 1024)
+        required = ReferenceCache.SPEAKER_FIELDS + ReferenceCache.EMOTION_FIELDS
+        if not all(hasattr(self.model, field) for field in required):
+            raise RuntimeError('Unsupported IndexTTS conditioning cache layout; check the upstream version.')
+
+    def infer(self, text, voice_path, output_path, emotion_path):
+        speaker_key = self.cache.file_key('speaker', voice_path)
+        emotion_key = self.cache.file_key('emotion', emotion_path or voice_path)
+        hits = self.cache.restore(self.model, speaker_key, emotion_key)
+        kwargs = dict(spk_audio_prompt=speaker_key[1], text=text, output_path=output_path,
+                      emo_audio_prompt=emotion_key[1] if emotion_path else None,
+                      emo_alpha=getattr(self, 'emotion_alpha', 0.75),
+                      use_random=False, verbose=False)
+        if self.version == '2.5':
+            kwargs['lang'] = self.language
+            kwargs['duration_factor'] = getattr(self, 'duration_factor', 0.90)
+        started = time.perf_counter()
+        # Publish only complete WAVs. Failed regeneration must not expose an old
+        # or partially written file through a successful progress callback.
+        temporary_path = output_path + f'.{uuid4().hex}.tmp.wav'
+        kwargs['output_path'] = temporary_path
+        try:
+            with self.torch.inference_mode():
+                self.model.infer(**kwargs)
+            if not os.path.isfile(temporary_path) or os.path.getsize(temporary_path) <= 44:
+                raise RuntimeError('IndexTTS did not produce a complete WAV file.')
+            # Do not retain conditioning if a reference was replaced mid-call.
+            if (speaker_key == self.cache.file_key('speaker', voice_path)
+                    and emotion_key == self.cache.file_key('emotion', emotion_path or voice_path)):
+                self.cache.capture(self.model, speaker_key, emotion_key)
+            os.replace(temporary_path, output_path)
+            return dict(speaker_cache_hit=hits['speaker'], emotion_cache_hit=hits['emotion'],
+                        inference_seconds=round(time.perf_counter() - started, 3),
+                        reference_cache_mb=round(self.cache.bytes_used / (1024 * 1024), 2))
+        finally:
+            self.cache.clear_model_slots(self.model)
+            with suppress(FileNotFoundError):
+                os.remove(temporary_path)
+
+
+def run_indextts_inference(options, text, voice_path, output_path, emotion_path=None):
+    """Process entry point. Return plain data so exceptions cannot retain tensors."""
+    global worker_runtime, worker_load_error
+    load_seconds = 0.0
+    try:
+        if worker_load_error:
+            raise RuntimeError(worker_load_error)
+        if worker_runtime is None:
+            started = time.perf_counter()
+            try:
+                worker_runtime = InferenceRuntime(options)
+            except Exception as exc:
+                worker_load_error = f'IndexTTS initialization failed: {exc}'
+                raise RuntimeError(worker_load_error) from None
+            load_seconds = time.perf_counter() - started
+        result = worker_runtime.infer(text, voice_path, output_path, emotion_path)
+        result['model_load_seconds'] = round(load_seconds, 3)
+        return result
+    except Exception as exc:
+        return {'error': str(exc)}
+
+
+class InferenceService:
+    """Keep a single GPU worker while batches are pending, unload when idle."""
+
+    def __init__(self, options, idle_seconds=5):
+        self.options = options
+        self.idle_seconds = idle_seconds
+        self.pool = None
+        self.active_batches = 0
+        self.idle_task = None
+        self.closing_task = None
+        self.lock = asyncio.Lock()
+        self.closed = False
+
+    def begin_batch(self):
+        if self.closed:
+            raise RuntimeError('TTS service is shutting down.')
+        self.active_batches += 1
+        if self.idle_task:
+            self.idle_task.cancel()
+            self.idle_task = None
+
+    def end_batch(self):
+        self.active_batches -= 1
+        if not self.active_batches and self.idle_seconds >= 0 and not self.closed:
+            self.idle_task = asyncio.create_task(self._unload_when_idle())
+
+    async def _unload_when_idle(self):
+        await asyncio.sleep(self.idle_seconds)
+        self.idle_task = None
+        if not self.active_batches:
+            await self._close_worker()
+
+    async def _close_worker(self):
+        # Detach synchronously before yielding; new work waits for full exit so
+        # the old and new models can never overlap in VRAM.
+        pool, self.pool = self.pool, None
+        if pool is not None:
+            self.closing_task = asyncio.create_task(asyncio.to_thread(pool.shutdown, wait=True))
+            await asyncio.shield(self.closing_task)
+            print('[IndexTTS] Worker stopped; model and CUDA memory released.', flush=True)
+
+    async def infer(self, *args, job_id=None):
+        queued = time.perf_counter()
+        async with self.lock:
+            queue_seconds = time.perf_counter() - queued
+            if self.closed:
+                raise RuntimeError('TTS service is shutting down.')
+            if job_id is not None:
+                cancelled, reason = await get_job_cancellation_state(job_id)
+                if cancelled:
+                    return {'error': f'Cancelled: {reason}', 'queue_seconds': round(queue_seconds, 3)}
+            if self.closing_task:
+                await asyncio.shield(self.closing_task)
+                self.closing_task = None
+            if self.pool is None:
+                self.pool = ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context('spawn'))
+            future = asyncio.get_running_loop().run_in_executor(self.pool, run_indextts_inference, self.options, *args)
+            try:
+                result = await asyncio.shield(future)
+            except asyncio.CancelledError:
+                # A running CUDA call cannot be cancelled by cancelling its
+                # asyncio waiter. Drain it before releasing the lock/worker.
+                with suppress(Exception):
+                    await asyncio.shield(future)
+                raise
+            result['queue_seconds'] = round(queue_seconds, 3)
+            return result
+
+    async def close(self):
+        self.closed = True
+        if self.idle_task:
+            self.idle_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await self.idle_task
+        async with self.lock:
+            if self.closing_task:
+                await asyncio.shield(self.closing_task)
+            await self._close_worker()
 
 
 def _now() -> float:
@@ -232,6 +491,7 @@ class ProgressTracker:
         # For smoothing the ETA
         self.avg_chars_per_sec = None
         self.smoothing_factor = 0.2  # Weight for new data
+        self.previous_callback = None
 
     async def update(self, filename, chars=0, error=None, status="running"):
         async with self.lock:
@@ -286,12 +546,17 @@ class ProgressTracker:
             )
 
             if self.callback_url:
-                asyncio.create_task(self._send_callback(progress_data))
+                task = asyncio.create_task(self._send_callback(progress_data, self.previous_callback))
+                self.previous_callback = task
+                callback_tasks.add(task)
+                task.add_done_callback(callback_tasks.discard)
 
-    async def _send_callback(self, data):
+    async def _send_callback(self, data, previous=None):
         try:
-            async with aiohttp.ClientSession() as session:
-                await session.post(self.callback_url, json=data)
+            if previous:
+                await previous
+            async with callback_session.post(self.callback_url, json=data) as response:
+                response.raise_for_status()
         except Exception as e:
             print(f"[Warning] Callback failed: {e}")
 
@@ -353,30 +618,36 @@ def _extract_generic_profile_key_from_stem(stem: str) -> str:
 
 
 def _find_generic_profile_candidates(search_dir: Optional[str], profile_key: str):
-    if not search_dir or not os.path.exists(search_dir):
+    if not search_dir:
         return []
-
-    candidates = []
     try:
-        filenames = os.listdir(search_dir)
-    except Exception:
+        directory = os.path.normcase(os.path.realpath(search_dir))
+        stamp = os.stat(directory)
+        signature = (stamp.st_mtime_ns, stamp.st_ctime_ns)
+        cached = voice_catalogue.get(directory)
+        if cached and cached[0] == signature:
+            voice_catalogue.move_to_end(directory)
+            return cached[1].get(profile_key, [])
+        profiles = {}
+        with os.scandir(directory) as entries:
+            for entry in entries:
+                if not entry.is_file():
+                    continue
+                stem, ext = os.path.splitext(entry.name)
+                if ext.lower() not in ['.wav', '.mp3', '.ogg']:
+                    continue
+                key = _extract_generic_profile_key_from_stem(stem)
+                if key:
+                    profiles.setdefault(key, []).append((entry.name, entry.path))
+        for candidates in profiles.values():
+            candidates.sort(key=lambda item: _natural_sort_key(item[0]))
+        voice_catalogue[directory] = (signature, profiles)
+        voice_catalogue.move_to_end(directory)
+        while len(voice_catalogue) > 32:
+            voice_catalogue.popitem(last=False)
+        return profiles.get(profile_key, [])
+    except OSError:
         return []
-
-    for filename in filenames:
-        full_path = os.path.join(search_dir, filename)
-        if not os.path.isfile(full_path):
-            continue
-        ext = os.path.splitext(filename)[1].lower()
-        if ext not in ['.wav', '.mp3', '.ogg']:
-            continue
-
-        stem = os.path.splitext(filename)[0]
-        key = _extract_generic_profile_key_from_stem(stem)
-        if key == profile_key:
-            candidates.append((filename, full_path))
-
-    candidates.sort(key=lambda item: _natural_sort_key(item[0]))
-    return candidates
 
 
 def resolve_voice_paths(
@@ -471,7 +742,23 @@ def resolve_voice_paths(
                 emo_path = temp_emo_path
                 break
         else:
-            print(f"[IndexTTS2] Mood requested: '{mood}', but '{mood_filename}' not found in {parent_dir}. Falling back to neutral.")
+            # A project may provide emotion_happy.wav etc. as a delivery
+            # reference shared by every character. The prefix reserves these
+            # files from character-name routing.
+            for d in search_dirs:
+                if not d or not os.path.exists(d):
+                    continue
+                for ext in ['.wav', '.mp3', '.ogg']:
+                    shared_filename = f"emotion_{mood.lower()}{ext}"
+                    temp_emo_path = os.path.join(d, shared_filename)
+                    if os.path.exists(temp_emo_path):
+                        emo_path = temp_emo_path
+                        break
+                if emo_path:
+                    break
+
+            if not emo_path:
+                print(f"[IndexTTS2] Mood requested: '{mood}', but neither '{mood_filename}' nor a shared 'emotion_{mood.lower()}' reference was found. Falling back to neutral.")
 
     return base_path, emo_path, base_voice, is_fallback
 
@@ -505,35 +792,35 @@ async def cleanup_output_files():
         await asyncio.sleep(CLEANUP_INTERVAL_SECONDS)
 
 
-# --- Inference Worker ---
-def run_indextts_inference(text, voice_prompt_path, output_path, emo_audio_prompt=None):
-    global model
-
-    if not model:
-        raise RuntimeError("IndexTTS2 not loaded.")
-
-    model.infer(
-        spk_audio_prompt=voice_prompt_path,
-        text=text,
-        output_path=output_path,
-        emo_audio_prompt=emo_audio_prompt,
-        emo_alpha=0.85,
-        use_random=False,
-        verbose=False
-    )
-
-
 # --- FastAPI ---
 app = FastAPI(title="IndexTTS2 API (Standalone)")
 
 
 @app.on_event("startup")
 async def startup_event():
+    global inference_service, callback_session, cleanup_task
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.makedirs(VOICES_DIR, exist_ok=True)
     os.makedirs(LOCAL_VOICES_DIR, exist_ok=True)
     # Start the periodic cleanup task
-    asyncio.create_task(cleanup_output_files())
+    cleanup_task = asyncio.create_task(cleanup_output_files())
+    callback_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+    if inference_service is None:
+        inference_service = InferenceService(default_worker_options())
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    if cleanup_task:
+        cleanup_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await cleanup_task
+    if inference_service:
+        await inference_service.close()
+    if callback_tasks:
+        await asyncio.gather(*list(callback_tasks), return_exceptions=True)
+    if callback_session:
+        await callback_session.close()
 
 
 @app.post("/generate")
@@ -558,6 +845,7 @@ async def generate_batch_tts(request: TTSRequest):
     )
 
     async def process_line(line: DialogueLine):
+        line_started = time.perf_counter()
         output_filename = clean_filename(line.crc)
         output_path = os.path.join(OUTPUT_DIR, output_filename)
 
@@ -582,10 +870,8 @@ async def generate_batch_tts(request: TTSRequest):
             return result_payload
 
         try:
-            if not INDEX_AVAILABLE:
-                raise RuntimeError("IndexTTS2 not available")
-
             # Execute the smart routing logic
+            resolve_started = time.perf_counter()
             voice_prompt_path, emo_audio_prompt, used_voice, is_fallback = resolve_voice_paths(
                 character=line.character,
                 gender=line.gender,
@@ -593,6 +879,7 @@ async def generate_batch_tts(request: TTSRequest):
                 project_voices_path=request.project_voices_path,
                 generic_voice_profile=line.generic_voice_profile
             )
+            resolution_seconds = time.perf_counter() - resolve_started
 
             result_payload["used_voice"] = used_voice
             result_payload["is_fallback"] = is_fallback
@@ -607,21 +894,19 @@ async def generate_batch_tts(request: TTSRequest):
 
             print(f"[IndexTTS2] {fallback_str} '{line.crc}' routing to {used_voice}{mood_str}")
 
-            async with tts_semaphore:
-                cancelled, cancel_reason = await get_job_cancellation_state(job_id)
-                if cancelled:
-                    error_msg = f"Cancelled: {cancel_reason}"
-                    status = "cancelled"
-                else:
-                    loop = asyncio.get_running_loop()
-                    await loop.run_in_executor(
-                        None,
-                        run_indextts_inference,
-                        line.text,
-                        voice_prompt_path,
-                        output_path,
-                        emo_audio_prompt
-                    )
+            metrics = await inference_service.infer(
+                line.text, voice_prompt_path, output_path, emo_audio_prompt, job_id=job_id
+            )
+            if metrics.get('error'):
+                raise RuntimeError(metrics['error'])
+            # Cancellation during an in-flight call must not publish stale audio.
+            cancelled, cancel_reason = await get_job_cancellation_state(job_id)
+            if cancelled:
+                raise RuntimeError(f'Cancelled: {cancel_reason}')
+            metrics['resolution_seconds'] = round(resolution_seconds, 3)
+            metrics['line_seconds'] = round(time.perf_counter() - line_started, 3)
+            result_payload['timings'] = metrics
+            print(f"[Timing] {line.crc}: {metrics}", flush=True)
 
         except Exception as e:
             error_msg = str(e)
@@ -633,8 +918,16 @@ async def generate_batch_tts(request: TTSRequest):
         await tracker.update(output_filename, chars=len(line.text), error=error_msg, status=status)
         return result_payload
 
-    tasks = [process_line(line) for line in request.lines]
-    task_results = await asyncio.gather(*tasks)
+    # Preserve supplied story order. Conditioning reuse does not require moving
+    # later lines ahead of the next clip the player needs.
+    inference_service.begin_batch()
+    try:
+        task_results = []
+        for line in request.lines:
+            task_results.append(await process_line(line))
+    finally:
+        inference_service.end_batch()
+        await mark_job_finished(job_id)
 
     results = [r for r in task_results if "error" not in r]
     errors = [r for r in task_results if "error" in r]
@@ -643,8 +936,6 @@ async def generate_batch_tts(request: TTSRequest):
     overall_status = "cancelled" if cancelled_errors else "completed"
     if cancelled_errors and results:
         overall_status = "partial_cancelled"
-
-    await mark_job_finished(job_id)
 
     return JSONResponse(content={
         "job_id": job_id,
@@ -705,36 +996,74 @@ async def get_audio(filename: str):
     return JSONResponse(status_code=404, content={"error": "File not found"})
 
 
-# --- Main ---
-if __name__ == "__main__":
+def default_worker_options():
+    return dict(model_dir=CHECKPOINTS_DIR, model_version='auto', language='EN',
+                cuda_kernel=True, use_accel=False, use_torch_compile=False,
+                cache_entries=32, cache_mb=256,
+                duration_factor=0.90, emotion_alpha=0.75)
+
+
+def create_argument_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', type=str, default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8000)
-    parser.add_argument('--parallel', type=int, default=1)
+    parser.add_argument('--parallel', type=int, choices=[1], default=1,
+                        help='One worker preserves ordering and protects mutable model state.')
+    parser.add_argument('--model-version', choices=['auto', '2', '2.5'], default='auto')
+    parser.add_argument('--model-dir', default=CHECKPOINTS_DIR)
+    parser.add_argument('--language', choices=['EN', 'ZH', 'JA', 'ES', 'AR', 'ZHEN'], default='EN')
+    parser.add_argument('--shared-dir', help='Shared TTS folder containing voices/ and output/.')
+    parser.add_argument('--idle-unload-seconds', type=float, default=5,
+                        help='Stop the GPU worker after this idle period; 0 immediately, -1 keeps it loaded.')
+    parser.add_argument('--reference-cache-entries', type=int, default=32)
+    parser.add_argument('--reference-cache-mb', type=int, default=256)
+    parser.add_argument('--duration-factor', type=float, default=0.90,
+                        help='IndexTTS 2.5 duration multiplier; below 1.0 speaks faster.')
+    parser.add_argument('--emotion-alpha', type=float, default=0.75,
+                        help='Emotion reference strength, from 0.0 to 1.0.')
+    parser.add_argument('--accel', action='store_true', help='Opt in to upstream GPT acceleration.')
+    parser.add_argument('--torch-compile', action='store_true', help='Opt in to upstream S2Mel compilation.')
+    parser.add_argument('--no-cuda-kernel', action='store_true')
+    return parser
+
+
+# --- Main ---
+if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    parser = create_argument_parser()
     args = parser.parse_args()
-
-    tts_semaphore = asyncio.Semaphore(args.parallel)
-
-    if INDEX_AVAILABLE:
-        print("Initializing IndexTTS2...")
-        try:
-            model = IndexTTS2(
-                cfg_path=os.path.join(CHECKPOINTS_DIR, "config.yaml"),
-                model_dir=CHECKPOINTS_DIR,
-                use_fp16=True,
-                use_cuda_kernel=True,
-                use_deepspeed=False
-            )
-            print("IndexTTS2 loaded successfully.")
-        except Exception as e:
-            print(f"FATAL: Failed to load IndexTTS2: {e}")
-            sys.exit(1)
+    if args.reference_cache_entries < 0 or args.reference_cache_mb < 0:
+        parser.error('Reference cache limits must be non-negative.')
+    if not 0.5 <= args.duration_factor <= 2.0:
+        parser.error('--duration-factor must be between 0.5 and 2.0.')
+    if not 0.0 <= args.emotion_alpha <= 1.0:
+        parser.error('--emotion-alpha must be between 0.0 and 1.0.')
+    if not math.isfinite(args.idle_unload_seconds) or (args.idle_unload_seconds < 0 and args.idle_unload_seconds != -1):
+        parser.error('--idle-unload-seconds must be non-negative or -1.')
+    if args.shared_dir:
+        BASE_DIR = os.path.abspath(args.shared_dir)
     else:
-        print("FATAL: IndexTTS2 library not found.")
-        sys.exit(1)
+        # Accept both TTS/IndexTTS2/index-tts and TTS/IndexTTS25 layouts.
+        parent_dir = os.path.dirname(SCRIPT_DIR)
+        if os.path.isdir(os.path.join(parent_dir, 'voices')):
+            BASE_DIR = parent_dir
+    VOICES_DIR = os.path.join(BASE_DIR, 'voices')
+    OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
+    options = default_worker_options()
+    options.update(model_dir=os.path.abspath(args.model_dir), model_version=args.model_version,
+                   language=args.language, cuda_kernel=not args.no_cuda_kernel,
+                   use_accel=args.accel, use_torch_compile=args.torch_compile,
+                   cache_entries=args.reference_cache_entries, cache_mb=args.reference_cache_mb,
+                   duration_factor=args.duration_factor, emotion_alpha=args.emotion_alpha)
+    if not os.path.isfile(os.path.join(options['model_dir'], 'config.yaml')):
+        parser.error('Model config.yaml not found. Copy the bridge into IndexTTS or set --model-dir.')
+    inference_service = InferenceService(options, idle_seconds=args.idle_unload_seconds)
 
     print("--- IndexTTS2 API Standalone ---")
     print(f"Port: {args.port}")
-    print(f"Parallel Jobs: {args.parallel}")
+    print(f"Model: {args.model_version}; loaded on first request")
+    print(f"Idle GPU release: {args.idle_unload_seconds}s (-1 means disabled)")
+    print(f"Reference cache: {args.reference_cache_entries} entries / {args.reference_cache_mb} MiB")
+    print(f"Speech timing: duration factor {args.duration_factor:.2f}; emotion alpha {args.emotion_alpha:.2f}")
 
     uvicorn.run(app, host=args.host, port=args.port)

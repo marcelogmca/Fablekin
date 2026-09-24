@@ -16,13 +16,13 @@ Based on the scene script and candidate options:
 
 OUTPUT FORMAT:
 Respond with each selected track and its starting line number from the script above. Use the following format:
-Line X: [Track Name]
+X. [Track Name]
 
 Example:
-Line 0: peaceful_village.mp3
-Line 72: danger_theme.mp3
+0. peaceful_village.mp3
+72. danger_theme.mp3
 
 ${recentOSTHistory}
 ${project_directives}
 
-Respond using ONLY the format "Line X: [Track Name]". Provide a very short reasoning (1 sentence) per track.
+Respond using ONLY the format "X. [Track Name]". Provide a very short reasoning (1 sentence) per track.

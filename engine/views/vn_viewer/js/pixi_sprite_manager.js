@@ -2121,7 +2121,8 @@ export const pixiSpriteManager = {
         const charName = normalizeCharacterKey(rawCharName);
         if (!charName) return;
 
-        if (state.isAudioPlaying && this._spriteRepresentsCharacter(this._getActiveSprite(charName), state.currentTalkingCharacter)) {
+        const representedCharacter = normalizeCharacterKey(this._getActiveSprite(charName)?.charName || charName);
+        if (state.isAudioPlaying && !!state.activeTalkingCharacters?.[representedCharacter]) {
             this.startTalking(charName);
             return;
         }

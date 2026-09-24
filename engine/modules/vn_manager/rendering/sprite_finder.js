@@ -122,7 +122,7 @@ function extractScheduleDialogueIndex(entry) {
   for (const candidate of candidates) {
     if (candidate == null) continue;
     const parsed = Number.parseInt(candidate, 10);
-    if (Number.isFinite(parsed) && parsed > 0) {
+    if (Number.isFinite(parsed) && parsed >= 0) {
       return parsed;
     }
   }
@@ -150,22 +150,22 @@ function extractScheduleVariantValue(entry) {
 /**
  * Resolves a scene variant lock for a character. Supports:
  * 1) Static map/object lock: processed.vnManager.spriteVariantLocks[character] = "winter_clothes"
- * 2) Dialogue-index schedule: processed.vnManager.spriteVariantLockSchedule = [
- *      { dialogue: 65, character: "frieren", variant: "winter_clothes" },
- *      { dialogue: 110, character: "frieren", variant: null } // clear lock
+ * 2) Global scene-line schedule: processed.vnManager.spriteVariantLockSchedule = [
+ *      { line: 65, character: "frieren", variant: "winter_clothes" },
+ *      { line: 110, character: "frieren", variant: null } // clear lock
  *    ]
  *
  * Schedule semantics:
- * - Entries apply from their dialogue index onward.
- * - Highest dialogue index <= current dialogue wins.
- * - If same dialogue index has multiple entries, later array entry wins.
+ * - Entries apply from their global zero-based scene line onward.
+ * - Highest scene line <= current scene line wins.
+ * - If the same scene line has multiple entries, the later array entry wins.
  *
  * @param {object} turnContext
  * @param {string[]} candidateCharacterKeys
- * @param {number|null} dialogueIndex - 1-based dialogue index in current turn.
+ * @param {number|null} sceneLineIndex - Global zero-based scene line index.
  * @returns {string|null} Normalized variant key or null.
  */
-function getSceneVariantLock(turnContext, candidateCharacterKeys = [], dialogueIndex = null) {
+function getSceneVariantLock(turnContext, candidateCharacterKeys = [], sceneLineIndex = null) {
   const vnManagerState = turnContext?.processed?.vnManager || {};
   const lockRegistry = vnManagerState.spriteVariantLocks;
   const lockSchedule = Array.isArray(vnManagerState.spriteVariantLockSchedule)
@@ -175,17 +175,17 @@ function getSceneVariantLock(turnContext, candidateCharacterKeys = [], dialogueI
   const keyCandidates = buildCharacterKeyCandidates(candidateCharacterKeys);
   const keySet = new Set(keyCandidates);
 
-  // 1) Dialogue schedule overlay (if dialogue index is available)
-  const currentDialogueIndex = Number.isFinite(Number(dialogueIndex))
-    ? Number.parseInt(dialogueIndex, 10)
+  // 1) Scene-line schedule overlay (if a line index is available)
+  const currentSceneLineIndex = Number.isFinite(Number(sceneLineIndex))
+    ? Number.parseInt(sceneLineIndex, 10)
     : null;
 
-  if (currentDialogueIndex && currentDialogueIndex > 0 && lockSchedule.length > 0) {
+  if (currentSceneLineIndex != null && currentSceneLineIndex >= 0 && lockSchedule.length > 0) {
     let winner = null;
 
     lockSchedule.forEach((entry, scheduleOrder) => {
       const entryDialogue = extractScheduleDialogueIndex(entry);
-      if (!entryDialogue || entryDialogue > currentDialogueIndex) return;
+      if (entryDialogue == null || entryDialogue > currentSceneLineIndex) return;
 
       const entryCharacterKey = extractScheduleCharacterKey(entry);
       if (!entryCharacterKey) return;
@@ -211,7 +211,7 @@ function getSceneVariantLock(turnContext, candidateCharacterKeys = [], dialogueI
       if (typeof winner.variant === 'string' && winner.variant.trim() !== '') {
         return normalizeVariantKey(winner.variant);
       }
-      // Null/empty variant explicitly clears lock from this dialogue onward.
+      // Null/empty variant explicitly clears the lock from this scene line onward.
       return null;
     }
   }
@@ -972,10 +972,10 @@ function findGenericMatch(sprites) {
  * @param {string} mainCharacter - Main character name (to skip).
  * @param {object} turnContext - The current turn context.
  * @param {string[]} allSprites - All available sprites (unfiltered, for rotation scanning).
- * @param {number|null} dialogueIndex - 1-based dialogue index in current turn.
+ * @param {number|null} sceneLineIndex - Global zero-based scene line index.
  * @returns {Promise<{image: string|null, gender: string|null, rotations: string[]}>} - Sprite path, gender, and available rotations.
  */
-async function findSprite(character, emotion, sprites, mainCharacter, turnContext, allSprites, dialogueIndex = null) {
+async function findSprite(character, emotion, sprites, mainCharacter, turnContext, allSprites, sceneLineIndex = null) {
   const cleanCharacter = stripHonorifics(character);
   const characterNameLower = cleanCharacter.toLowerCase();
 
@@ -1024,7 +1024,7 @@ async function findSprite(character, emotion, sprites, mainCharacter, turnContex
     normalizeText(firstName)
   ].filter(Boolean);
 
-  const sceneVariantLock = getSceneVariantLock(turnContext, [cleanCharacter, normalizedChar, firstName], dialogueIndex);
+  const sceneVariantLock = getSceneVariantLock(turnContext, [cleanCharacter, normalizedChar, firstName], sceneLineIndex);
   const safeAllSprites = Array.isArray(allSprites) && allSprites.length > 0 ? allSprites : sprites;
 
   let primarySprites = sprites;

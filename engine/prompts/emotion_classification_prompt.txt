@@ -15,22 +15,53 @@ ${characterEmotionProfiles}
 
 ${project_directives}
 
-You should also classify the mood:
+VOICE DELIVERY MOOD:
+For every numbered line, also choose exactly one TTS delivery mood from:
 [${moodList}]
 
-The emotion is the expression on the character's face. The mood is the overall feeling of the dialogue.
-The character CAN have an angry expression but a happy mood, or a happy expression but an angry mood.
-"angry" mood should ONLY be used when the dialogue is undisputeably angry, if it's ambiguous, use "annoyed" instead. Angry should ONLY be used for actual and very explicit anger, not for when the character is just annoyed or irritated.
+Shared TTS moods available to every character (from `emotion_<mood>.wav`):
+[${sharedTtsMoods}]
+
+The two classifications are independent:
+- emotion = what the speaker's face/body looks like; it controls sprite selection.
+- mood = how this exact utterance should sound when voiced; it controls TTS delivery.
+
+Choose mood from the line's wording, punctuation, conversational function, nearby narration, and subtext. Do NOT classify the scene's general atmosphere. Do NOT mechanically copy the sprite emotion into mood. The sprite does not need a matching asset for the selected mood.
+
+MOOD GUIDANCE:
+- neutral: genuinely plain, controlled, informational, or emotionally unmarked delivery. This is NOT the safe fallback when uncertain.
+- happy: openly cheerful, amused, playful, triumphant, or warmly delighted delivery.
+- sad: grieving, sorrowful, melancholy, heartbroken, or audibly dejected delivery.
+- angry: unmistakably forceful anger, fury, hostility, or rage. Use only when anger is explicit and strong.
+- annoyed: irritation, impatience, dry exasperation, restrained anger, scolding, or a cutting/dismissive edge.
+- surprised: shock, disbelief, startled realization, or an audibly unexpected reaction.
+- fearful: fear, dread, panic, alarm, or anxious apprehension.
+- caring: tenderness, reassurance, concern, protectiveness, sympathy, or gentle intimacy.
+- injured: speech audibly shaped by pain, physical strain, weakness, or impaired breathing.
+- horny: overtly aroused, seductive, lustful, breathless-with-desire, or sexually commanding delivery.
+
+Only use labels that appear in the supplied mood list. If a guidance label is unavailable, choose the closest available delivery.
+
+Examples of valid independent choices:
+- A character thinking through how to comfort someone -> thinking,caring
+- A smiling character delivering an irritated tease -> happy,annoyed
+- A composed face with overtly seductive delivery -> neutral,horny
+- An angry/protective expression with a gentle reassurance -> angry,caring
+- A sad face delivering a deliberately controlled factual answer -> sad,neutral
+
+Before answering, audit the mood column independently. In an expressive multi-line scene, an output dominated almost entirely by happy and neutral is usually under-classified. Reconsider each line where delivery, subtext, or narration supports a more precise available mood. Do not force artificial variety when the dialogue is genuinely uniform.
 
 IMPORTANT:
-- The input dialogue lines should be outputted in the same order as the original.
-- Do not skip any lines.
-- Maintain order strictly.
+- Narrative lines are unnumbered context. Use them to interpret delivery, body language, and subtext.
+- Dialogue lines carry their authoritative global zero-based scene line number.
+- Classify every numbered dialogue line exactly once. Echo that same number in the output.
+- Do not classify unnumbered narrative lines.
+- Output the sprite emotion first and the independent TTS mood second.
 
-Dialogues:
+Scene excerpt:
 ${dialogues}
 
 Output format:
-emotion1,mood1
-emotion2,mood2
+3. emotion1,mood1
+5. emotion2,mood2
 ...
