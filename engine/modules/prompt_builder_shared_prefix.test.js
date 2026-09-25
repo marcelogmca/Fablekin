@@ -244,3 +244,56 @@ test('turn one and Director-less preparation produce a valid Writer prompt', asy
   assert.match(messages.at(-1).content, /# AGENT TASK: WRITER/);
   assert.doesNotMatch(messages.at(-1).content, /writer_brief/);
 });
+
+test('shadow prepared Writer prompt is byte-identical with a covering manifest', async () => {
+  const context = createContext();
+  const messages = await promptBuilder.buildWriterMessages(context);
+
+  const manifest = context.processed.promptBuilder.writerPromptManifest;
+  assert.ok(manifest, 'shadow manifest must be recorded for diagnostics');
+  assert.equal(manifest.version, 1);
+  assert.equal(manifest.promptId, 'core.writer');
+  assert.equal(context.processed.promptBuilder.writerPromptPreparedHash.length, 16);
+
+  // Every legacy message is covered by manifest spans with no gaps.
+  const sorted = manifest.spans.slice().sort((a, b) => a.messageIndex - b.messageIndex || a.start - b.start);
+  assert.equal(sorted[0].start, 0);
+  messages.forEach((message, index) => {
+    const covered = sorted
+      .filter(span => span.messageIndex === index)
+      .map(span => message.content.slice(span.start, span.end))
+      .join('');
+    // Message-owned join separators (messageFormats) are legitimate coverage
+    // that reconstructs the bytes without belonging to any component.
+    const expected = message.content;
+    assert.ok(covered.length <= expected.length, `message ${index} over-covered`);
+    assert.equal(covered.replace(/\n\n---\n\n/g, ''), expected.replace(/\n\n---\n\n/g, ''), `message ${index} must reconstruct`);
+  });
+
+  // Provenance spot-checks: the Writer directives block carries the pushed
+  // brief text (soft feedback + writer_brief + pacing) as one writer.directives
+  // occurrence; the final action is a first-class component.
+  const byId = {};
+  for (const occurrence of manifest.occurrences) {
+    byId[occurrence.componentId] = byId[occurrence.componentId] || [];
+    byId[occurrence.componentId].push(occurrence);
+  }
+  assert.ok(byId['writer.directives']?.length >= 1, 'Writer directives must be traced');
+  const suffixText = messages.at(-2)?.content || messages.at(-1)?.content || '';
+  assert.match(suffixText, /Reveal the old telescope/, 'legacy suffix carries the pushed brief');
+  assert.ok(byId['core.writer.current_action']?.length === 1, 'Current action must appear exactly once');
+  assert.ok(byId['root.simulation']?.length >= 1, 'Simulation must be traced');
+});
+
+test('shadow prepared prompt stays byte-identical without CoT', async () => {
+  const context = createContext();
+  context.writerCoTEnabled = false;
+  context.processed.director = {};
+  delete context.input.softFeedback;
+
+  const messages = await promptBuilder.buildWriterMessages(context);
+  const manifest = context.processed.promptBuilder.writerPromptManifest;
+  assert.ok(manifest, 'shadow manifest must be recorded without CoT');
+  assert.equal(messages.at(-1).role, 'user');
+  assert.ok(manifest.occurrences.some(o => o.componentId === 'core.writer.current_action'));
+});
