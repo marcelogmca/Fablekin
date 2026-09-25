@@ -267,6 +267,14 @@ test('prepared results are immutable, nested under the pillar and fully attribut
   assert.throws(() => { 'use strict'; prepared.messages[0].content = 'MUTATED'; }, TypeError);
   assert.equal(prepared.messages[0].content, before);
 
+  // finalizeText must be a function when provided; per-occurrence overrides
+  // accept functions or explicit null (pre-finalized input).
+  assert.throws(() => new Prompt({ id: 'x', finalizeText: 'nope' }), /finalizeText must be a function/);
+  assert.throws(
+    () => writerPrompt().user(m => m.add('core.writer.brief', 'x', { finalizeText: 'nope' })),
+    /finalizeText option must be a function/
+  );
+
   // Catalogue parent links still govern placement: the brief hangs off its slot.
   assert.equal(CORE_COMPONENTS['core.writer.brief'].parent, 'writer.directives');
   assert.ok(prepared.manifest.components['core.writer.brief'], 'manifest must describe the brief');
@@ -279,4 +287,82 @@ test('prepared results are immutable, nested under the pillar and fully attribut
     reconstructed.push(prepared.messages[span.messageIndex].content.slice(span.start, span.end));
   }
   assert.equal(reconstructed.join(''), prepared.messages.map(m => m.content).join(''));
+});
+
+test('finalizeText transforms owned units inside preparation, keeping provenance', () => {
+  const prepared = new Prompt({
+    id: 'core.writer',
+    finalizeText: (text) => text.replaceAll('[HERO]', 'Ari').replaceAll('z_virtual_', '')
+  })
+    .system(message => {
+      // Separator carries the placeholder through message-owned formatting.
+      message.add('core.shared.engine_contract', 'Dear [HERO]');
+      message.add('core.shared.interpretation_lock', 'Signed z_virtual_[HERO]');
+    }, { separator: '|z_virtual_-' })
+    .user(message => {
+      message.add('core.writer.brief', '[HERO] acts', { prefix: '>>[HERO]:', suffix: ':z_virtual_end' });
+    })
+    .prepare();
+
+  assert.equal(prepared.messages[0].content, 'Dear Ari|-Signed Ari');
+  assert.equal(prepared.messages[1].content, '>>Ari:Ari acts:end');
+
+  // Spans still reconstruct the final bytes exactly.
+  const sorted = prepared.manifest.spans.slice().sort((a, b) => a.messageIndex - b.messageIndex || a.start - b.start);
+  const reconstructed = sorted.map(span => prepared.messages[span.messageIndex].content.slice(span.start, span.end)).join('');
+  assert.equal(reconstructed, prepared.messages.map(m => m.content).join(''));
+
+  // The transform must not reinvent component identity: same components,
+  // same occurrence count, same message formats as without the transform.
+  const plain = writerPrompt()
+    .system(message => {
+      message.add('core.shared.engine_contract', 'Dear [HERO]');
+      message.add('core.shared.interpretation_lock', 'Signed z_virtual_[HERO]');
+    }, { separator: '|z_virtual_|' })
+    .user(message => {
+      message.add('core.writer.brief', '[HERO] acts', { prefix: '>>[HERO]:', suffix: ':z_virtual_end' });
+    })
+    .prepare();
+  assert.equal(prepared.manifest.occurrences.length, plain.manifest.occurrences.length);
+  assert.deepEqual(
+    prepared.manifest.occurrences.map(o => o.componentId).sort(),
+    plain.manifest.occurrences.map(o => o.componentId).sort()
+  );
+  assert.equal(prepared.manifest.messageFormats.length, plain.manifest.messageFormats.length);
+
+  // Mixing finalizable composition with pre-rendered inclusions is rejected:
+  // an inclusion was already finalized under its own transform.
+  const frozen = writerPrompt()
+    .system(message => message.add('core.shared.engine_contract', 'FROZEN'))
+    .prepare();
+  assert.throws(
+    () => new Prompt({ id: 'core.writer', finalizeText: (text) => text })
+      .usePrefix(frozen)
+      .prepare(),
+    /finalizeText with prefix inclusion/
+  );
+  assert.throws(
+    () => new Prompt({ id: 'core.writer', finalizeText: (text) => text })
+      .append(frozen)
+      .prepare(),
+    /finalizeText with block inclusion/
+  );
+});
+
+test('per-occurrence finalizeText marks pre-finalized inputs without forking bytes', () => {
+  const legacyChat = 'Ari asks about the z_virtual_key.';
+  const prepared = new Prompt({ id: 'core.writer', finalizeText: (text) => text.replaceAll('z_virtual_', '') })
+    .user(message => {
+      // Chat replay arrives pre-finalized from the shared prefix (placeholder
+      // replacement, no virtual-name strip): the per-occurrence transform
+      // reproduces exactly the legacy bytes for that piece.
+      message.add('root.history', '[HERO] asks about the z_virtual_key.', { instanceKey: 'history-chat-0-user', finalizeText: (text) => text.replaceAll('[HERO]', 'Ari') });
+      message.add('core.writer.current_action', 'open the z_virtual_door');
+    })
+    .prepare();
+
+  assert.equal(prepared.messages[0].content, `${legacyChat}open the door`);
+  const sorted = prepared.manifest.spans.slice().sort((a, b) => a.start - b.start);
+  const reconstructed = sorted.map(span => prepared.messages[0].content.slice(span.start, span.end)).join('');
+  assert.equal(reconstructed, prepared.messages[0].content);
 });

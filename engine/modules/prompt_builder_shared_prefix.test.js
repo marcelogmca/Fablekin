@@ -297,3 +297,47 @@ test('shadow prepared prompt stays byte-identical without CoT', async () => {
   assert.equal(messages.at(-1).role, 'user');
   assert.ok(manifest.occurrences.some(o => o.componentId === 'core.writer.current_action'));
 });
+
+test('shadow prepared prompt survives placeholders and virtual names with exact spans', async () => {
+  const context = createContext();
+  // Final-text transforms must live inside preparation: the manifest hash and
+  // spans describe the exact bytes compared and sent, not pre-transform text.
+  //
+  // NOTE on legacy quirks this fixture documents: placeholder replacement
+  // applies to the whole shared system message, the shared chat replay, and
+  // the Writer suffix, but NOT to the precomputed simulation user message;
+  // the virtual-name strip applies to the system message and suffix only.
+  // Legacy chat content keeps its virtual-name text verbatim (precomputed).
+  context.input.playerCharacterName = 'Ari';
+  context.input.userPrompt = '[USER_CHARACTER] touches the vault console.';
+  context.promptComponents.root.canon = ['[USER_CHARACTER] keeps a z_virtual_brass key.'];
+  context.promptComponents.root.simulation = ['Ari stands by the vault door.'];
+  context.runtime.historyData.chatHistory = [
+    { role: 'user', content: '[USER_CHARACTER] asks about the z_virtual_key.' },
+    { role: 'assistant', content: 'It glints on the z_virtual_hook.' }
+  ];
+  delete context.input.softFeedback;
+
+  const messages = await promptBuilder.buildWriterMessages(context);
+  const prepared = context.processed.promptBuilder.writerPromptPrepared;
+  assert.ok(prepared?.manifest, 'prepared copy must be recorded for the post-hook gate');
+  assert.equal(prepared.hash, context.processed.promptBuilder.writerPromptPreparedHash);
+
+  const joined = messages.map(m => m.content).join('\n');
+  assert.match(joined, /Ari touches the/);
+  assert.match(joined, /Ari keeps a brass key/);
+  assert.doesNotMatch(joined, /\[USER_CHARACTER\] keeps/);
+  for (const message of messages) {
+    if (message.role !== 'user' || !message.content.includes('asks about')) continue;
+    assert.match(message.content, /z_virtual_key/, 'legacy replay keeps virtual names verbatim');
+  }
+  const sorted = prepared.manifest.spans.slice().sort((a, b) => a.messageIndex - b.messageIndex || a.start - b.start);
+  assert.equal(sorted[0].start, 0);
+  messages.forEach((message, index) => {
+    const covered = sorted
+      .filter(span => span.messageIndex === index)
+      .map(span => message.content.slice(span.start, span.end))
+      .join('');
+    assert.equal(covered, message.content, `message ${index} spans must reconstruct final bytes`);
+  });
+});

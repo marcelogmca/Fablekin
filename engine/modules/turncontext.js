@@ -598,6 +598,12 @@ class TurnContext {
                 // keep assets, timelineRouting, and any small plugin data
             }
             if (snapshot.processed?.promptBuilder?.messages) snapshot.processed.promptBuilder.messages = [];
+            // Prepared-prompt provenance lives in the turn log (payload.promptTrace),
+            // joined by callId. The snapshot keeps only hash/characterCount; the
+            // full manifest and rehydratable prepared copy would balloon chat.db
+            // blobs the same way messages did.
+            if (snapshot.processed?.promptBuilder?.writerPromptManifest) delete snapshot.processed.promptBuilder.writerPromptManifest;
+            if (snapshot.processed?.promptBuilder?.writerPromptPrepared) delete snapshot.processed.promptBuilder.writerPromptPrepared;
             if (snapshot.processed?.chapterHistory) delete snapshot.processed.chapterHistory;
             if (snapshot.processed?.historyData) delete snapshot.processed.historyData;
 

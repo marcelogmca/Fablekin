@@ -122,3 +122,37 @@ test('clears the deadline after a successful model response', async () => {
   const result = await invokeModelWithDeadline(model, [], { timeout: 1000 });
   assert.equal(result.content, 'ok');
 });
+
+test('prepared-prompt path derives the provider payload and keeps the cache fingerprint', async () => {
+  const { Prompt } = require('./prompt/prompt.js');
+  const prepared = new Prompt({ id: 'core.writer' })
+    .user(message => message.add('core.writer.current_action', 'Ari opens the door.'))
+    .prepare();
+
+  // Same rendered text through both input shapes must fingerprint identically.
+  const fingerprint = (messages) => JSON.stringify({
+    messages,
+    provider: 'openai',
+    model: 'm',
+    extra: {},
+    expectJson: false,
+    validationRegex: null,
+    minCharacters: 0
+  });
+  assert.equal(
+    fingerprint(prepared.messages.map(message => ({ role: message.role, content: message.content }))),
+    fingerprint([{ role: 'user', content: 'Ari opens the door.' }])
+  );
+
+  // The manifest never reaches the provider: only role/content cross the boundary.
+  const providerPayload = prepared.messages.map(message => ({ role: message.role, content: message.content }));
+  assert.deepEqual(providerPayload, [{ role: 'user', content: 'Ari opens the door.' }]);
+  assert.ok(prepared.manifest.occurrences.length >= 1, 'provenance stays on the manifest, not the payload');
+
+  // Exactly-one-input rule: messages + prompt together must be rejected.
+  const { callLLM } = require('./llm.js');
+  await assert.rejects(
+    callLLM({ messages: providerPayload, prompt: prepared, model: 'veryhighendmodel' }),
+    /exactly one of messages or prompt/
+  );
+});

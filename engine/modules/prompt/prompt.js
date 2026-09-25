@@ -67,7 +67,7 @@ function normalizeOptions(options) {
   if (typeof options !== 'object' || Array.isArray(options)) {
     throw new TypeError('Prompt add() options must be an object.');
   }
-  const { instanceKey = null, prefix = '', separator = '', suffix = '' } = options;
+  const { instanceKey = null, prefix = '', separator = '', suffix = '', finalizeText = undefined } = options;
   if (instanceKey != null && (typeof instanceKey !== 'string' || instanceKey.length === 0)) {
     throw new TypeError('instanceKey must be a non-empty string.');
   }
@@ -76,7 +76,12 @@ function normalizeOptions(options) {
       throw new TypeError(`${name} must be a string.`);
     }
   }
-  return { instanceKey, prefix, separator, suffix };
+  if (finalizeText !== undefined && finalizeText !== null && typeof finalizeText !== 'function') {
+    throw new TypeError('finalizeText option must be a function.');
+  }
+  // Undefined = inherit the prompt finalize; explicit null = pre-finalized.
+  // The node must distinguish the two, so keep undefined as-is.
+  return { instanceKey, prefix, separator, suffix, finalizeText };
 }
 
 function makeLeafNode(componentId, opts, text) {
@@ -88,6 +93,7 @@ function makeLeafNode(componentId, opts, text) {
     prefix: opts.prefix,
     separator: '',
     suffix: opts.suffix,
+    finalizeText: opts.finalizeText,
     text,
     children: null
   };
@@ -101,6 +107,7 @@ function makeContainerNode(componentId, opts) {
     prefix: opts.prefix,
     separator: opts.separator,
     suffix: opts.suffix,
+    finalizeText: opts.finalizeText,
     text: null,
     children: []
   };
@@ -244,15 +251,19 @@ function deepFreeze(value) {
 }
 
 class Prompt {
-  constructor({ id, catalog = CORE_COMPONENTS } = {}) {
+  constructor({ id, catalog = CORE_COMPONENTS, finalizeText = null } = {}) {
     if (typeof id !== 'string' || id.length === 0) {
       throw new TypeError('Prompt requires a non-empty string id.');
     }
     if (!catalog || typeof catalog !== 'object' || Array.isArray(catalog)) {
       throw new TypeError('Prompt catalog must be an object.');
     }
+    if (finalizeText != null && typeof finalizeText !== 'function') {
+      throw new TypeError('Prompt finalizeText must be a function.');
+    }
     this._id = id;
     this._catalog = catalog;
+    this._finalizeText = finalizeText || null;
     this._items = [];
     this._sealed = false;
   }
@@ -373,7 +384,15 @@ class Prompt {
         // occurrenceId. verifySpanCoverage counts them toward coverage but the
         // accounting rule keeps them out of every component rollup.
         const MESSAGE_FORMAT_OCCURRENCE_ID = null;
-        const renderNode = (node, containerOccurrenceId) => {
+        // finalizeText transforms each owned text unit (component text,
+        // prefix/suffix wraps, separators) before it is recorded, so span
+        // offsets always describe the final bytes. The transform runs on
+        // whole atomic units (leaf text, one wrapper string), never across
+        // ownership boundaries. A per-occurrence finalizeText override marks
+        // pre-finalized inputs (e.g. shared-prefix chat replay): null means
+        // the identity transform for that occurrence.
+        const promptFinalize = this._finalizeText;
+        const renderNode = (node, containerOccurrenceId, inheritedFinalize = promptFinalize) => {
           const occurrenceId = nextOccurrenceId();
           claimInstanceKey(node.componentId, node.instanceKey, occurrenceId);
           usedComponents.add(node.componentId);
@@ -384,26 +403,40 @@ class Prompt {
             containerOccurrenceId,
             origin: null
           });
+          const nodeFinalize = ('finalizeText' in node && node.finalizeText !== undefined)
+            ? node.finalizeText
+            : inheritedFinalize;
+          const pushNodeText = (text) => {
+            pushText(nodeFinalize ? nodeFinalize(text) : text, occurrenceId);
+          };
           if (node.children == null) {
-            pushText(node.prefix, occurrenceId);
-            pushText(node.text, occurrenceId);
-            pushText(node.suffix, occurrenceId);
+            pushNodeText(node.prefix);
+            pushNodeText(node.text);
+            pushNodeText(node.suffix);
           } else {
-            pushText(node.prefix, occurrenceId);
+            pushNodeText(node.prefix);
             node.children.forEach((child, index) => {
-              if (index > 0) pushText(node.separator, occurrenceId);
+              if (index > 0) pushNodeText(node.separator);
               if (child.kind === 'text') {
-                pushText(child.text, occurrenceId);
+                pushNodeText(child.text);
               } else {
-                renderNode(child, occurrenceId);
+                renderNode(child, occurrenceId, nodeFinalize);
               }
             });
-            pushText(node.suffix, occurrenceId);
+            pushNodeText(node.suffix);
           }
           return occurrenceId;
         };
+        // Message-owned join separators are also finalizable text: the legacy
+        // path replaces placeholders inside fully joined strings, so the
+        // transform must apply here or parity breaks. Separators have no
+        // component owner (MESSAGE_FORMAT_OCCURRENCE_ID), recorded so coverage
+        // stays gapless while rollups exclude them.
+        const pushMessageSeparator = (text) => {
+          pushText(promptFinalize ? promptFinalize(text) : text, MESSAGE_FORMAT_OCCURRENCE_ID);
+        };
         item.children.forEach((child, index) => {
-          if (index > 0) pushText(item.separator || '', MESSAGE_FORMAT_OCCURRENCE_ID);
+          if (index > 0) pushMessageSeparator(item.separator || '');
           renderNode(child, null);
         });
         const content = parts.join('');
@@ -415,8 +448,15 @@ class Prompt {
         finalMessages.push({ role: item.role, content });
       } else {
         // prefix or block inclusion: remap occurrence ids and message indices,
-        // keep rendered bytes identical.
+        // keep rendered bytes identical. Inclusions were finalized when their
+        // own prompt prepared, so no transform runs here.
         const source = item.prepared;
+        if (this._finalizeText) {
+          throw new Error(
+            `Prompt "${this._id}" uses finalizeText with ${item.kind} inclusion from "${source.id}"; ` +
+            'mixing finalizable composition with pre-rendered inclusions is not supported.'
+          );
+        }
         const messageStart = finalMessages.length;
         const idMap = new Map();
         for (const occurrence of source.manifest.occurrences) {

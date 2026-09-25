@@ -338,7 +338,7 @@ const TurnLogger = (() => {
     * @param {string} title - The title for the log entry.
     * @param {any} content - The content to log.
     */
-  async function _performLog(title, content, model, provider, other = false, usage = null, reasoning = null) {
+  async function _performLog(title, content, model, provider, other = false, usage = null, reasoning = null, extraPayload = null) {
     const resolvedRoute = _resolveAliasRouteForLog(model, provider);
     model = resolvedRoute.model;
     provider = resolvedRoute.provider;
@@ -392,6 +392,13 @@ const TurnLogger = (() => {
     };
     if (reasoning !== null && reasoning !== undefined && reasoning !== '') {
       entry.payload.reasoning = reasoning;
+    }
+    // Prepared-prompt provenance: manifest + hash + callId live beside the
+    // raw request messages (payload.content), never duplicating their text.
+    if (extraPayload && typeof extraPayload === 'object' && !Array.isArray(extraPayload)) {
+      for (const [key, value] of Object.entries(extraPayload)) {
+        if (value !== undefined) entry.payload[key] = value;
+      }
     }
     const diagnostics = getDiagnosticContext();
     if (diagnostics) {
@@ -470,7 +477,7 @@ const TurnLogger = (() => {
      * @param {any} [content] - The content to log.
      * @param {string} [model] - The model used for the exchange, if applicable.
      */
-    logRequest(title, content, model = null, provider = null, other = false, usage = null) {
+    logRequest(title, content, model = null, provider = null, other = false, usage = null, extraPayload = null) {
       if (typeof title === 'object' && title !== null && !Array.isArray(title)) {
         const obj = title;
         title = (obj.msg || obj.title || "Plugin Log") + " - Request";
@@ -479,11 +486,12 @@ const TurnLogger = (() => {
         provider = obj.provider || provider;
         other = obj.other || other;
         usage = obj.usage || usage;
+        extraPayload = obj.extraPayload ?? extraPayload;
       } else {
         title = title + " - Request";
       }
 
-      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other, usage));
+      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other, usage, null, extraPayload));
     },
 
     /**
@@ -492,7 +500,7 @@ const TurnLogger = (() => {
      * @param {any} [content] - The content to log.
      * @param {string} [model] - The model used for the exchange, if applicable.
      */
-    logResponse(title, content, model = null, provider = null, other = false, usage = null, reasoning = null) {
+    logResponse(title, content, model = null, provider = null, other = false, usage = null, reasoning = null, extraPayload = null) {
       if (typeof title === 'object' && title !== null && !Array.isArray(title)) {
         const obj = title;
         title = (obj.msg || obj.title || "Plugin Log") + " - Response";
@@ -502,6 +510,7 @@ const TurnLogger = (() => {
         other = obj.other || other;
         usage = obj.usage || usage;
         reasoning = obj.reasoning ?? reasoning;
+        extraPayload = obj.extraPayload ?? extraPayload;
       } else {
         title = title + " - Response";
       }
@@ -513,17 +522,18 @@ const TurnLogger = (() => {
         model = content.model || model;
         provider = content.provider || provider;
         reasoning = content.reasoning ?? reasoning;
+        extraPayload = content.extraPayload ?? extraPayload;
         content = content.content; // Flatten to just the actual text/JSON for the log
       }
 
-      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other, usage, reasoning));
+      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other, usage, reasoning, extraPayload));
     },
 
     /**
      * Queues a failed LLM exchange entry. This keeps failed/aborted calls visible
      * in diagnostics and the waterfall instead of leaving orphaned requests.
      */
-    logError(title, error, model = null, provider = null, other = false) {
+    logError(title, error, model = null, provider = null, other = false, extraPayload = null) {
       if (typeof title === 'object' && title !== null && !Array.isArray(title)) {
         const obj = title;
         title = (obj.msg || obj.title || "Plugin Log") + " - Error";
@@ -531,6 +541,7 @@ const TurnLogger = (() => {
         model = obj.model || model;
         provider = obj.provider || provider;
         other = obj.other || other;
+        extraPayload = obj.extraPayload ?? extraPayload;
       } else {
         title = title + " - Error";
       }
@@ -546,7 +557,7 @@ const TurnLogger = (() => {
         retriesLeft: error?.retriesLeft || null
       };
 
-      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other));
+      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other, null, null, extraPayload));
     },
 
     /**
@@ -554,7 +565,7 @@ const TurnLogger = (() => {
      * @param {string|object} title - The title for the log entry or a log object.
      * @param {any} [content] - The content to log.
      */
-    log(title, content, model = null, provider = null, other = false) {
+    log(title, content, model = null, provider = null, other = false, extraPayload = null) {
       if (typeof title === 'object' && title !== null && !Array.isArray(title)) {
         const obj = title;
         title = (obj.msg || obj.title || "Plugin Log");
@@ -562,9 +573,10 @@ const TurnLogger = (() => {
         model = obj.model || model;
         provider = obj.provider || provider;
         other = obj.other || other;
+        extraPayload = obj.extraPayload ?? extraPayload;
       }
 
-      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other));
+      logQueue = logQueue.then(() => _performLog(title, content, model, provider, other, null, null, extraPayload));
     },
 
     /**

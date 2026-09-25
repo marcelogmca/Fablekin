@@ -4,6 +4,7 @@ const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 const { ChatAnthropic } = require("@langchain/anthropic");
 const { Logger, TurnLogger, readSettings, calculateCrc, sendUiNotification, repairHallucinatedLists } = require('./utils');
 const cancellation = require('./pipeline_cancellation.js');
+const liveTracker = require('./llm_live_tracker.js');
 const { PipelineAbortError } = require('./plugin_manager/runtime/errors.js');
 const devCache = require('./memory_manager/storage/devcache');
 const JSON5 = require('json5');
@@ -790,7 +791,8 @@ function normalizeUsageData(providerKey, response) {
  * - **Response Sanitization:** Optionally removes CJK character artifacts from responses, configurable in settings.
  *
  * @param {object} params - The parameters for the LLM call.
- * @param {Array<{role: 'system'|'user'|'assistant', content: string}>} params.messages - The message payload in standard OpenAI format.
+ * @param {Array<{role: 'system'|'user'|'assistant', content: string}>} [params.messages] - The message payload in standard OpenAI format. Legacy path.
+ * @param {PreparedPrompt} [params.prompt] - A PreparedPrompt from engine/modules/prompt/prompt.js. Exactly one of messages/prompt is required.
  * @param {string} params.model - A global model alias such as 'veryhighendmodel'. Its route selects the provider and concrete model.
  * @param {number} [params.retries=1] - The number of times to automatically retry on API errors or validation failures. (Total attempts = retries + 1).
  * @param {number} [params.timeout=300000] - The enforced per-attempt request timeout in milliseconds.
@@ -802,11 +804,34 @@ function normalizeUsageData(providerKey, response) {
  * @returns {Promise<{content: (string|object), model: string}>} A promise that resolves to an object containing the LLM's response content (as a string, or a parsed object if expectJson is true) and the final resolved model name used for the call.
  * @throws {Error} Throws an error if the provider is invalid, or if all retry attempts fail. The error will contain the message from the last failed attempt.
  */
-async function callLLM({ messages, model, provider = null, retries = 1, timeout = DEFAULT_LLM_TIMEOUT_MS, extra = {}, expectJson = false, validationRegex = null, validateFn = null, minCharacters = 0, minWords = 0, callingModule = 'LLM', turnLogTitle = null }) {
+async function callLLM({ messages, prompt = null, model, provider = null, retries = 1, timeout = DEFAULT_LLM_TIMEOUT_MS, extra = {}, expectJson = false, validationRegex = null, validateFn = null, minCharacters = 0, minWords = 0, callingModule = 'LLM', turnLogTitle = null }) {
   const safeModule = callingModule || 'LLM';
   const numericMinWords = Number(minWords);
   const effectiveMinWords = Number.isFinite(numericMinWords) ? Math.max(0, Math.floor(numericMinWords)) : 0;
   const settings = readSettings();
+  // Prepared-prompt path: derive the provider payload from the immutable
+  // PreparedPrompt. Exactly one of messages/prompt is required; the manifest
+  // never reaches the provider, only central logging.
+  let promptTrace = null;
+  if (prompt != null) {
+    if (messages != null) {
+      throw new Error('callLLM accepts exactly one of messages or prompt, not both.');
+    }
+    const { PreparedPrompt } = require('./prompt/prompt.js');
+    if (!(prompt instanceof PreparedPrompt)) {
+      throw new TypeError('callLLM prompt must be a PreparedPrompt returned by Prompt.prepare().');
+    }
+    messages = prompt.messages.map(message => ({ role: message.role, content: message.content }));
+    promptTrace = {
+      promptId: prompt.id,
+      hash: prompt.hash,
+      characterCount: prompt.characterCount,
+      manifest: prompt.manifest
+    };
+  }
+  if (!Array.isArray(messages) || messages.length === 0) {
+    throw new Error('callLLM requires a non-empty messages array (or a PreparedPrompt).');
+  }
   cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
 
   const primaryRoute = resolveModelAlias(model);
@@ -844,6 +869,31 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
   let usingFallback = false;
 
   const totalAttempts = retries + 1;
+
+  // Live LLM road + turn logs: one stable callId spans every retry attempt
+  // so the viewer renders a single bar per logical call and the turn log can
+  // join request/response/error entries to their prepared prompt trace.
+  const liveCallId = liveTracker.start({
+    title: turnLogTitle || safeModule,
+    callingModule: safeModule,
+    model: primaryAttemptRoute.resolvedModel,
+    provider: primaryAttemptRoute.providerKey,
+    maxAttempts: totalAttempts
+  });
+  // Prepared-prompt calls log centrally here (legacy callers keep their own
+  // manual TurnLogger calls). The promptTrace joins the request entry; the
+  // response/error entries reuse the same callId instead of the title.
+  if (promptTrace && turnLogTitle) {
+    TurnLogger.logRequest(turnLogTitle, messages, model, provider, false, null, {
+      promptTrace: { ...promptTrace, callId: liveCallId }
+    });
+  }
+  let liveCallSettled = false;
+  const settleLiveCall = (payload) => {
+    if (liveCallSettled) return;
+    liveCallSettled = true;
+    liveTracker.end(liveCallId, payload);
+  };
 
   try {
     for (let attempt = 1; attempt <= totalAttempts; attempt++) {
@@ -886,6 +936,19 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
             Logger.log(safeModule, resolvedModel, 'LOCAL DEV CACHE HIT');
             const usageData = { is_local_cache: true, cost: 0, prompt_tokens: 0, completion_tokens: 0 };
             TurnLogger.linkUsage(providerKey, resolvedModel, cached, usageData);
+            settleLiveCall({ status: 'done', model: resolvedModel, provider: providerKey, cached: true, attempt });
+            // A local dev-cache hit serves the same-size request locally: log
+            // it as cached, never as a zero-sized prompt.
+            if (promptTrace && turnLogTitle) {
+              TurnLogger.logResponse(turnLogTitle, {
+                content: cached,
+                model: resolvedModel,
+                provider: providerKey,
+                usage: { ...usageData, prompt_trace_hash: promptTrace.hash },
+                reasoning: null,
+                extraPayload: { callId: liveCallId, cacheHit: true }
+              });
+            }
             return { content: cached, model: resolvedModel, provider: providerKey, usage: usageData };
           }
         }
@@ -1113,13 +1176,37 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
           TurnLogger.linkUsage(providerKey, resolvedModel, finalContent, usageData, reasoning);
         }
 
+        settleLiveCall({ status: 'done', model: resolvedModel, provider: providerKey, attempt });
+        // Central logging for the prepared path only. Legacy callers keep
+        // their manual logRequest/logResponse; the same callId joins request
+        // and response entries into one logical call.
+        if (promptTrace && turnLogTitle) {
+          TurnLogger.logResponse(turnLogTitle, {
+            content: finalContent,
+            model: resolvedModel,
+            provider: providerKey,
+            usage: usageData,
+            reasoning,
+            extraPayload: { callId: liveCallId }
+          });
+        }
         return { content: finalContent, model: resolvedModel, provider: providerKey, usage: usageData, reasoning };
 
       } catch (error) {
         if (error instanceof PipelineAbortError) {
+          settleLiveCall({ status: 'error', model: resolvedModel, provider: providerKey, error: 'cancelled' });
+          if (promptTrace && turnLogTitle) {
+            TurnLogger.logError(turnLogTitle, error, resolvedModel, providerKey, false, { callId: liveCallId });
+            error.turnLoggerLogged = true;
+          }
           throw error;
         }
         if (cancellation.isCancelled()) {
+          settleLiveCall({ status: 'error', model: resolvedModel, provider: providerKey, error: 'cancelled' });
+          if (promptTrace && turnLogTitle && !error.turnLoggerLogged) {
+            TurnLogger.logError(turnLogTitle, error, resolvedModel, providerKey, false, { callId: liveCallId });
+            error.turnLoggerLogged = true;
+          }
           cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
           throw error;
         }
@@ -1128,11 +1215,16 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
 
         if (attempt === totalAttempts) {
           Logger.error(safeModule, resolvedModel, `All ${totalAttempts} attempts failed. Propagating error.`);
-          if (turnLogTitle) {
+          settleLiveCall({ status: 'error', model: resolvedModel, provider: providerKey, error: error.message, attempt });
+          if (turnLogTitle && !error.turnLoggerLogged) {
             error.kind = error.kind || 'retry_exhausted';
             error.attemptNumber = attempt;
             error.retriesLeft = 0;
-            TurnLogger.logError(turnLogTitle, error, resolvedModel, providerKey);
+            if (promptTrace) {
+              TurnLogger.logError(turnLogTitle, error, resolvedModel, providerKey, false, { callId: liveCallId });
+            } else {
+              TurnLogger.logError(turnLogTitle, error, resolvedModel, providerKey);
+            }
             error.turnLoggerLogged = true;
           }
           throw error; // Propagate the final error up the call stack
@@ -1145,6 +1237,13 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
             resolvedModel,
             `Transient provider failure detected. Switching immediately to configured fallback ${fallbackRoute.provider}/${fallbackRoute.model} for attempt ${attempt + 1}/${totalAttempts}.`
           );
+          liveTracker.update(liveCallId, {
+            status: 'retrying',
+            attempt: attempt + 1,
+            model: fallbackRoute.model,
+            provider: fallbackRoute.provider,
+            message: `Fallback -> ${fallbackRoute.model}`
+          });
           sendUiNotification({
             id: `retry_${safeModule}`,
             message: `⚡ LLM fallback: ${safeModule} is switching to its backup model...`,
@@ -1156,6 +1255,13 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
         }
 
         // Notify the user about the retry to keep the UI alive and informative
+        liveTracker.update(liveCallId, {
+          status: 'retrying',
+          attempt: attempt + 1,
+          model: resolvedModel,
+          provider: providerKey,
+          message: error.message
+        });
         sendUiNotification({
           id: `retry_${safeModule}`,
           message: `🔄 LLM retry: ${safeModule} (Attempt ${attempt}/${totalAttempts})...`,
@@ -1169,6 +1275,11 @@ async function callLLM({ messages, model, provider = null, retries = 1, timeout 
       }
     }
   } finally {
+    // Safety net: never leave a bar stuck "running" if the call exits via an
+    // unexpected path (e.g. a throw outside the retry loop).
+    if (!liveCallSettled) {
+      settleLiveCall({ status: 'error', error: 'aborted' });
+    }
     // Ensure the retry notification is cleared regardless of outcome
     sendUiNotification({ id: `retry_${safeModule}`, type: 'clear' });
   }

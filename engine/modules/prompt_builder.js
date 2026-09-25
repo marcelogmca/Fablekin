@@ -896,7 +896,18 @@ The final AGENT TASK suffix remains authoritative for role, reasoning procedure,
     const executionParts = [...writerSlots.protocol];
     if (writerCoTEnabled) executionParts.push(WRITER_COT_EXECUTION_REMINDER);
 
-    const prompt = new Prompt({ id: 'core.writer' });
+    // Final-text post-processing (player placeholders, virtual-name strip)
+    // happens inside preparation so the manifest describes the exact bytes
+    // that are compared and sent. Transforms run per component occurrence and
+    // keep exclusive-span ownership; see prompt.js finalizeText.
+    //
+    // Chat replay carries the legacy shared-prefix transform (placeholder
+    // replacement, no virtual-name strip), so per-occurrence finalizeText
+    // below reproduces exactly that for chat pieces while the prompt-level
+    // finalize handles everything else.
+    const finalizeText = (text) => applyGlobalReplacements(replaceAll(text, 'z_virtual_', ''), turnContext);
+    const finalizeChatText = (text) => applyGlobalReplacements(text, turnContext);
+    const prompt = new Prompt({ id: 'core.writer', finalizeText });
     prompt.system(message => {
         // Order mirrors prepareSharedNarrativePrefix(): contract, protocol,
         // interpretation lock, optional shared directives, canon, knowledge,
@@ -915,13 +926,17 @@ The final AGENT TASK suffix remains authoritative for role, reasoning procedure,
         message.add('root.history', `# PART 3: THE NARRATIVE STREAM (HISTORY)\n${wrap('narrative_history', pc.root.history)}`);
     }, { separator: '\n\n---\n\n' });
 
-    // Historical chat replay: one user/assistant pair per full chapter, owned
-    // by root.history with a per-chapter instanceKey.
+    // Historical chat replay: one user/assistant message per full chapter,
+    // owned by root.history with a per-chapter instanceKey. The legacy shared
+    // prefix applies placeholder replacement to chat content (but NOT the
+    // virtual-name strip), so the composer must not finalize chat text here:
+    // chat pieces are already final text.
     let chapterIndex = 0;
     for (const chatMessage of historyData.chatHistory || []) {
         const key = `history-chat-${Math.floor(chapterIndex / 2)}-${chatMessage.role}`;
+        const content = String(chatMessage.content || '');
         prompt.message(chatMessage.role, message => {
-            message.add('root.history', String(chatMessage.content || ''), { instanceKey: key });
+            message.add('root.history', content, { instanceKey: key, finalizeText: finalizeChatText });
         });
         chapterIndex++;
     }
@@ -955,16 +970,9 @@ The final AGENT TASK suffix remains authoritative for role, reasoning procedure,
     }
 
     const prepared = prompt.prepare();
-    // Legacy code applies player-placeholder replacement to the fully joined
-    // strings (and strips z_virtual_). Apply the identical transform to each
-    // prepared message so comparison is byte-exact.
-    const messages = prepared.messages.map(message => ({
-        role: message.role,
-        content: applyGlobalReplacements(replaceAll(message.content, 'z_virtual_', ''), turnContext)
-    }));
 
     return {
-        messages,
+        messages: prepared.messages.map(message => ({ role: message.role, content: message.content })),
         manifest: prepared.manifest,
         hash: prepared.hash,
         characterCount: prepared.characterCount
@@ -1069,10 +1077,17 @@ async function buildWriterMessages(turnContext) {
     turnContext.processed.promptBuilder.messages = messages;
     try {
         const shadow = await buildWriterPreparedPromptShadow(turnContext, messages);
+        // Diagnostics: plain-JSON manifest plus a rehydratable prepared copy
+        // for the HOOK_PRE_WRITER gate in narrativeengine. The full manifest
+        // is stripped from chat.db snapshots (turncontext serialize); only
+        // hash/characterCount persist there. The turn log holds the trace.
         turnContext.processed.promptBuilder.writerPromptManifest = shadow.manifest;
+        turnContext.processed.promptBuilder.writerPromptPrepared = shadow;
         turnContext.processed.promptBuilder.writerPromptPreparedHash = shadow.hash;
         turnContext.processed.promptBuilder.writerPromptPreparedCharacterCount = shadow.characterCount;
     } catch (error) {
+        turnContext.processed.promptBuilder.writerPromptPrepared = null;
+        turnContext.processed.promptBuilder.writerPromptManifest = null;
         Logger.error('PromptBuilder', 'WriterAssembler', `Shadow prepared Writer prompt failed: ${error.message}`, error);
     }
     Logger.log('PromptBuilder', 'WriterAssembler', 'Writer prompt assembled.', 'end');
