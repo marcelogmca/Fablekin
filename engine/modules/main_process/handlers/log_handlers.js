@@ -268,6 +268,46 @@ function createLogHandlers({ fs, logsDir, getProjectName, settings, Logger, emit
             }
         },
 
+        // Writes an AI-readable Token Map report (built in the renderer) to
+        // workspace/logs/token-map-exports/<project>/. Repeatable from the
+        // Log Inspector's Token Map header button.
+        async exportTokenMap(_socket, { projectName, filename, markdown } = {}) {
+            if (!projectName || !isSafePathSegment(projectName)) {
+                emitResponse('export-token-map-response', { success: false, error: 'Invalid project name.' });
+                return;
+            }
+            if (typeof markdown !== 'string' || markdown.trim().length === 0) {
+                emitResponse('export-token-map-response', { success: false, error: 'Empty report payload.' });
+                return;
+            }
+            if (markdown.length > 6 * 1024 * 1024) {
+                emitResponse('export-token-map-response', { success: false, error: 'Report payload too large.' });
+                return;
+            }
+            try {
+                const exportDir = resolveChildInsideRoot(logsDir, 'token-map-exports', projectName);
+                if (!exportDir) {
+                    emitResponse('export-token-map-response', { success: false, error: 'Invalid export path.' });
+                    return;
+                }
+                await fs.mkdir(exportDir, { recursive: true });
+                const base = String(filename || 'token-map').replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_\-]+/g, '_').slice(0, 64) || 'token-map';
+                const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const outName = `${base}-token-map-${stamp}.md`;
+                const outPath = resolveChildInsideRoot(logsDir, 'token-map-exports', projectName, outName);
+                if (!outPath) {
+                    emitResponse('export-token-map-response', { success: false, error: 'Invalid export filename.' });
+                    return;
+                }
+                await fs.writeFile(outPath, markdown, 'utf8');
+                Logger.log('Main', 'LogInspector', 'Token Map export written', { projectName, filename, outName });
+                emitResponse('export-token-map-response', { success: true, path: outPath, filename: outName, projectName });
+            } catch (error) {
+                Logger.error('Main', 'LogInspector', 'Token Map export failed', error);
+                emitResponse('export-token-map-response', { success: false, error: error?.message || String(error) });
+            }
+        },
+
         async getLogArenaProviders(_socket) {
             return arenaResponse('get-log-arena-providers-response', async () => ({
                 providers: logArenaService.listProviders(),

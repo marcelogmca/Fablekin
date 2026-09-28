@@ -1579,6 +1579,11 @@ th.token-map-rowh { min-width: 190px; max-width: 280px; padding: 6px 10px 6px ca
 .token-map-row-child th.token-map-rowh .token-map-rowtext { color: #c4ccd6; }
 .token-map-row-formatting th.token-map-rowh { font-style: italic; opacity: .85; }
 tr.token-map-row[hidden] { display: none; }
+.token-map-export { flex: 0 0 auto; appearance: none; border: 1px solid rgba(var(--color-primary-rgb), 0.55); background: rgba(var(--color-primary-rgb), 0.18); color: var(--text-main); border-radius: var(--radius-sm); padding: 4px 12px; font-family: var(--font-ui); font-size: var(--font-sm); font-weight: 800; cursor: pointer; transition: background 160ms ease, border-color 160ms ease; }
+.token-map-export:hover:not(:disabled), .token-map-export:focus-visible { background: rgba(var(--color-primary-rgb), 0.38); border-color: var(--color-primary); outline: none; }
+.token-map-export:disabled { opacity: 0.5; cursor: default; }
+.token-map-export-status { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.token-map-export-status.is-error { color: #ff8a8a; }
 td.token-map-cell { height: 38px; min-width: 118px; background: #232b35; border-radius: 5px; text-align: center; padding: 0; }
 td.token-map-cell[data-heat="1"] { background: #2c4258; }
 td.token-map-cell[data-heat="2"] { background: #2f6483; }

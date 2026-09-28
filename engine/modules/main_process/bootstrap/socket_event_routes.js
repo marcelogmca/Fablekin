@@ -116,6 +116,7 @@ function createSocketEventRoutes({
         'get-log-projects': logHandlers.getLogProjects,
         'get-current-project-name': logHandlers.getCurrentProjectName,
         'get-model-pricing': logHandlers.getModelPricing,
+        'export-token-map': logHandlers.exportTokenMap,
         'get-log-arena-providers': logHandlers.getLogArenaProviders,
         'get-log-arena-preset': logHandlers.getLogArenaPreset,
         'save-log-arena-preset': logHandlers.saveLogArenaPreset,

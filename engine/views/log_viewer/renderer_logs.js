@@ -22,6 +22,7 @@ const pendingOpenLogRefreshTimers = new Map();
 const splitViewModes = new Map();
 const SPLIT_VIEW_STATES = ['turn', 'split', 'console'];
 let logArenaUi = null;
+let tokenMapExportUi = null;
 // #endregion
 
 // #region CORE FUNCTIONS & UTILITIES
@@ -2272,7 +2273,10 @@ function renderWaterfallIntoContainer(container, data) {
     const renderTokenMapOnce = () => {
         if (tokenMapRendered) return;
         tokenMapRendered = true;
-        renderTokenMapIntoContainer(tokenMapStage, data.turnLog?.data);
+        renderTokenMapIntoContainer(tokenMapStage, data.turnLog?.data, {
+            projectName: data.projectName,
+            filename: data.turnLog?.filename || null
+        });
     };
 
     const setActiveTab = (mode) => {
@@ -2553,7 +2557,7 @@ function tokenMapMoney(value) {
     return `$${number.toFixed(8)}`;
 }
 
-function renderTokenMapIntoContainer(container, turnLogData) {
+function renderTokenMapIntoContainer(container, turnLogData, meta = {}) {
     container.innerHTML = '';
     container.classList.add('token-map-stage');
     if (!window.PromptTraceMatrix) {
@@ -2583,6 +2587,44 @@ function renderTokenMapIntoContainer(container, turnLogData) {
     hint.className = 'waterfall-timing-summary';
     hint.textContent = 'Columns sorted by input cost, heaviest first. Click ▸ to split a row into its nested pieces. Input rows are ~attributed shares; Reasoning/Output rows are provider-reported whole-call totals.';
     header.appendChild(hint);
+    const exportStatus = document.createElement('span');
+    exportStatus.className = 'waterfall-timing-summary token-map-export-status';
+    const exportButton = document.createElement('button');
+    exportButton.type = 'button';
+    exportButton.className = 'token-map-export';
+    exportButton.textContent = 'Export .md';
+    exportButton.title = 'Write a fully-expanded, AI-readable Markdown report for this turn to workspace/logs/token-map-exports/.';
+    const exportAvailable = Boolean(window.PromptTraceExport && typeof window.PromptTraceExport.buildTokenMapReport === 'function');
+    if (!exportAvailable) exportButton.disabled = true;
+    exportButton.addEventListener('click', () => {
+        if (!exportAvailable) return;
+        exportButton.disabled = true;
+        exportStatus.textContent = 'Exporting…';
+        exportStatus.classList.remove('is-error');
+        try {
+            const markdown = window.PromptTraceExport.buildTokenMapReport({
+                project: meta.projectName || currentProject || 'unknown',
+                turnId: meta.filename || 'turn',
+                sourceLabel: meta.filename ? `logs/${meta.projectName || currentProject}/${meta.filename}` : null,
+                log: turnLogData,
+                calls,
+                matrix,
+                pricing: modelPricing
+            });
+            socket.emit('export-token-map', {
+                projectName: meta.projectName || currentProject || null,
+                filename: meta.filename || null,
+                markdown
+            });
+        } catch (error) {
+            exportButton.disabled = false;
+            exportStatus.textContent = `Export failed: ${error?.message || error}`;
+            exportStatus.classList.add('is-error');
+        }
+    });
+    header.appendChild(exportButton);
+    header.appendChild(exportStatus);
+    tokenMapExportUi = { status: exportStatus, button: exportButton };
     container.appendChild(header);
 
     // Parser already returns rows in DFS order (families by burden, children
@@ -3383,6 +3425,19 @@ window.addEventListener('DOMContentLoaded', () => {
         if (data.isLlmPair === false) return;
 
         scheduleOpenLogContentRefresh(projectName, filename);
+    });
+
+    socket.on('export-token-map-response', (response) => {
+        const ui = tokenMapExportUi;
+        if (ui && ui.button) ui.button.disabled = false;
+        if (!ui || !ui.status) return;
+        if (response && response.success) {
+            ui.status.textContent = `Saved: ${response.path}`;
+            ui.status.classList.remove('is-error');
+        } else {
+            ui.status.textContent = `Export failed: ${(response && response.error) || 'unknown error'}`;
+            ui.status.classList.add('is-error');
+        }
     });
 
     socket.on('get-model-pricing-response', (response) => {
