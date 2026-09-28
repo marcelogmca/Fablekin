@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { elements } from './elements.js';
 import { debugLog, debugError, canNavigate, getPluginRouteUrl } from './utils.js';
 import { applyVNResult, handleStatusUpdate, resetViewerState, handleWindowFocusChanged } from './engine.js';
+import { handleLlmUpdate, clearLlmRoad, freezeLlmRoad } from './modules/llm_road_manager.js';
 import { showPrologueOverlay, hidePrologueOverlay } from './modules/ui_manager.js';
 import { compileSequence } from './vn_ucp_compiler.js';
 import { dispatchUCPCommand } from './vn_ucp_dispatcher.js';
@@ -194,7 +195,12 @@ export function initSocketHandlers(socket) {
         handleStatusUpdate({ id: 'background_pipeline', type: 'clear' });
     });
 
+    socket.on('llm-update', (payload) => {
+        handleLlmUpdate(payload);
+    });
+
     socket.on('generation-phase-start', () => {
+        clearLlmRoad();
         console.info('[GenerationFlow] phase-start', {
             turnNumber: state.currentVN?.turnNumber ?? null,
             sceneMode: state.currentVN?.sceneMode || null,
@@ -223,6 +229,7 @@ export function initSocketHandlers(socket) {
     });
 
     socket.on('generation-phase-end', () => {
+        freezeLlmRoad();
         console.info('[GenerationFlow] phase-end', {
             activeRunId: state.activeGenerationRunId || null,
             cancelRequested: state.generationCancelRequested === true,

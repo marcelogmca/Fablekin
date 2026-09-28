@@ -119,7 +119,14 @@ export const elements = {
     cancelGenerationBtn: null,
     feedbackLip: null,
     feedbackMessage: null,
-    pluginOverlay: null
+    pluginOverlay: null,
+    llmRoad: null,
+    llmRoadScroll: null,
+    llmRoadLanes: null,
+    llmRoadGrid: null,
+    llmRoadNow: null,
+    llmRoadEmpty: null,
+    llmRoadFollow: null
 };
 
 export function initElements() {
@@ -244,6 +251,13 @@ export function initElements() {
     elements.feedbackLip = document.getElementById('feedback-toggle-lip');
     elements.feedbackMessage = document.getElementById('feedback-message');
     elements.pluginOverlay = document.getElementById('plugin-overlay');
+    elements.llmRoad = document.getElementById('llm-road');
+    elements.llmRoadScroll = document.getElementById('llm-road-scroll');
+    elements.llmRoadLanes = document.getElementById('llm-road-lanes');
+    elements.llmRoadGrid = document.getElementById('llm-road-grid');
+    elements.llmRoadNow = document.getElementById('llm-road-now');
+    elements.llmRoadEmpty = document.getElementById('llm-road-empty');
+    elements.llmRoadFollow = document.getElementById('llm-road-follow');
 
     if (elements.gameContainer && elements.controls && elements.controls.parentElement !== elements.gameContainer) {
         elements.gameContainer.appendChild(elements.controls);

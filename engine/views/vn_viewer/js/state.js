@@ -56,6 +56,13 @@ export const state = {
     pendingSfxResume: false,
     pendingVoiceResume: false,
     missingTtsCrcs: [],
+    llmCalls: new Map(),
+    llmRunId: null,
+    llmRunStartTime: null,
+    llmRoadFrozen: false,
+    llmRoadFrozenAt: null,
+    llmSequence: 0,
+    llmFollowMode: true,
     interceptRuntime: {
         descriptors: [],
         statusByKey: {},
@@ -134,5 +141,8 @@ export const runtime = {
     saveStateTimeout: null,
     saveSettingsTimeout: null,
     musicPopupTimeout: null,
-    logBatchTimeout: null
+    logBatchTimeout: null,
+    llmRoadTickerInterval: null,
+    llmRoadLastAutoScrollLeft: 0,
+    llmRoadResizeHandler: null
 };

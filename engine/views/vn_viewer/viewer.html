@@ -187,6 +187,19 @@
             <div id="unified-status-task-list">
                 <!-- Tasks will be injected here dynamically -->
             </div>
+            <div id="llm-road" class="llm-road">
+                <div class="llm-road-header">
+                    <span class="llm-road-hint">Live LLM road</span>
+                    <button id="llm-road-follow" class="llm-road-follow" type="button">Follow: ON</button>
+                </div>
+                <div id="llm-road-scroll" class="llm-road-scroll">
+                    <div id="llm-road-grid" class="llm-road-grid">
+                        <div id="llm-road-now" class="llm-road-now"></div>
+                        <div id="llm-road-lanes" class="llm-road-lanes"></div>
+                        <div id="llm-road-empty" class="llm-road-empty">Waiting for the first LLM call…</div>
+                    </div>
+                </div>
+            </div>
             <div id="unified-status-console-toggle" class="console-toggle">
                 <span>Show System Logs</span>
                 <i class="toggle-icon">▼</i>

@@ -5,6 +5,7 @@ import { initUIEvents } from './js/ui_events.js';
 import { applyVNSettings, loadVNSettings } from './js/settings_manager.js';
 import { pixiApp } from './js/pixi_engine.js';
 import { initGlobalAPI } from './js/vn_api.js';
+import { initLlmRoad } from './js/modules/llm_road_manager.js';
 import { pixiRenderer } from './js/pixi_renderer.js';
 import { initTransitionRuntimeListeners } from './js/transition_manager.js';
 import { SERVER_URL, getPluginRouteUrl } from './js/utils.js';
@@ -42,6 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Initialize UI event listeners
     initUIEvents(socket);
+
+    // 4b. Initialize the live LLM road (wires follow button, resize, ticker hooks)
+    initLlmRoad();
 
     // 5. Initial settings application
     applyVNSettings();
