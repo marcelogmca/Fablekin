@@ -1947,7 +1947,12 @@ async function generateChoices(context, tools, settings) {
     try {
         const response = await tools.llm.runTask({
             msg: `Camp Rest Choice Generator`,
-            messages,
+            requestId: 'camp_rest_choice_generation',
+            prompt: { messages: messages.map((message, index) => ({
+                role: message.role,
+                piece: `choices.message_${index + 1}`,
+                text: String(message.content ?? '')
+            })) },
             model: resolvedModel,
             params: {
                 expectJson: false,

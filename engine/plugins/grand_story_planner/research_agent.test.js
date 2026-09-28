@@ -158,6 +158,19 @@ function makeTools(outputDir, options = {}) {
                 }
                 if (typeof params.validateFn === 'function') await params.validateFn(content);
                 return { content, model: params.model, provider: params.provider };
+            },
+            runTask: async (task) => {
+                const phase = String(task?.params?.callingModule || '').split(':').pop();
+                const messages = task?.prompt?.messages || [];
+                llmCalls.push({ phase, messages, params: task?.params || {} });
+                let content;
+                if (phase === 'plan') {
+                    const planCalls = llmCalls.filter(call => call.phase === 'plan').length;
+                    content = outputs.plan[planCalls - 1];
+                } else {
+                    content = outputs[phase];
+                }
+                return { content, model: task?.model, provider: task?.provider };
             }
         },
         project: {
@@ -213,8 +226,8 @@ function makeTools(outputDir, options = {}) {
             assert.deepStrictEqual(tools.agentCalls[0].toolsAllowed.sort(), ['memory_recall', 'story_text']);
             assert.deepStrictEqual(tools.agentCalls[1].toolsAllowed, ['narrative_architect']);
             assert.deepStrictEqual(tools.llmCalls.map(call => call.phase), ['room', 'plan', 'plan', 'plan', 'ledger']);
-            assert.match(tools.llmCalls[0].messages.map(message => message.content).join('\n'), /Do not redo Phase 1 story research/);
-            assert.match(tools.llmCalls[1].messages.map(message => message.content).join('\n'), /CURRENT GRAND STORY PLANNER LEDGER/);
+            assert.match(tools.llmCalls[0].messages.map(message => message.text ?? message.content).join('\n'), /Do not redo Phase 1 story research/);
+            assert.match(tools.llmCalls[1].messages.map(message => message.text ?? message.content).join('\n'), /CURRENT GRAND STORY PLANNER LEDGER/);
             assert.strictEqual(tools.factsState.processed.length, 1);
             assert.strictEqual(tools.factsState.processed[0].category, 'grand_story_planner');
             assert.match(tools.factsState.processed[0].text, /\[SHORT-9\]/);
@@ -276,7 +289,7 @@ function makeTools(outputDir, options = {}) {
             assert.strictEqual(result.artifact.status, 'completed');
             assert.strictEqual(result.artifact.published, true);
             assert.strictEqual(tools.llmCalls.filter(call => call.phase === 'ledger').length, 1);
-            const ledgerPrompt = tools.llmCalls.find(call => call.phase === 'ledger').messages.map(message => message.content).join('\n');
+            const ledgerPrompt = tools.llmCalls.find(call => call.phase === 'ledger').messages.map(message => message.text ?? message.content).join('\n');
             const compilerBlock = ledgerPrompt.slice(ledgerPrompt.lastIndexOf('# PHASE 5: GRAND STORY LEDGER COMPILER'));
             assert.doesNotMatch(compilerBlock, /THEME-1/);
             assert.match(compilerBlock, /No existing IDs are available/);
@@ -346,7 +359,7 @@ function makeTools(outputDir, options = {}) {
             const result = await researchAgent.runResearchAgent(makeTurnContext(72), tools);
             assert.strictEqual(result.artifact.status, 'completed');
             assert.strictEqual(result.artifact.objectiveLedger.portfolio.active, 1);
-            const objectivePrompt = tools.llmCalls.find(call => call.phase === 'objective').messages.map(message => message.content).join('\n');
+            const objectivePrompt = tools.llmCalls.find(call => call.phase === 'objective').messages.map(message => message.text ?? message.content).join('\n');
             assert.match(objectivePrompt, /LOW QUEST INVENTORY/);
             assert.match(objectivePrompt, /QUEST-AARU-01/);
             assert.match(objectivePrompt, /3 turn\(s\) left/);

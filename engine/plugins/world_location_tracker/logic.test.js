@@ -971,7 +971,7 @@ test('exact destination grounding is deterministic while partial names use one b
         json: async request => {
             calls += 1;
             assert.equal(request.model, 'location-model');
-            assert.equal(request.messages.length, 3);
+            assert.equal(request.prompt.messages.length, 3);
             return { content: { resolutions: [{ key: 'aaru', outcome: 'MAPPED', selected_uid: 'aaru-node' }] } };
         }
     };
@@ -997,7 +997,7 @@ test('grounding batches references and rejects invented candidate UIDs', async (
     const logic = makeLogic();
     let requestMessages;
     logic.tools.llm = { json: async request => {
-        requestMessages = request.messages.map(message => ({ ...message }));
+        requestMessages = request.prompt.messages.map(message => ({ ...message }));
         return { content: { resolutions: [
             { key: 'town', outcome: 'MAPPED', selected_uid: 'invented' },
             { key: 'town b', outcome: 'MAPPED', selected_uid: 'b' }
@@ -1104,7 +1104,7 @@ test('grounding and route selection reuse one transcript and location model', as
     logic.settings.model_def = { model: 'shared-model' };
     const requests = [];
     logic.tools.llm = { json: async request => {
-        requests.push({ messages: request.messages.map(message => ({ ...message })), model: request.model, provider: request.provider });
+        requests.push({ messages: request.prompt.messages.map(message => ({ ...message })), model: request.model, provider: request.provider });
         if (requests.length === 1) return { content: { resolutions: [{ key: 'town', outcome: 'MAPPED', selected_uid: 'b' }] } };
         return { content: { selected_route_id: 'direct', summary: 'Proceed to Town B.', waypoints: [], requirements: [] } };
     } };
@@ -1170,8 +1170,8 @@ test('deliberation researches contested mapped options in one batched planner ca
     let plannerCalls = 0;
     logic.tools.llm = { json: async request => {
         plannerCalls += 1;
-        assert.match(request.messages.at(-1).content, /Town B/);
-        assert.match(request.messages.at(-1).content, /Town C/);
+        assert.match(request.prompt.messages.at(-1).text, /Town B/);
+        assert.match(request.prompt.messages.at(-1).text, /Town C/);
         return { content: { selections: [
             { target_uid: 'b', selected_route_id: 'b-route', summary: 'Research Town B.', waypoints: [], requirements: [] },
             { target_uid: 'c', selected_route_id: 'invented-route', summary: 'Invalid selection.', waypoints: [], requirements: [] }

@@ -1000,19 +1000,31 @@ function buildFallbackState(turnContext, settings) {
     }, settings, { party });
 }
 
-async function callStoryWriterOnce(messages, tools, settings, title) {
+function toStructuredMessages(messages, requestLabel) {
+    return messages.map((message, index) => ({
+        role: message.role,
+        piece: `${requestLabel}.message_${index + 1}`,
+        text: String(message.content ?? '')
+    }));
+}
+
+async function callStoryWriterOnce(messages, tools, settings, title, requestId = 'story_writing') {
     const modelDef = getLlmModel(settings);
-    const response = await tools.llm.call(messages, {
+    const response = await tools.llm.runTask({
+        requestId,
+        prompt: { messages: toStructuredMessages(messages, requestId) },
         model: modelDef.model,
-        temperature: 0.82,
-        timeout: 90000,
-        callingModule: `Plugin:${PLUGIN_ID}:${title}`
+        params: {
+            temperature: 0.82,
+            timeout: 90000,
+            callingModule: `Plugin:${PLUGIN_ID}:${title}`
+        }
     });
     return sanitizeLongText(response?.content, '', 12000);
 }
 
-async function callStoryWriter(messages, tools, settings, title, sourceText = '') {
-    const storyText = await callStoryWriterOnce(messages, tools, settings, title);
+async function callStoryWriter(messages, tools, settings, title, sourceText = '', requestId = 'story_writing') {
+    const storyText = await callStoryWriterOnce(messages, tools, settings, title, requestId);
     if (!isStoryTooCloseToSource(storyText, sourceText)) return storyText;
 
     tools.logger?.warn?.(`[${PLUGIN_ID}] ${title} looked too similar to source text; retrying with anti-copy instruction.`);
@@ -1029,7 +1041,7 @@ async function callStoryWriter(messages, tools, settings, title, sourceText = ''
             ].join('\n')
         }
     ];
-    const retryText = await callStoryWriterOnce(retryMessages, tools, settings, `${title} Retry`);
+    const retryText = await callStoryWriterOnce(retryMessages, tools, settings, `${title} Retry`, `${requestId}_retry`);
     return retryText || storyText;
 }
 
@@ -1049,7 +1061,8 @@ async function generateInitialState(turnContext, tools, settings) {
         messages.push({ role: 'user', content: buildInitialMetadataPrompt(maxSteps) });
         const response = await tools.llm.withSchema({
             title: 'Adventure Book Seed Metadata',
-            messages,
+            requestId: 'seed_metadata',
+            prompt: { messages: toStructuredMessages(messages, 'seed_metadata') },
             model: modelDef.model,
             params: {
                 retries: 2,
@@ -1086,7 +1099,8 @@ async function generateAdvanceState(session, tools, option, rollResult) {
         session.messages.push({ role: 'user', content: buildAdvanceMetadataPrompt(session) });
         const response = await tools.llm.withSchema({
             title: 'Adventure Book Advance Metadata',
-            messages: session.messages,
+            requestId: 'advance_metadata',
+            prompt: { messages: toStructuredMessages(session.messages, 'advance_metadata') },
             model: modelDef.model,
             params: {
                 retries: 2,
@@ -1161,7 +1175,8 @@ async function generateFinalCapsule(session, tools, transcript) {
     try {
         const response = await tools.llm.withSchema({
             title: 'Adventure Book Canonization',
-            messages: [...session.messages, { role: 'user', content: prompt }],
+            requestId: 'final_capsule',
+            prompt: { messages: toStructuredMessages([...session.messages, { role: 'user', content: prompt }], 'final_capsule') },
             model: modelDef.model,
             params: {
                 retries: 1,

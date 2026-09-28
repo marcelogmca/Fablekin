@@ -240,12 +240,16 @@ async function generateSituation(input, tools) {
         const detail = await storage.getProfileDetail(db, input.profile_id);
         if (!detail.profile.persona_text.trim()) throw new Error('Add and save a character persona before generating situations.');
         const route = requireAlias(tools, detail.profile.situation_model, 'Situation');
-        const messages = situationMessages(detail, input);
+        const built = situationMessages(detail, input);
         let structured;
         try {
             const response = await tools.llm.withSchema({
                 model: detail.profile.situation_model,
-                messages,
+                requestId: 'cortex_situation_generation',
+                prompt: { messages: [
+                    { role: 'system', piece: 'situation_rules', text: built[0].content },
+                    { role: 'user', piece: 'situation_request', text: built[1].content }
+                ] },
                 msg: `Character Cortex: Generate situation for ${detail.profile.name}`,
                 params: { temperature: 0.9, retries: 1, timeout: 90000, callingModule: 'Plugin:character_cortex:Situation' }
             }, SITUATION_SCHEMA);
@@ -283,11 +287,16 @@ async function generateActor(input, tools) {
             pressure_points: normalizeList(input.pressure_points), probe_reason: input.probe_reason || ''
         });
         const revision = await storage.ensurePersonaRevision(db, profile);
-        const messages = actorMessages(profile, example.scenario_text);
+        const built = actorMessages(profile, example.scenario_text);
+        const messages = built;
         try {
             const response = await tools.llm.runTask({
                 model: profile.actor_model,
-                messages,
+                requestId: 'cortex_actor_portrayal',
+                prompt: { messages: [
+                    { role: 'system', piece: 'actor_persona', text: built[0].content },
+                    { role: 'user', piece: 'actor_situation', text: built[1].content }
+                ] },
                 msg: `Character Cortex: Portray ${profile.name}`,
                 params: { temperature: 0.8, retries: 1, timeout: 120000, callingModule: 'Plugin:character_cortex:Actor' }
             });
@@ -333,11 +342,16 @@ async function submitFeedback(input, tools) {
             ? { ...detail, profile: { ...detail.profile, persona_text: personaRevision.persona_text } }
             : detail;
         const route = requireAlias(tools, detail.profile.analysis_model, 'Analysis');
-        const messages = analysisMessages(analysisDetail, example, { ...input, rating });
+        const built = analysisMessages(analysisDetail, example, { ...input, rating });
+        const messages = built;
         try {
             const response = await tools.llm.withSchema({
                 model: detail.profile.analysis_model,
-                messages,
+                requestId: 'cortex_feedback_distillation',
+                prompt: { messages: [
+                    { role: 'system', piece: 'analysis_rules', text: built[0].content },
+                    { role: 'user', piece: 'analysis_case', text: built[1].content }
+                ] },
                 msg: `Character Cortex: Distill feedback for ${detail.profile.name}`,
                 params: { temperature: 0.2, retries: 1, timeout: 120000, callingModule: 'Plugin:character_cortex:Analysis' }
             }, ANALYSIS_SCHEMA);

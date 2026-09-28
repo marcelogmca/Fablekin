@@ -1211,7 +1211,12 @@ class LocationTrackerLogic {
                 const modelDef = this.getLocationModel();
                 const response = await this.tools.llm.json({
                     msg: 'Location Destination Grounding',
-                    messages,
+                    requestId: 'location_destination_grounding',
+                    prompt: { messages: messages.map((message, index) => ({
+                        role: message.role,
+                        piece: `history.message_${index + 1}`,
+                        text: String(message.content ?? '')
+                    })) },
                     model: modelDef.model || 'mediumendmodel',
                     provider: modelDef.provider,
                     callingModule: 'Plugin:world_location_tracker:destination_grounding'
@@ -1901,7 +1906,12 @@ class LocationTrackerLogic {
             const modelDef = this.getLocationModel();
             const response = await this.tools.llm.json({
                 msg: 'Navigation Deliberation Route Planning',
-                messages,
+                requestId: 'navigation_deliberation_routing',
+                prompt: { messages: messages.map((message, index) => ({
+                    role: message.role,
+                    piece: `history.message_${index + 1}`,
+                    text: String(message.content ?? '')
+                })) },
                 model: modelDef.model || 'mediumendmodel',
                 provider: modelDef.provider,
                 callingModule: 'Plugin:world_location_tracker:navigation_deliberation'
@@ -1974,7 +1984,12 @@ class LocationTrackerLogic {
             messages.push({ role: 'user', content: prompt });
             const response = await this.tools.llm.json({
                 msg: 'Navigation Route Planning',
-                messages,
+                requestId: 'navigation_route_planning',
+                prompt: { messages: messages.map((message, index) => ({
+                    role: message.role,
+                    piece: `history.message_${index + 1}`,
+                    text: String(message.content ?? '')
+                })) },
                 model: modelDef.model || 'mediumendmodel',
                 provider: modelDef.provider,
                 callingModule: 'Plugin:world_location_tracker:navigation_copilot'
@@ -3537,7 +3552,8 @@ class LocationTrackerLogic {
             this.tools.logger.runtime(`[LLM_Call] Calling LLM for location initialization`);
             const llmResponse = await this.tools.llm.json({
                 msg: 'Location Init',
-                messages,
+                requestId: 'location_init',
+                prompt,
                 model: modelDef.model || 'mediumendmodel',
                 provider: modelDef.provider,
                 callingModule: 'Plugin:world_location_tracker'
@@ -4889,7 +4905,8 @@ ${activeChars.join(', ')}`;
             const modelDef = this.getLocationModel();
             const llmResponse = await this.tools.llm.json({
                 msg: 'Location Update',
-                messages,
+                requestId: 'location_update',
+                prompt,
                 model: modelDef.model || 'mediumendmodel',
                 provider: modelDef.provider,
                 callingModule: 'Plugin:world_location_tracker'
@@ -5150,7 +5167,8 @@ ${activeChars.join(', ')}`;
             this.tools.logger.runtime(`[LLM_Call] Calling LLM for character location bootstrap`);
             const llmResponse = await this.tools.llm.json({
                 msg: 'Location Bootstrap',
-                messages,
+                requestId: 'location_bootstrap',
+                prompt,
                 model: targetModel,
                 provider: targetProvider,
                 callingModule: 'Plugin:world_location_tracker:bootstrap'

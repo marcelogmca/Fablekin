@@ -105,7 +105,6 @@ async function runCapsuleAudit(turnContext, tools) {
     const prompt = promptTemplate.replace('${candidateList}', candidateList);
 
     const modelDef = settings.auditor_model || settings.lowendmodel || { model: 'lowendmodel' };
-    const messages = [{ role: 'user', content: prompt }];
 
     tools.logger.runtime(`Capsule Auditor: Sending ${candidateData.length} candidates for LLM review`);
 
@@ -113,7 +112,8 @@ async function runCapsuleAudit(turnContext, tools) {
     try {
         const response = await tools.llm.json({
             msg: 'Capsule Auditor',
-            messages,
+            requestId: 'capsule_auditor',
+            prompt,
             model: modelDef.model,
             provider: modelDef.provider,
             params: {

@@ -130,10 +130,10 @@ async function generateInitialRelationships(turnContext, tools, options = {}) {
                 .replace('${scoringGuide}', scoringGuide);
         }
 
-        const messages = [{ role: 'user', content: prompt }];
         const response = await tools.llm.json({
             msg: `RelationshipGenerator`,
-            messages,
+            requestId: 'relationship_initial_generation',
+            prompt,
             model: config.MODEL,
             provider: config.PROVIDER,
             params: {

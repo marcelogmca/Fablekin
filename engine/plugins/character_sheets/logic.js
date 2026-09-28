@@ -244,7 +244,7 @@ async function getOrGenerateSheet(turnContext, tools, file, promptTemplate) {
         const fields = schemaAdapter.getFields(schema, 'full');
         const dynamicSchemaText = schemaAdapter.generatePromptSchema(fields);
 
-        const messages = [{ role: 'system', content: promptTemplate.replace('{{DYNAMIC_SCHEMA}}', dynamicSchemaText) }, { role: 'user', content: content }];
+        const builtMessages = [{ role: 'system', content: promptTemplate.replace('{{DYNAMIC_SCHEMA}}', dynamicSchemaText) }, { role: 'user', content: content }];
         const settings = { ...tools.settings.get(), ...tools.settings.getSelf() };
         const rawModelDef = settings.model_def || settings.narrative_agents?.summarizer;
         const modelDef = tools.llm.resolveModelDefinition?.(rawModelDef) || rawModelDef || {};
@@ -252,7 +252,12 @@ async function getOrGenerateSheet(turnContext, tools, file, promptTemplate) {
         tools.logger.runtime(`getOrGenerateSheet: Calling LLM (${modelDef.provider}/${modelDef.model})`);
         const response = await tools.llm.runTask({
             msg: 'Character Sheet Generator',
-            messages,
+            requestId: 'character_sheet_generation',
+            prompt: { messages: builtMessages.map((message, index) => ({
+                role: message.role,
+                piece: index === 0 ? 'generation_rules' : 'source_content',
+                text: String(message.content ?? '')
+            })) },
             model: modelDef.model,
             provider: modelDef.provider,
             params: {
@@ -355,6 +360,7 @@ async function updateCharacterSheet(turnContext, tools, characterName) {
     tools.logger.runtime(`updateCharacterSheet: Calling LLM for evolution`);
     const task = {
         msg: 'Character Evolution',
+        requestId: 'character_sheet_evolution',
         params: {
             retries: settings.retries,
             timeout: settings.timeout,
@@ -362,8 +368,18 @@ async function updateCharacterSheet(turnContext, tools, characterName) {
         }
     };
     const response = useSharedModel
-        ? await tools.llm.vnBackground.call({ ...task, scene: 'raw', suffix: `${finalPrompt}\n\nCURRENT CHARACTER SHEET:\n${currentText}\n\nTASK:\nUpdate ${characterName}'s mutable layers using the shared narrative context. Use SEARCH/REPLACE patches only.` })
-        : await tools.llm.runTask({ ...task, messages, model: modelDef.model, provider: modelDef.provider });
+        ? await tools.llm.vnBackground.call({ ...task, scene: 'raw', instruction: `${finalPrompt}\n\nCURRENT CHARACTER SHEET:\n${currentText}\n\nTASK:\nUpdate ${characterName}'s mutable layers using the shared narrative context. Use SEARCH/REPLACE patches only.` })
+        : await tools.llm.runTask({ ...task, prompt: { messages: [
+            { role: 'system', piece: 'evolution_rules', text: finalPrompt },
+            { role: 'user', piece: 'recent_history', text: `RECENT NARRATIVE HISTORY:\n${history || '(No recent history available.)'}` },
+            { role: 'user', piece: 'evolution_task', text: [
+                `CURRENT CHARACTER SHEET:\n${currentText}`,
+                '',
+                'TASK:',
+                `Update ${characterName}'s mutable character-sheet layers based only on the recent narrative history.`,
+                'Use SEARCH/REPLACE patches only. If no mutable layer needs an earned update, output nothing.'
+            ].join('\n') }
+        ] }, model: modelDef.model, provider: modelDef.provider });
 
     if (!response.content || !response.content.includes('<<<<<<< SEARCH')) {
         tools.logger.runtime(`updateCharacterSheet: No patches found in response for ${characterName}`);
@@ -518,7 +534,8 @@ async function updateLightCapsulesBatch(turnContext, tools, windowSize = 5) {
     const response = tools.llm.vnBackground?.isSelected?.(rawModelDef) === true
         ? await tools.llm.vnBackground.json({
             msg: 'Batch Capsule Update',
-            suffix: chapters
+            requestId: 'light_capsule_batch_update',
+            instruction: chapters
                 ? prompt.replace(chapters, 'Use SELECTED NARRATIVE HISTORY and CURRENT WRITER CHAPTER from the dedicated scene message above.')
                 : prompt,
             scene: chapters ? 'raw' : 'none',
@@ -526,7 +543,8 @@ async function updateLightCapsulesBatch(turnContext, tools, windowSize = 5) {
         })
         : await tools.llm.json({
             msg: 'Batch Capsule Update',
-            messages,
+            requestId: 'light_capsule_batch_update',
+            prompt,
             model: modelDef.model,
             provider: modelDef.provider,
             callingModule: 'Plugin:character_sheets:batch_evolution'
@@ -1200,13 +1218,18 @@ async function createOrUpdateCapsuleFromText(turnContext, tools, charName, text,
             const fields = schemaAdapter.getFields(schema, 'full');
             const dynamicSchemaText = schemaAdapter.generatePromptSchema(fields);
 
-            const messages = [{ role: 'system', content: promptTemplate.replace('{{DYNAMIC_SCHEMA}}', dynamicSchemaText) }, { role: 'user', content: `Character Name: ${charName}\n\nRecent Narrative Summary:\n${text}` }];
+            const builtMessages = [{ role: 'system', content: promptTemplate.replace('{{DYNAMIC_SCHEMA}}', dynamicSchemaText) }, { role: 'user', content: `Character Name: ${charName}\n\nRecent Narrative Summary:\n${text}` }];
             const settings = { ...tools.settings.get(), ...tools.settings.getSelf() };
             const rawModelDef = settings.model_def || settings.narrative_agents?.summarizer || { model: 'highendmodel' };
             const modelDef = tools.llm.resolveModelDefinition?.(rawModelDef) || rawModelDef;
             const response = await tools.llm.runTask({
                 msg: 'Text to Capsule Conversion',
-                messages,
+                requestId: 'text_to_capsule_conversion',
+                prompt: { messages: builtMessages.map((message, index) => ({
+                    role: message.role,
+                    piece: index === 0 ? 'conversion_rules' : 'source_text',
+                    text: String(message.content ?? '')
+                })) },
                 model: modelDef.model,
                 provider: modelDef.provider,
                 callingModule: 'Plugin:character_sheets:text_to_capsule'

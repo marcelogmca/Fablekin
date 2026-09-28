@@ -610,9 +610,15 @@ function buildTrackMessages(systemPrompt, scriptLines, assistantPrimer = '') {
 }
 
 async function runTrackLLM({ tools, settings: _settings, modelDef, reasoningConfig, systemPrompt, assistantPrimer = '', scriptLines, msg }) {
+    const built = buildTrackMessages(systemPrompt, scriptLines, assistantPrimer);
     const response = await tools.llm.json({
         msg,
-        messages: buildTrackMessages(systemPrompt, scriptLines, assistantPrimer),
+        requestId: `cinematography_${String(msg || 'track').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48) || 'track'}`,
+        prompt: { messages: built.map((message, index) => ({
+            role: message.role,
+            piece: `track.message_${index + 1}`,
+            text: String(message.content ?? '')
+        })) },
         model: modelDef.model,
         params: {
             extra: { reasoning: reasoningConfig },

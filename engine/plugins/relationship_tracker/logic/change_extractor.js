@@ -48,10 +48,9 @@ async function extractAndStoreRelationshipChanges(turnContext, tools) {
             .replace('${sceneText}', useSharedModel ? 'Use CURRENT WRITER CHAPTER from the dedicated scene message above.' : sceneText)
             .replace('${scoringGuide}', scoringGuide);
 
-        const messages = [{ role: 'user', content: prompt }];
-
         const task = {
             msg: 'RelationshipChangeExtractor',
+            requestId: 'relationship_change_extraction',
             params: {
                 max_tokens: 32000,
                 retries: config.RETRIES,
@@ -60,8 +59,8 @@ async function extractAndStoreRelationshipChanges(turnContext, tools) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, scene: 'raw', suffix: prompt })
-            : await tools.llm.json({ ...task, messages, model: config.MODEL, provider: config.PROVIDER });
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'raw', instruction: prompt })
+            : await tools.llm.json({ ...task, prompt, model: config.MODEL, provider: config.PROVIDER });
 
         const changeData = response.content;
         if (!changeData || !Array.isArray(changeData)) return [];

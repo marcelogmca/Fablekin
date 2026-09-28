@@ -1281,7 +1281,11 @@ async function runResearchPipeline(turnContext, tools, options = {}) {
             let output = '';
             let accepted = false;
             for (let attempt = 1; attempt <= validationAttempts; attempt++) {
-                const callMessages = [...prefix.messages, ...visibleMessages];
+                const callMessages = { messages: [...prefix.messages, ...visibleMessages].map((message, index) => ({
+                    role: message.role,
+                    piece: `research.message_${index + 1}`,
+                    text: String(message.content ?? '')
+                })) };
                 await persistEvent({
                     type: 'model_request',
                     phase,
@@ -1293,11 +1297,18 @@ async function runResearchPipeline(turnContext, tools, options = {}) {
                     prefixOmitted: prefixMetadata,
                     messages: visibleMessages
                 });
-                const response = await tools.llm.call(callMessages, {
-                    ...llm,
-                    retries: 0,
-                    expectJson: false
-                }, { logTitle: RESEARCH_TURN_LOG_TITLE });
+                const response = await tools.llm.runTask({
+                    requestId: `research_${String(phase || 'phase').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'phase'}`,
+                    prompt: callMessages,
+                    model: llm.model,
+                    provider: llm.provider,
+                    params: {
+                        retries: 0,
+                        expectJson: false,
+                        timeout: llm.timeout,
+                        callingModule: llm.callingModule || 'Plugin:grand_story_planner:research'
+                    }
+                });
                 output = normalizeLlmResponseContent(response).trim();
                 const rejection = validateFinal
                     ? validateFinal(output, { phase, iteration, finalIteration: iteration === normalizedSteps.length })

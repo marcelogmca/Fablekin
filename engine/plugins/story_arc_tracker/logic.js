@@ -627,10 +627,11 @@ async function runClassifier(turnContext, tools, settings, previousState, pressu
     };
 
     const response = useSharedModel
-        ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'none', suffix: prompt }, isPlausibleClassification)
+        ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'none', requestId: 'story_arc_classification', instruction: prompt }, isPlausibleClassification)
         : await tools.llm.withSchema({
             ...task,
-            messages: [{ role: 'user', content: prompt }],
+            requestId: 'story_arc_classification',
+            prompt,
             ...(tools.llm?.resolveModelDefinition ? tools.llm.resolveModelDefinition(modelDef) : modelDef)
         }, isPlausibleClassification);
 

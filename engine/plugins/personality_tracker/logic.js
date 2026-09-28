@@ -197,12 +197,11 @@ async function extractAndStoreInitialPersonalityVectors(turnContext, tools, char
         '${characterData}': characterData
     });
 
-    const messages = [{ role: 'user', content: prompt }];
-
     try {
         const response = await tools.llm.json({
             msg: 'Initial Personality Extraction',
-            messages,
+            requestId: 'initial_personality_extraction',
+            prompt,
             model: config.MODEL,
             provider: config.PROVIDER,
             params: {
@@ -273,12 +272,11 @@ async function extractAndStoreBatchInitialPersonality(turnContext, tools, charac
         '${characterBlocks}': characterBlocks
     });
 
-    const messages = [{ role: 'user', content: prompt }];
-
     try {
         const response = await tools.llm.json({
             msg: 'Batch Initial Personality',
-            messages,
+            requestId: 'batch_initial_personality',
+            prompt,
             model: config.MODEL,
             provider: config.PROVIDER,
             params: {
@@ -449,11 +447,10 @@ async function extractAndStoreBatchPersonalityChanges(turnContext, tools, target
             '${characters}': majorCharacters.join(', ')
         });
 
-        const messages = [{ role: 'user', content: prompt }];
-
         tools.logger.log('BatchExtraction', 'Calling PersonalityChangeExtractor LLM...', 'start');
         const task = {
             msg: 'PersonalityChangeExtractor',
+            requestId: 'personality_change_extraction',
             params: {
                 ...config.LLM_PARAMS,
                 retries: config.RETRIES,
@@ -462,8 +459,8 @@ async function extractAndStoreBatchPersonalityChanges(turnContext, tools, target
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, scene: 'raw', suffix: prompt })
-            : await tools.llm.json({ ...task, messages, model: config.MODEL, provider: config.PROVIDER });
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'raw', instruction: prompt })
+            : await tools.llm.json({ ...task, prompt, model: config.MODEL, provider: config.PROVIDER });
         tools.logger.log('BatchExtraction', 'PersonalityChangeExtractor response received.', 'end');
 
         const extractedData = response.content;
@@ -637,10 +634,10 @@ async function consolidatePersonalityHistory(tools, projectName, characters) {
     const useSharedModel = tools.llm.vnBackground?.isSelected?.(modelDef) === true;
     const canon = useSharedModel
         ? 'Use SELECTED CANON from the shared background context.'
-        : turnContext.promptComponents.root.canon.join('\n') || 'No canon data available.';
+        : turnContext.renderPromptSlot('root', 'canon') || 'No canon data available.';
     const history = useSharedModel
         ? 'Use SELECTED NARRATIVE HISTORY from the shared background context.'
-        : turnContext.promptComponents.root.history.join('\n') || 'No narrative history available.';
+        : turnContext.renderPromptSlot('root', 'history') || 'No narrative history available.';
 
     const promptTemplatePath = path.join(__dirname, 'prompts/personality_ledger_consolidator_prompt.txt');
     const promptTemplate = await fs.readFile(promptTemplatePath, 'utf-8');
@@ -653,20 +650,19 @@ async function consolidatePersonalityHistory(tools, projectName, characters) {
     const model = resolvedModelDef.model || 'meta-llama/llama-3-70b-instruct';
     const provider = resolvedModelDef.provider;
 
-    const messages = [{ role: 'user', content: prompt }];
-
     try {
         tools.logger.runtime(`Requesting ledger consolidation from LLM. Model: ${model}.`);
         const task = {
             msg: 'PersonalityLedgerConsolidator',
+            requestId: 'personality_ledger_consolidation',
             params: {
                 max_tokens: 32000,
                 callingModule: 'Plugin:personality_tracker'
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, scene: 'none', suffix: prompt })
-            : await tools.llm.json({ ...task, messages, model, provider });
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'none', instruction: prompt })
+            : await tools.llm.json({ ...task, prompt, model, provider });
 
         const results = response.content;
         if (Array.isArray(results)) {

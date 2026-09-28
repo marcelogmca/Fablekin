@@ -215,7 +215,6 @@ async function extractContextTags(turnContext, tools, settings, seriesList = [],
         seriesList,
         batch
     );
-    const messages = [{ role: 'user', content: systemPrompt }];
     const resolvedModelDef = tools.llm.resolveModelDefinition?.(modelDef) || modelDef;
 
     tools.logger.log('Extraction', 'Calling LLM for structural tag extraction...', 'start');
@@ -237,7 +236,8 @@ async function extractContextTags(turnContext, tools, settings, seriesList = [],
         };
         const response = await tools.llm.withSchema({
             ...task,
-            messages,
+            requestId: 'context_tag_extraction',
+            prompt: systemPrompt,
             model: resolvedModelDef.model,
             provider: resolvedModelDef.provider
         }, schema);

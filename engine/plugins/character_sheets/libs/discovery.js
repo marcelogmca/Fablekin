@@ -27,14 +27,14 @@ async function extractMentionedNames(tools, sheets) {
     const prompt = promptTemplate.replace('${relationshipBlocks}', sanitizedBlocks);
 
     tools.logger.log('Character Sheets', 'Scraping character names from social connections...');
-    const messages = [{ role: 'user', content: prompt }];
     const settings = { ...tools.settings.get(), ...tools.settings.getSelf() };
     const lowModel = settings.lowendmodel || { model: 'lowendmodel' };
 
     try {
         const response = await tools.llm.json({
             msg: 'Character Name Scraper',
-            messages,
+            requestId: 'character_name_scraper',
+            prompt,
             model: lowModel.model,
             provider: lowModel.provider,
             callingModule: 'Plugin:character_sheets:name_scraper'
@@ -72,14 +72,14 @@ async function proactiveBatchGeneration(turnContext, tools, names, sheets, canon
         .replace('{{DYNAMIC_JSON_STRUCT}}', schemaAdapter.generateJsonStructure(fields));
 
     tools.logger.log('Character Sheets', `Proactively forging ${names.length} support characters: ${names.join(', ')}...`);
-    const messages = [{ role: 'user', content: prompt }];
     const rawModelDef = settings.model_def || { model: 'highendmodel' };
     const modelDef = tools.llm.resolveModelDefinition?.(rawModelDef) || rawModelDef;
 
     try {
         const response = await tools.llm.json({
             msg: 'Proactive Batch Forge',
-            messages,
+            requestId: 'proactive_batch_forge',
+            prompt,
             model: modelDef.model,
             provider: modelDef.provider,
             callingModule: 'Plugin:character_sheets:batch_forge'
@@ -142,14 +142,14 @@ async function processSupportingCastFile(turnContext, tools, file, canon, exclud
     }
 
     tools.logger.log('Character Sheets', `Extracting character cast list from ${path.basename(file.path)}...`);
-    const messages = [{ role: 'user', content: prompt }];
     const rawModelDef = settings.model_def || { model: 'highendmodel' };
     const modelDef = tools.llm.resolveModelDefinition?.(rawModelDef) || rawModelDef;
 
     try {
         const response = await tools.llm.json({
             msg: 'Cast List Extraction',
-            messages,
+            requestId: 'cast_list_extraction',
+            prompt,
             model: modelDef.model,
             provider: modelDef.provider,
             callingModule: 'Plugin:character_sheets:cast_list'
@@ -198,13 +198,13 @@ async function generateLightCapsule(turnContext, tools, charName) {
             .replace('${detailInstruction}', detailInstruction)
             .replace('{{DYNAMIC_SCHEMA}}', schemaAdapter.generatePromptSchema(fields));
 
-        const messages = [{ role: 'user', content: prompt }];
     const rawModelDef = settings.model_def || settings.narrative_agents?.summarizer;
     const modelDef = tools.llm.resolveModelDefinition?.(rawModelDef) || rawModelDef || {};
 
         const response = await tools.llm.runTask({
             msg: 'Single Capsule Generation',
-            messages,
+            requestId: 'single_capsule_generation',
+            prompt,
             model: modelDef.model,
             provider: modelDef.provider,
             params: {
@@ -296,13 +296,13 @@ async function batchGenerateLightCapsules(turnContext, tools, charNames) {
             .replace('{{DYNAMIC_JSON_STRUCT}}', schemaAdapter.generateJsonStructure(fields));
 
         tools.logger.log('Character Sheets', `Batch generating ${charNames.length} capsules: ${charNames.join(', ')}...`);
-        const messages = [{ role: 'user', content: prompt }];
     const rawModelDef = settings.model_def || settings.narrative_agents?.summarizer;
     const modelDef = tools.llm.resolveModelDefinition?.(rawModelDef) || rawModelDef || {};
 
         const response = await tools.llm.json({
             msg: 'Batch Capsule Generation',
-            messages,
+            requestId: 'batch_capsule_generation',
+            prompt,
             model: modelDef.model,
             provider: modelDef.provider,
             params: {

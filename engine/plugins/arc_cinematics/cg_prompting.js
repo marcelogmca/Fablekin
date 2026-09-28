@@ -192,7 +192,8 @@ async function compileDiffusionPositivePrompt({ tools, manifest, stanza, setting
     try {
         const response = await tools.llm.withSchema({
             msg: 'Arc Cinematic CG Prompt Compiler',
-            messages: [{ role: 'user', content: instruction }],
+            requestId: 'cg_prompt_compilation',
+            prompt: instruction,
             model: modelDef.model || 'mediumendmodel',
             params: {
                 callingModule: `Plugin:${pluginId}:cg_prompt_compiler`,

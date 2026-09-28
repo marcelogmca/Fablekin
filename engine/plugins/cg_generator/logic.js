@@ -582,10 +582,11 @@ async function extractCGPlan(turnContext, tools) {
         let frames = [];
 
         tools.logger.runtime(`[CG Generator] extractCGPlan: Entering tools.llm.call [${modelDef.model} via ${modelDef.provider}]...`);
-        const response = await tools.llm.call([{ role: 'user', content: promptText }], {
+        const response = await tools.llm.json({
+            requestId: 'cg_plan_extraction',
+            prompt: promptText,
             model: modelDef.model,
             provider: modelDef.provider,
-            expectJson: true,
             callingModule: 'Plugin:cg_generator'
         });
         tools.logger.runtime(`[CG Generator] extractCGPlan: LLM call returned successfully.`);

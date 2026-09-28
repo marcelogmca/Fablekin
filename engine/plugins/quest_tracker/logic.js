@@ -1533,10 +1533,11 @@ async function updateQuestTracker(turnContext, tools, settingsOverride = null) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'indexedScene', suffix: prompt }, isPlausibleRawState)
+            ? await tools.llm.vnBackground.withSchema({ ...task, scene: 'indexedScene', requestId: 'story_objective_tracking', instruction: prompt }, isPlausibleRawState)
             : await tools.llm.withSchema({
                 ...task,
-                messages: [{ role: 'user', content: prompt }],
+                requestId: 'story_objective_tracking',
+                prompt,
                 model: resolvedModelDef.model || 'mediumendmodel',
                 provider: resolvedModelDef.provider
             }, isPlausibleRawState);

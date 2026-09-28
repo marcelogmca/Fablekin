@@ -497,7 +497,6 @@ async function triageCharacter(tools, characterName, turnContext) {
         .replace('${dialogue.substring(0, 3000)}', relevantDialogue);
 
     try {
-        const messages = [{ role: 'user', content: prompt }];
         const modelDef = settings.model_def || { model: 'lowendmodel' };
         const resolvedModelDef = tools.llm.resolveModelDefinition?.(modelDef) || modelDef;
         const model = resolvedModelDef.model;
@@ -507,7 +506,8 @@ async function triageCharacter(tools, characterName, turnContext) {
 
         const response = await tools.llm.json({
             msg: `Character Classification`,
-            messages,
+            requestId: 'character_classification',
+            prompt,
             model,
             provider,
             params: {
@@ -572,7 +572,8 @@ async function classifyGenderOnly(tools, characterName, relevantText) {
 
         const response = await tools.llm.runTask({
             msg: `Character Classification`,
-            messages: [{ role: 'user', content: prompt }],
+            requestId: 'character_gender_classification',
+            prompt,
             model: resolvedModelDef.model,
             provider: resolvedModelDef.provider,
             params: {
@@ -1231,8 +1232,8 @@ async function classifyCleanupCandidate(tools, candidate) {
         }
     };
     const response = tools.llm.vnBackground?.isSelected?.(modelDef) === true
-        ? await tools.llm.vnBackground.json({ ...task, scene: 'none', suffix: prompt })
-        : await tools.llm.json({ ...task, messages, model: resolvedModelDef.model, provider: resolvedModelDef.provider });
+        ? await tools.llm.vnBackground.json({ ...task, scene: 'none', requestId: 'character_cleanup_classification', instruction: prompt })
+        : await tools.llm.json({ ...task, requestId: 'character_cleanup_classification', prompt, model: resolvedModelDef.model, provider: resolvedModelDef.provider });
 
     const parsed = parseJsonObject(response.content) || {};
     const importance = normalizeImportance(parsed.importance) || 'major';

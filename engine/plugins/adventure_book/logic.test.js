@@ -482,9 +482,14 @@ test('post VN generation registers blocking Pixi canvas overlay', async (t) => {
                 storyMessages = messages.map(message => ({ ...message }));
                 return { content: LONG_STORY };
             },
+            runTask: async (task) => {
+                storyCalls += 1;
+                storyMessages = task.prompt.messages.map(message => ({ role: message.role, content: message.text }));
+                return { content: LONG_STORY };
+            },
             withSchema: async (task) => {
                 seedCalls += 1;
-                schemaMessages = task.messages.map(message => ({ ...message }));
+                schemaMessages = (task.prompt?.messages || task.messages).map(message => ({ role: message.role, content: message.text ?? message.content }));
                 return {
                     content: {
                         title: 'Ruin Door',
@@ -612,6 +617,10 @@ test('raw story generation retries when it copies the source chapter', async () 
         },
         llm: {
             call: async () => {
+                storyCalls += 1;
+                return { content: storyCalls === 1 ? sourceChapter : freshStory };
+            },
+            runTask: async () => {
                 storyCalls += 1;
                 return { content: storyCalls === 1 ? sourceChapter : freshStory };
             },
@@ -753,6 +762,16 @@ test('socket loop starts, advances, and finalizes a continuation prompt', async 
                         : LONG_STORY
                 };
             },
+            runTask: async (task) => {
+                storyCalls += 1;
+                const lastText = task?.prompt?.messages?.at(-1)?.text || '';
+                if (storyCalls === 2) advanceStoryPrompt = lastText;
+                return {
+                    content: storyCalls === 2
+                        ? 'John commits to the stones, but the crossing changes under him. The first leap lands cleanly, the second sends cold water over his boots, and the third reveals a rope hidden beneath the foam.\n\n"Someone made this harder on purpose," he says, dragging himself onto the far bank. The bell keeps ringing behind him, not as a warning now, but as an answer from somewhere among the reeds.'
+                        : LONG_STORY
+                };
+            },
             withSchema: async (task) => {
                 const title = String(task?.title || '');
                 if (title.includes('Seed')) {
@@ -778,7 +797,7 @@ test('socket loop starts, advances, and finalizes a continuation prompt', async 
                     };
                 }
                 if (title.includes('Advance')) {
-                    advanceMetadataPrompt = task.messages.at(-1)?.content || '';
+                    advanceMetadataPrompt = task.prompt?.messages?.at(-1)?.text || task.messages?.at(-1)?.content || '';
                     return {
                         content: {
                             resultText: 'John commits to the stones and reaches the far bank with wet boots.',
@@ -790,7 +809,7 @@ test('socket loop starts, advances, and finalizes a continuation prompt', async 
                         }
                     };
                 }
-                finalCapsulePrompt = task.messages.at(-1)?.content || '';
+                finalCapsulePrompt = task.prompt?.messages?.at(-1)?.text || task.messages?.at(-1)?.content || '';
                 return {
                     content: {
                         summary: 'John reached the river after choosing the faster route and committed to the stone crossing despite the current. The river fought his footing, soaked his boots, and revealed that the crossing had been tampered with by a hidden rope beneath the foam. The bell on the far bank rang without a visible hand, turning the ford from a simple shortcut into evidence of an unseen watcher or mechanism. John still kept momentum, but the journey now carries suspicion and wet exhaustion rather than clean speed.',
@@ -1070,6 +1089,10 @@ test('natural book state persists, restores, and stores CG in chat turn plugin s
         },
         llm: {
             call: async () => {
+                storyCalls += 1;
+                return { content: LONG_STORY };
+            },
+            runTask: async () => {
                 storyCalls += 1;
                 return { content: LONG_STORY };
             },
@@ -1477,6 +1500,10 @@ test('debug rebuild can request cg into chat turn plugin storage', async (t) => 
         },
         llm: {
             call: async () => {
+                storyCalls += 1;
+                return { content: LONG_STORY };
+            },
+            runTask: async () => {
                 storyCalls += 1;
                 return { content: LONG_STORY };
             },

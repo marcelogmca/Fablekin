@@ -1499,7 +1499,12 @@ async function generatePoem(manifest, sourceTurns, tools, settings, turnContext 
         );
         const response = await tools.llm.withSchema({
             msg: 'Arc Cinematic Poem',
-            messages,
+            requestId: 'arc_cinematic_poem',
+            prompt: { messages: messages.map((message, index) => ({
+                role: message.role,
+                piece: `poem.message_${index + 1}`,
+                text: String(message.content ?? '')
+            })) },
             model: modelDef.model || 'mediumendmodel',
             params: {
                 callingModule: `Plugin:${PLUGIN_ID}:poem`,

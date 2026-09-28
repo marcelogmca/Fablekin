@@ -65,10 +65,10 @@ async function consolidateMultipleRelationships(tools, projectName, pairs) {
     const useSharedModel = tools.llm.vnBackground?.isSelected?.(modelDef) === true;
     const canon = useSharedModel
         ? 'Use SELECTED CANON from the shared background context.'
-        : turnContext.promptComponents.root.canon.join('\n') || 'No canon data available.';
+        : turnContext.renderPromptSlot('root', 'canon') || 'No canon data available.';
     const history = useSharedModel
         ? 'Use SELECTED NARRATIVE HISTORY from the shared background context.'
-        : turnContext.promptComponents.root.history.join('\n') || 'No narrative history available.';
+        : turnContext.renderPromptSlot('root', 'history') || 'No narrative history available.';
 
     const promptTemplatePath = path.join(__dirname, '../prompts/relationship_ledger_consolidator_prompt.txt');
     const promptTemplate = await fs.readFile(promptTemplatePath, 'utf-8');
@@ -82,11 +82,11 @@ async function consolidateMultipleRelationships(tools, projectName, pairs) {
     const provider = resolvedModelDef.provider;
     const retries = selfSettings.retries ?? 1;
     const timeout = selfSettings.timeout ?? 120000;
-    const messages = [{ role: 'user', content: prompt }];
 
     try {
         const task = {
             msg: 'RelationshipLedgerConsolidator',
+            requestId: 'relationship_ledger_consolidation',
             params: {
                 max_tokens: 64000,
                 retries,
@@ -95,8 +95,8 @@ async function consolidateMultipleRelationships(tools, projectName, pairs) {
             }
         };
         const response = useSharedModel
-            ? await tools.llm.vnBackground.json({ ...task, scene: 'none', suffix: prompt })
-            : await tools.llm.json({ ...task, messages, model, provider });
+            ? await tools.llm.vnBackground.json({ ...task, scene: 'none', instruction: prompt })
+            : await tools.llm.json({ ...task, prompt, model, provider });
 
         const results = response.content;
         if (Array.isArray(results)) {

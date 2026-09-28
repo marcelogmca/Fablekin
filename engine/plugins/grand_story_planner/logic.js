@@ -305,11 +305,10 @@ async function classifyStoryNeeds(turnContext, tools, settings, inputs = {}) {
             .replace('{{pacing_strategy}}', truncatePromptText(inputs.pacingStrategy || 'No pacing strategy available.', 1800))
             .replace('{{planner_inputs}}', truncatePromptText(inputs.plannerInputs || 'No planner inputs available.', 1800));
 
-        const messages = [{ role: 'user', content: prompt }];
-
         const response = await tools.llm.withSchema({
             msg: 'Grand Story Planner Classifier',
-            messages,
+            requestId: 'story_needs_classification',
+            prompt,
             model: classifierModel.model,
             provider: classifierModel.provider,
             params: {
@@ -1425,7 +1424,12 @@ async function getOrInitializePlan(turnContext, tools) {
         tools.logger.log('Generation', 'Calling LLM for Master Grand Story Plan...', 'start');
         const response = await tools.llm.runTask({
             msg: 'Grand Story Planner Init',
-            messages,
+            requestId: 'grand_story_plan_init',
+            prompt: { messages: messages.map((message, index) => ({
+                role: message.role,
+                piece: index === 0 ? 'plan_brief' : 'plan_context',
+                text: String(message.content ?? '')
+            })) },
             model: modelDef.model,
             provider: modelDef.provider,
             params: {
@@ -1581,7 +1585,12 @@ ${userContent}`;
     tools.logger.log('Update', 'Calling LLM for Grand Story Plan update...', 'start');
     const response = await tools.llm.runTask({
         msg: 'Grand Story Planner Update',
-        messages,
+        requestId: 'grand_story_plan_update',
+        prompt: { messages: messages.map((message, index) => ({
+            role: message.role,
+            piece: `plan_update.message_${index + 1}`,
+            text: String(message.content ?? '')
+        })) },
         model: modelDef.model,
         provider: modelDef.provider,
         params: {

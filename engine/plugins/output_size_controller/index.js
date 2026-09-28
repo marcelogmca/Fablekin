@@ -137,7 +137,12 @@ The scene ended prematurely. Do not summarize or conclude the event yet. Pick up
 
                     const response = await tools.llm.runTask({
                         msg: 'Writer (Expansion)',
-                        messages: expansionMessages,
+                        requestId: 'writer_expansion',
+                        prompt: { messages: expansionMessages.map((message, index) => ({
+                            role: message.role,
+                            piece: `expansion.message_${index + 1}`,
+                            text: String(message.content ?? '')
+                        })) },
                         model: writerSettings.model,
                         provider: writerSettings.provider,
                         params: {

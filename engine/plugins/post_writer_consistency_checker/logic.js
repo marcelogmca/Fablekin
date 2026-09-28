@@ -749,7 +749,12 @@ function logModelAssignment(tools, label, assignment) {
 async function runSingleFlagAgent({ key, label, messages, modelAssignment, settings, tools }) {
   const response = await tools.llm.runTask({
     msg: `Post Writer HQ Flag: ${label}`,
-    messages,
+    requestId: `hq_flag_${String(key || 'check').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48) || 'check'}`,
+    prompt: { messages: messages.map((message, index) => ({
+      role: message.role,
+      piece: `flag.message_${index + 1}`,
+      text: String(message.content ?? '')
+    })) },
     model: modelAssignment.model,
     provider: modelAssignment.provider,
     params: {
@@ -819,7 +824,12 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
   const concurrency = Math.max(1, Math.min(flagTasks.length, settings.hq_concurrency));
   const buildFlagTaskPayload = (flagTask) => ({
     msg: `Post Writer HQ Flag: ${flagTask.label}`,
-    messages: flagTask.messages,
+    requestId: `hq_flag_${String(flagTask.key || 'check').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48) || 'check'}`,
+    prompt: { messages: flagTask.messages.map((message, index) => ({
+      role: message.role,
+      piece: `flag.message_${index + 1}`,
+      text: String(message.content ?? '')
+    })) },
     model: flagTask.modelAssignment.model,
     provider: flagTask.modelAssignment.provider,
     params: {
@@ -924,7 +934,12 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
   logModelAssignment(tools, 'Post Writer HQ corrector', correctorAssignment);
   const correctorResponse = await tools.llm.runTask({
     msg: 'Post Writer HQ Corrector',
-    messages: correctorMessages,
+    requestId: 'hq_corrector',
+    prompt: { messages: correctorMessages.map((message, index) => ({
+      role: message.role,
+      piece: `corrector.message_${index + 1}`,
+      text: String(message.content ?? '')
+    })) },
     model: correctorAssignment.model,
     provider: correctorAssignment.provider,
     params: {
@@ -1059,7 +1074,12 @@ async function runConsistencyCheck(turnContext, tools, settingsInput = null) {
   );
   const response = await tools.llm.runTask({
     msg: 'Post Writer Consistency Checker',
-    messages,
+    requestId: 'consistency_check',
+    prompt: { messages: messages.map((message, index) => ({
+      role: message.role,
+      piece: `check.message_${index + 1}`,
+      text: String(message.content ?? '')
+    })) },
     model: modelAssignment.model,
     provider: modelAssignment.provider,
     params: {
