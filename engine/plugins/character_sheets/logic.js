@@ -1047,11 +1047,17 @@ async function handlePromptInjectionHook(turnContext, tools) {
 
     tools.logger.runtime(`handlePromptInjectionHook: Injecting final context blocks, total length=${contextBlocks.length}`);
     const cleanedBlocks = contextBlocks.replace(/^#+\s*/gm, '');
-    tools.prompt.inject('canon', tools.prompt.wrap('character_sheets', cleanedBlocks.trim()), 'root');
+    if (cleanedBlocks.trim()) {
+        tools.prompt.contribute('character_canon', {
+            sheets: tools.prompt.wrap('character_sheets', cleanedBlocks.trim())
+        });
+    }
 
     const hardDirective = buildHardPriorityDirective(hardPriorityEntries);
     if (hardDirective) {
-        tools.prompt.inject('directives', tools.prompt.wrap('character_sheet_hard_priority', hardDirective), 'writer');
+        tools.prompt.contribute('character_priority', {
+            directive: tools.prompt.wrap('character_sheet_hard_priority', hardDirective)
+        });
     }
 
     const turnState = tools.pluginState.turn();

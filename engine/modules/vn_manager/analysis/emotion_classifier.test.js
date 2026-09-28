@@ -3,13 +3,14 @@ const assert = require('node:assert/strict');
 const { _private } = require('./emotion_classifier.js');
 
 test('emotion classifier messages contain only the chunk task prompt', () => {
-  const prompt = 'Classify this dialogue chunk only.';
-  const messages = _private.buildEmotionClassificationMessages(prompt);
+  const turnContext = { processed: { vnManager: { processedLines: [] } }, getFormattedDirective: () => '' };
+  const prepared = _private.buildEmotionClassificationPrompt(turnContext, [], { lineAllowedEmotions: [] }, null, 0);
+  const messages = prepared.messages;
 
-  assert.deepEqual(messages, [
-    { role: 'user', content: prompt }
-  ]);
+  assert.equal(messages.length, 1);
+  assert.equal(messages[0].role, 'user');
   assert.doesNotMatch(messages[0].content, /SHARED VN SCENE CAPSULE/);
+  assert.ok(prepared.manifest.occurrences.some(item => item.componentId === 'core.vn.emotion_classification'));
 });
 
 test('emotion prompt includes unnumbered narrative and global dialogue indexes', () => {

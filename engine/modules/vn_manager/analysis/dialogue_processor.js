@@ -1,5 +1,6 @@
-const { Logger, readSettings, TurnLogger, readFileSync, sanitizeForCrc } = require('../../utils.js');
+const { Logger, readSettings, readFileSync, sanitizeForCrc } = require('../../utils.js');
 const { callLLM } = require('../../llm.js');
+const { Prompt } = require('../../prompt/prompt.js');
 const crc32 = require('crc-32');
 
 // #region MODULE IMPORTS
@@ -350,6 +351,20 @@ function splitTextAtWordCount(text, targetWordCount) {
 }
 
 /**
+ * Wraps a rendered dialogue-transform prompt in a named core VN request.
+ * @param {string} promptText - The fully rendered transform prompt.
+ * @param {string} instanceKey - Stable per-request key (full, part-1, part-2).
+ * @returns {PreparedPrompt} The prepared dialogue-transform request.
+ */
+function buildDialogueTransformPrompt(promptText, instanceKey = 'full') {
+  const prompt = new Prompt({ id: 'core.vn.dialogue_transform' });
+  prompt.user(message => {
+    message.add('core.vn.dialogue_transform', String(promptText || ''), { instanceKey });
+  });
+  return prompt.prepare();
+}
+
+/**
  * Extracts dialogue content from an LLM response.
  * @param {string} responseContent - The raw LLM response.
  * @returns {string}
@@ -419,32 +434,26 @@ async function processDialogueLines(turnContext) {
         const [part1, part2] = splitTextAtWordCount(text, config.PARALLEL_SPLIT_TARGET);
         if (part2.length > 0) {
           Logger.log('DialogueProcessor', 'Generation', `Large input (${wordCount} words). Splitting parallel.`);
-          const prompt1 = createDialogueTransformPrompt(turnContext, part1);
-          const prompt2 = createDialogueTransformPrompt(turnContext, part2);
-
-          TurnLogger.logRequest('DialogueProcessor (Parallel 1)', prompt1, config.MODEL, config.PROVIDER);
-          TurnLogger.logRequest('DialogueProcessor (Parallel 2)', prompt2, config.MODEL, config.PROVIDER);
+          const prepared1 = buildDialogueTransformPrompt(createDialogueTransformPrompt(turnContext, part1), 'part-1');
+          const prepared2 = buildDialogueTransformPrompt(createDialogueTransformPrompt(turnContext, part2), 'part-2');
 
           const startTime = Date.now();
           const [res1, res2] = await Promise.all([
             callLLM({
               model: config.MODEL, provider: config.PROVIDER, retries: config.RETRIES, timeout: config.TIMEOUT,
-              messages: [{ role: 'user', content: prompt1 }],
+              prompt: prepared1,
               validationRegex: validationFormatRegex, validateFn: validateDialogueProcessing,
               ...config.LLM_PARAMS, callingModule: 'DialogueProcessor',
               turnLogTitle: 'DialogueProcessor (Parallel 1)'
             }),
             callLLM({
               model: config.MODEL, provider: config.PROVIDER, retries: config.RETRIES, timeout: config.TIMEOUT,
-              messages: [{ role: 'user', content: prompt2 }],
+              prompt: prepared2,
               validationRegex: validationFormatRegex, validateFn: validateDialogueProcessing,
               ...config.LLM_PARAMS, callingModule: 'DialogueProcessor',
               turnLogTitle: 'DialogueProcessor (Parallel 2)'
             })
           ]);
-
-          TurnLogger.logResponse('DialogueProcessor (Parallel 1)', res1.content, res1.model, config.PROVIDER);
-          TurnLogger.logResponse('DialogueProcessor (Parallel 2)', res2.content, res2.model, config.PROVIDER);
 
           const p1 = extractDialogue(res1.content);
           const p2 = extractDialogue(res2.content);
@@ -455,16 +464,14 @@ async function processDialogueLines(turnContext) {
 
       // Single-call flow
       if (!responseContent) {
-        const prompt = createDialogueTransformPrompt(turnContext);
-        TurnLogger.logRequest('DialogueProcessor', prompt, config.MODEL, config.PROVIDER);
+        const prepared = buildDialogueTransformPrompt(createDialogueTransformPrompt(turnContext), 'full');
         const { content: singleResponse, model: resolvedModel } = await callLLM({
           model: config.MODEL, provider: config.PROVIDER, retries: config.RETRIES, timeout: config.TIMEOUT,
-          messages: [{ role: 'user', content: prompt }],
+          prompt: prepared,
           validationRegex: validationFormatRegex, validateFn: validateDialogueProcessing,
           ...config.LLM_PARAMS, callingModule: 'DialogueProcessor',
           turnLogTitle: 'DialogueProcessor'
         });
-        TurnLogger.logResponse('DialogueProcessor', singleResponse, resolvedModel, config.PROVIDER);
         responseContent = singleResponse;
         Logger.log('DialogueProcessor', 'Generation', 'DialogueProcessor response finalized.', 'end');
       }

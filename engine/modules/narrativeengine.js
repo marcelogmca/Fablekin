@@ -183,17 +183,31 @@ async function generateNextChapter(turnContext) {
   }));
   turnContext.runtime.narrativeEngine = turnContext.runtime.narrativeEngine || {};
   turnContext.runtime.narrativeEngine.writerRequestMessages = writerRequestMessages;
-  // Prepared Writer prompt (shadow-built during assembly): used only when it
-  // still exactly matches the post-hook messages. Otherwise the legacy path
-  // runs and the stale manifest is explicitly invalidated, never logged.
-  const shadowPrepared = turnContext.processed.promptBuilder.writerPromptPrepared || null;
-  const shadowMatchesPostHook = shadowPrepared
-    && Array.isArray(shadowPrepared.messages)
-    && shadowPrepared.messages.length === writerRequestMessages.length
-    && shadowPrepared.messages.every((message, index) =>
+  // Authoritative composer: narrativeengine sends the prepared result.
+  // HOOK_PRE_WRITER ran above; a hook that mutates writer slots after
+  // assembly must surface as a hard error here, never a silent legacy send.
+  const { PreparedPrompt } = require('./prompt/prompt.js');
+  const storedPrepared = turnContext.processed.promptBuilder.writerPromptPrepared || null;
+  let writerPrepared = null;
+  try {
+    writerPrepared = storedPrepared ? PreparedPrompt.rehydrate(storedPrepared) : null;
+  } catch (error) {
+    throw new Error(`Writer prepared prompt failed verification: ${error.message}`);
+  }
+  if (!writerPrepared) {
+    throw new Error('Writer prepared prompt is missing; buildWriterMessages() must produce it before the LLM call.');
+  }
+  const preparedMatchesPostHook = writerPrepared.messages.length === writerRequestMessages.length
+    && writerPrepared.messages.every((message, index) =>
       message.role === writerRequestMessages[index].role
       && message.content === writerRequestMessages[index].content
     );
+  if (!preparedMatchesPostHook) {
+    throw new Error(
+      'Writer prepared prompt no longer matches the post-HOOK_PRE_WRITER messages; ' +
+      'a hook mutated prompt state after assembly. Migrate that hook to contribute() before assembly.'
+    );
+  }
 
   workQueue.updateStatus('writer', 'running');
   const writerResult = await runWithDiagnosticContext({
@@ -204,49 +218,22 @@ async function generateNextChapter(turnContext) {
     promptCachePrefixHash: turnContext.processed.promptBuilder.sharedPrefixHash,
     blocking: true
   }, async () => {
-    if (shadowMatchesPostHook && shadowPrepared.prepared) {
-      // Prepared path: callLLM logs request/response centrally with the
-      // manifest + callId; no manual TurnLogger calls (no duplicate entries).
-      writerLlmCallPromise = callLLM({
-        prompt: shadowPrepared.prepared,
-        model: config.model,
-        provider: config.provider,
-        retries: config.retries,
-        timeout: config.timeout,
-        ...writerLlmParams,
-        minWords: turnContext.writerMinimumWordCount,
-        callingModule: 'NarrativeEngine',
-        turnLogTitle: 'Writer'
-      });
-    } else {
-      if (shadowPrepared) {
-        turnContext.processed.promptBuilder.writerPromptManifest = null;
-        Logger.warn(
-          'NarrativeEngine',
-          'WriterPreparedPrompt',
-          'HOOK_PRE_WRITER changed the Writer messages after preparation; using the legacy request without a manifest.'
-        );
-      }
-      TurnLogger.logRequest('Writer', writerRequestMessages, config.model, config.provider);
-      writerLlmCallPromise = callLLM({
-        messages: writerRequestMessages,
-        model: config.model,
-        provider: config.provider,
-        retries: config.retries,
-        timeout: config.timeout,
-        ...writerLlmParams,
-        minWords: turnContext.writerMinimumWordCount,
-        callingModule: 'NarrativeEngine',
-        turnLogTitle: 'Writer'
-      });
-    }
+    // Prepared-only: callLLM logs request/response centrally with the
+    // manifest + callId; no manual TurnLogger calls (no duplicate entries).
+    writerLlmCallPromise = callLLM({
+      prompt: writerPrepared,
+      model: config.model,
+      provider: config.provider,
+      retries: config.retries,
+      timeout: config.timeout,
+      ...writerLlmParams,
+      minWords: turnContext.writerMinimumWordCount,
+      callingModule: 'NarrativeEngine',
+      turnLogTitle: 'Writer'
+    });
 
     Logger.log('NarrativeEngine', 'Generation', 'Awaiting Writer LLM call...');
     const result = await writerLlmCallPromise;
-    // Legacy path only: prepared calls are logged centrally inside callLLM.
-    if (!shadowMatchesPostHook || !shadowPrepared?.prepared) {
-      TurnLogger.logResponse('Writer', result);
-    }
     return result;
   });
   cancellation.throwIfCancelled('writer generation');

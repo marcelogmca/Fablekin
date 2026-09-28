@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const fuzzysort = require('fuzzysort');
 const { filterForegroundOcclusionAssets } = require('./background_asset_helpers.js');
-const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { buildCoreVnPreparedPrompt } = require('../shared_llm_context.js');
 const { formatIndexedScene } = require('../scene_prompt_formatter.js');
 
 // #region MODULE IMPORTS
@@ -496,19 +496,21 @@ async function selectBestBackground(turnContext) {
 
   try {
     Logger.log('AssetSelector', 'Background', 'Selecting best background...', 'start');
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'none' });
-    TurnLogger.logRequest('Select Best Background', messages, CONFIG.BACKGROUND_MODEL, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.asset_selector.background.basic',
+      task: prompt,
+      scene: 'none'
+    });
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
       provider: resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider,
       retries: CONFIG.BACKGROUND_PARAMS.retries,
       timeout: CONFIG.BACKGROUND_PARAMS.timeout,
-      messages,
+      prompt: prepared,
       ...CONFIG.BACKGROUND_PARAMS,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Select Best Background'
     });
-    TurnLogger.logResponse('Select Best Background', responseContent, resolvedModel, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
     Logger.log('AssetSelector', 'Background', `Background selection response received.`, 'end');
 
     const result = parseMultiAssetSelection(responseContent, backgrounds, backgroundFilenames, prevBackground);
@@ -599,18 +601,20 @@ async function selectMetadataDrivenBackground(turnContext, backgrounds, metadata
       .replace('${schemaDesc}', schemaDesc)
       .replace('${project_directives}', projectDirectives);
 
-    const filterMessages = buildCoreVnLlmMessages(turnContext, filterPrompt, { scene: 'none' });
-    TurnLogger.logRequest('Smart Background Filters', filterMessages, CONFIG.BACKGROUND_MODEL, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
+    const filterPrepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.asset_selector.background.smart_filters',
+      task: filterPrompt,
+      scene: 'none'
+    });
     const { content: llmFilterResponse, model: resolvedModelFilter } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
       provider: resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider,
-      messages: filterMessages,
+      prompt: filterPrepared,
       ...CONFIG.BACKGROUND_PARAMS,
       expectJson: true,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart Background Filters'
     });
-    TurnLogger.logResponse('Smart Background Filters', llmFilterResponse, resolvedModelFilter, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
 
     // â”€â”€ Step 3: Multi-Category Scoring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const categories = ['calm', 'happy', 'sad', 'battle'];
@@ -661,17 +665,19 @@ async function selectMetadataDrivenBackground(turnContext, backgrounds, metadata
       .replace('${candidateSummaries}', candidateSummaries)
       .replace('${project_directives}', projectDirectives);
 
-    const selectionMessages = buildCoreVnLlmMessages(turnContext, selectionPrompt, { scene: 'none' });
-    TurnLogger.logRequest('Smart Background Select', selectionMessages, CONFIG.BACKGROUND_MODEL, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
+    const selectionPrepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.asset_selector.background.smart_select',
+      task: selectionPrompt,
+      scene: 'none'
+    });
     const { content: llmSelection, model: resolvedModelSelect } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
       provider: resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider,
-      messages: selectionMessages,
+      prompt: selectionPrepared,
       ...CONFIG.BACKGROUND_PARAMS,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart Background Select'
     });
-    TurnLogger.logResponse('Smart Background Select', llmSelection, resolvedModelSelect, resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider);
 
     // â”€â”€ Step 5: Fuzzy Match to Filesystem â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const bgFilenames = backgrounds.map(getFilename);
@@ -1014,20 +1020,22 @@ async function buildNormalPathOstCategoryChoices(turnContext, sceneDescription, 
   }
 
   try {
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'none' });
-    TurnLogger.logRequest('OST Category Split (Basic)', messages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.asset_selector.ost.category_split',
+      task: prompt,
+      scene: 'none'
+    });
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
       retries: CONFIG.OST_PARAMS.retries,
       timeout: CONFIG.OST_PARAMS.timeout,
-      messages,
+      prompt: prepared,
       ...CONFIG.OST_PARAMS,
       expectJson: true,
       callingModule: 'AssetSelector',
       turnLogTitle: 'OST Category Split (Basic)'
     });
-    TurnLogger.logResponse('OST Category Split (Basic)', responseContent, resolvedModel, resolveModelAlias(CONFIG.OST_MODEL).provider);
 
     return mapCategorizedNamesToPaths(responseContent, candidatePaths, perCategory);
   } catch (error) {
@@ -1175,19 +1183,21 @@ async function selectBestOST(turnContext) {
 
   try {
     Logger.log('AssetSelector', 'OST', 'Selecting best OST...', 'start');
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'none' });
-    TurnLogger.logRequest('Select Best Ost', messages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.asset_selector.ost.basic',
+      task: prompt,
+      scene: 'none'
+    });
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
       retries: CONFIG.OST_PARAMS.retries,
       timeout: CONFIG.OST_PARAMS.timeout,
-      messages,
+      prompt: prepared,
       ...CONFIG.OST_PARAMS,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Select Best Ost'
     });
-    TurnLogger.logResponse('Select Best Ost', responseContent, resolvedModel, resolveModelAlias(CONFIG.OST_MODEL).provider);
     Logger.log('AssetSelector', 'OST', `OST selection response received.`, 'end');
 
     const result = parseMultiAssetSelection(responseContent, ostList, ostList.map(getFilename), prevOST);
@@ -1285,18 +1295,20 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
       .replace('${schemaDesc}', schemaDesc)
       .replace('${project_directives}', projectDirectives + (diversitySeed ? `\n\nVARIETY NUDGE: ${diversitySeed}` : ""));
 
-    const filterMessages = buildCoreVnLlmMessages(turnContext, filterPrompt, { scene: 'none' });
-    TurnLogger.logRequest('Smart OST Filters', filterMessages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
+    const filterPrepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.asset_selector.ost.smart_filters',
+      task: filterPrompt,
+      scene: 'none'
+    });
     const { content: llmFilterResponse, model: resolvedModelFilter } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
-      messages: filterMessages,
+      prompt: filterPrepared,
       ...CONFIG.OST_PARAMS,
       expectJson: true,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart OST Filters'
     });
-    TurnLogger.logResponse('Smart OST Filters', llmFilterResponse, resolvedModelFilter, resolveModelAlias(CONFIG.OST_MODEL).provider);
 
     // â”€â”€ Step 3: Multi-Category Scoring & Diversity Injection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const categories = ['calm', 'happy', 'sad', 'battle'];
@@ -1372,17 +1384,19 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
       .replace('${project_directives}', projectDirectives)
       .replace('${recentOSTHistory}', recentHistorySignal);
 
-    const selectionMessages = buildCoreVnLlmMessages(turnContext, selectionPrompt, { scene: 'none' });
-    TurnLogger.logRequest('Smart OST Select', selectionMessages, CONFIG.OST_MODEL, resolveModelAlias(CONFIG.OST_MODEL).provider);
+    const selectionPrepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.asset_selector.ost.smart_select',
+      task: selectionPrompt,
+      scene: 'none'
+    });
     const { content: llmSelection, model: resolvedModelSelect } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
-      messages: selectionMessages,
+      prompt: selectionPrepared,
       ...CONFIG.OST_PARAMS,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart OST Select'
     });
-    TurnLogger.logResponse('Smart OST Select', llmSelection, resolvedModelSelect, resolveModelAlias(CONFIG.OST_MODEL).provider);
 
     // â”€â”€ Step 5: Fuzzy Match to Filesystem â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const ostFilenames = ostList.map(getFilename);

@@ -403,8 +403,8 @@ module.exports = {
                     const dynamicPersonalitySummaries = results.filter(r => r !== null);
 
                     if (dynamicPersonalitySummaries.length > 0) {
-                        dynamicPersonalitySummaries.forEach(summary => {
-                            tools.prompt.inject('simulation', summary, 'root');
+                        tools.prompt.contribute('personality_context', (piece) => {
+                            for (const summary of dynamicPersonalitySummaries) piece.text(summary);
                         });
                         tools.logger.log('Synthesis', `Injected ${dynamicPersonalitySummaries.length} personality snapshots into simulation slot.`);
                         tools.logger.runtime(`Injected ${dynamicPersonalitySummaries.length} profiles into the prompt.`);

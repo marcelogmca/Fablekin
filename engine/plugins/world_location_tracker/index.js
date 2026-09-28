@@ -1344,7 +1344,9 @@ module.exports = {
                             if (movementConstraint) {
                                 const wrappedConstraint = tools.prompt.wrap('manual_movement_only', movementConstraint);
                                 currentStateParts.push(wrappedConstraint);
-                                tools.prompt.inject('directives', wrappedConstraint, 'writer', { directable: true });
+                                tools.prompt.contribute('movement_constraint', {
+                                    constraint: wrappedConstraint
+                                }, { directable: true });
                                 tools.logger.runtime('Injected Manual Movement Only constraint for Director/Writer continuity.');
                             }
 
@@ -1355,15 +1357,14 @@ module.exports = {
                             }
 
                             const directorPluginFeedbackEnabled = tools.settings.get('narrative_agents.director.direct_plugins_enabled') !== false;
-                            const pluginPromptParts = [];
+                            const contentByKey = {};
                             if (directorPluginFeedbackEnabled) {
                                 const previousTurnUpdate = await logic.buildPreviousTurnUpdatePrompt(turnContext);
-                                pluginPromptParts.push(tools.prompt.wrap('previous_turn_update', previousTurnUpdate || 'No previous turn update is available.'));
+                                contentByKey.previous_turn_update = tools.prompt.wrap('previous_turn_update', previousTurnUpdate || 'No previous turn update is available.');
                             }
-                            pluginPromptParts.push(tools.prompt.wrap('current_state', currentStateParts.join('\n\n')));
-                            const pluginPrompt = pluginPromptParts.join('\n\n');
+                            contentByKey.current_state = tools.prompt.wrap('current_state', currentStateParts.join('\n\n'));
                             tools.logger.runtime('Injecting ordered location update and current state into [simulation] slot.');
-                            tools.prompt.inject('simulation', pluginPrompt, 'root', { directable: true });
+                            tools.prompt.contribute('location_context', contentByKey, { directable: true });
 
                             const pendingTimeskip = await logic.getPendingTimeskipDirective(turnContext);
                             if (pendingTimeskip?.text) {

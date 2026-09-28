@@ -1,6 +1,6 @@
 const { Logger, TurnLogger, readSettings, readFileSync } = require('../../utils.js');
 const { callLLM, resolveModelAlias } = require('../../llm.js');
-const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { buildCoreVnPreparedPrompt } = require('../shared_llm_context.js');
 const {
   getAllowedEmotionsForDialogueLine,
   resolveCatalogCharacterKey
@@ -179,20 +179,22 @@ async function directReactions(turnContext, spriteCatalog) {
       indexedScene: formatEmotionAnnotatedScene(turnContext),
       projectDirectives
     });
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'none' });
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.vn_analysis.reaction_director',
+      task: prompt,
+      scene: 'none'
+    });
 
     Logger.log('ReactionDirector', 'Request', `Reviewing reactions for ${profiles.length} expression-capable characters...`, 'start');
-    TurnLogger.logRequest('Reaction Director', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);
     const { content: responseContent, model: actualModel } = await callLLM({
       model: CONFIG.MODEL,
-      messages,
+      prompt: prepared,
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
       ...CONFIG.LLM_PARAMS,
       callingModule: 'ReactionDirector',
       turnLogTitle: 'Reaction Director'
     });
-    TurnLogger.logResponse('Reaction Director', responseContent, actualModel, resolveModelAlias(CONFIG.MODEL).provider);
 
     const reactions = parseReactionResponse(responseContent, turnContext, spriteCatalog, profiles);
     Logger.log('ReactionDirector', 'Parsing', `Accepted ${reactions.length} sparse expression changes.`, 'end');

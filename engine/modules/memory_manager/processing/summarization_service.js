@@ -8,7 +8,7 @@ const {
 const { callLLM, resolveModelAlias } = require("../../llm.js");
 const { getStore } = require("../storage/vector_store_manager");
 const { getDiagnosticContext, runWithDiagnosticContext } = require("../../diagnostic_context.js");
-const { buildCoreVnLlmMessages } = require("../../vn_manager/shared_llm_context.js");
+const { buildCoreVnPreparedPrompt } = require("../../vn_manager/shared_llm_context.js");
 
 // #region MODULE IMPORTS
 const settings = readSettings();
@@ -23,13 +23,34 @@ const synopsisPrompt = readFileSync("engine/prompts/synopsis_prompt.txt");
 // #endregion
 
 function buildCurrentTurnSummaryMessages(content) {
-    return [
-        { role: 'system', content: summaryPrompt },
-        { role: 'user', content: String(content || 'No current chapter text available.') }
-    ];
+    return buildSummaryPrepared(content, 'legacy').messages.map(({ role, content: text }) => ({ role, content: text }));
 }
 
-async function runLoggedSummarizerCall(title, messages, model, provider, callOptions = {}, fallbackDiagnostics = {}) {
+function buildSummaryPrepared(content, instanceKey = 'summary') {
+    const { Prompt } = require("../../prompt/prompt.js");
+    const prompt = new Prompt({ id: 'core.memory.summary' });
+    prompt.system(message => {
+        message.add('core.memory.summary_system', summaryPrompt);
+    });
+    prompt.user(message => {
+        message.add('core.memory.summary_content', String(content || 'No current chapter text available.'), { instanceKey });
+    });
+    return prompt.prepare();
+}
+
+function buildSynopsisPrepared(content, instanceKey = 'synopsis') {
+    const { Prompt } = require("../../prompt/prompt.js");
+    const prompt = new Prompt({ id: 'core.memory.synopsis' });
+    prompt.system(message => {
+        message.add('core.memory.synopsis_system', synopsisPrompt);
+    });
+    prompt.user(message => {
+        message.add('core.memory.synopsis_content', 'Content to summarize:\n' + String(content || ''), { instanceKey });
+    });
+    return prompt.prepare();
+}
+
+async function runLoggedSummarizerCall(title, messagesOrPrepared, model, provider, callOptions = {}, fallbackDiagnostics = {}) {
     provider = resolveModelAlias(model).provider;
     const activeDiagnostics = getDiagnosticContext();
     const diagnostics = activeDiagnostics
@@ -44,15 +65,18 @@ async function runLoggedSummarizerCall(title, messages, model, provider, callOpt
         };
 
     return await runWithDiagnosticContext(diagnostics, async () => {
-        TurnLogger.logRequest(title, messages, model, provider);
+        // Prepared core VN requests log centrally via callLLM; legacy message
+        // arrays keep their manual TurnLogger pair until migrated.
+        const isPrepared = messagesOrPrepared && typeof messagesOrPrepared === 'object' && Array.isArray(messagesOrPrepared.messages);
+        if (!isPrepared) TurnLogger.logRequest(title, messagesOrPrepared, model, provider);
         const result = await callLLM({
-            messages,
+            ...(isPrepared ? { prompt: messagesOrPrepared } : { messages: messagesOrPrepared }),
             model,
             provider,
             ...callOptions,
             turnLogTitle: title
         });
-        TurnLogger.logResponse(title, result.content, result.model, result.provider || provider);
+        if (!isPrepared) TurnLogger.logResponse(title, result.content, result.model, result.provider || provider);
         return result;
     });
 }
@@ -124,7 +148,7 @@ async function generateSummary(turnContext, contentToSummarize, options = {}) {
         }
 
         Logger.log('SummarizationService', 'Generation', `No valid cache for ${filePath}. Generating new summary.`);
-        const messages = [{ role: 'system', content: summaryPrompt }, { role: 'user', content: content }];
+        const messages = buildSummaryPrepared(content, 'static');
         const { content: summaryContent } = await runLoggedSummarizerCall('Summary Request', messages,
             settings.narrative_agents?.summarizer?.summary_model,
             undefined,
@@ -149,7 +173,7 @@ async function generateSummary(turnContext, contentToSummarize, options = {}) {
     // --- Path 2: Turn-based summary without caching ---
     else if (includeUserPrompt) {
         Logger.log('SummarizationService', 'Generation', 'Generating summary from the current chapter only.', 'start');
-        const messages = buildCurrentTurnSummaryMessages(content);
+        const messages = buildSummaryPrepared(content, 'turn');
         const { content: summaryContent } = await runLoggedSummarizerCall('Summary Request', messages,
             settings.narrative_agents?.summarizer?.summary_model,
             undefined,
@@ -168,7 +192,7 @@ async function generateSummary(turnContext, contentToSummarize, options = {}) {
     // --- Fallback Path ---
     else {
         Logger.warn('SummarizationService', 'Generation', 'generateSummary called in ambiguous context. Performing simple summarization.');
-        const messages = [{ role: 'system', content: summaryPrompt }, { role: 'user', content: content }];
+        const messages = buildSummaryPrepared(content, 'fallback');
         const { content: summaryContent } = await runLoggedSummarizerCall('Summary Request', messages,
             settings.narrative_agents?.summarizer?.summary_model,
             undefined,
@@ -203,15 +227,12 @@ async function generateSynopsis(turnContext, contentToSummarize, options = {}) {
     }
 
     const messages = includeUserPrompt
-        ? buildCoreVnLlmMessages(
-            turnContext,
-            `${synopsisPrompt}\n\nGenerate the synopsis from CURRENT WRITER CHAPTER in the dedicated scene message above. Use CURRENT USER INPUT only as context.`,
-            { scene: 'raw' }
-        )
-        : [
-            { role: 'system', content: synopsisPrompt },
-            { role: 'user', content: 'Content to summarize:\n' + userMessageContent }
-        ];
+        ? buildCoreVnPreparedPrompt(turnContext, {
+            id: 'core.memory.synopsis.current_chapter',
+            task: `${synopsisPrompt}\n\nGenerate the synopsis from CURRENT WRITER CHAPTER in the dedicated scene message above. Use CURRENT USER INPUT only as context.`,
+            scene: 'raw'
+        })
+        : buildSynopsisPrepared(userMessageContent, 'synopsis');
     const synopsisValidationRegex = /Literal Title:\s*([^\n]*)\s+Abstract Title:\s*([^\n]*)\s+Synopsis:\s*([\s\S]*)/i;
     const { content: rawSynopsisContent } = await runLoggedSummarizerCall('Synopsis Request', messages,
         settings.narrative_agents?.summarizer?.synopsis_model,

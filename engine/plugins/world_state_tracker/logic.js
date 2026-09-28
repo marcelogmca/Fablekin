@@ -711,8 +711,7 @@ async function extractAndStoreWorldState(turnContext, tools, options = {}) {
 
   // For Turn 1, we include the canon lore/character sheets to establish the initial world state (starting inventory, etc)
   if (turnNumber === 1) {
-    const pc = turnContext.promptComponents;
-    const canonText = (pc?.root?.canon || []).join('\n\n');
+    const canonText = turnContext.renderPromptSlot('root', 'canon');
     const introText = String(turnContext.processed?.turnOneIntroText || '').trim();
     const referenceSections = [];
     if (introText) {
@@ -882,8 +881,6 @@ Estimated Travel Time: ${stats.narrativeText} (${stats.days} days).
     .replace('${sceneText}', sceneText);
 
   try {
-    const messages = [{ role: 'user', content: prompt }];
-
     const selfSettings = tools.settings.getSelf();
     const modelDef = selfSettings.model_def || { model: 'mediumendmodel' };
 
@@ -897,7 +894,8 @@ Estimated Travel Time: ${stats.narrativeText} (${stats.days} days).
       tools.logger.log('Extraction', `Calling LLM for world state extraction (Attempt ${attempt}/${maxRetries})...`, 'start');
       llmResponse = await tools.llm.withSchema({
         msg: 'World State Extraction',
-        messages,
+        requestId: 'extraction_request',
+        instruction: prompt,
         model: modelDef.model || 'mediumendmodel',
         provider: modelDef.provider,
         params: {

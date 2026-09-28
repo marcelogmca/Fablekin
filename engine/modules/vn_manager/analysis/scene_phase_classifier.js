@@ -1,6 +1,6 @@
 const { Logger, TurnLogger, settings, readFileSync } = require('../../utils.js');
 const { callLLM, resolveModelAlias } = require('../../llm.js');
-const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { buildCoreVnPreparedPrompt } = require('../shared_llm_context.js');
 
 const CONFIG = {
   ENABLED: settings.narrative_agents?.scene_phase_classifier?.enabled !== false,
@@ -712,10 +712,13 @@ async function classifyScenePhaseHandoff(turnContext) {
   try {
     const historyContext = await buildHistoryContext(turnContext);
     const prompt = buildPrompt(turnContext, registeredCapabilities, historyContext);
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'raw' });
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.vn_analysis.scene_phase',
+      task: prompt,
+      scene: 'raw'
+    });
 
     Logger.log('ScenePhaseClassifier', 'Request', `Classifying handoff with ${registeredCapabilities.length} registered capabilities...`, 'start');
-    TurnLogger.logRequest('Scene Phase Classifier', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);
 
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.MODEL,
@@ -723,13 +726,11 @@ async function classifyScenePhaseHandoff(turnContext) {
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
       validationRegex: /"capability"\s*:/i,
-      messages,
+      prompt: prepared,
       ...normalizeEvaluatorLlmParams(CONFIG.LLM_PARAMS),
       callingModule: 'ScenePhaseClassifier',
       turnLogTitle: 'Scene Phase Classifier'
     });
-
-    TurnLogger.logResponse('Scene Phase Classifier', responseContent, resolvedModel, resolveModelAlias(CONFIG.MODEL).provider);
 
     const rawJson = extractJsonObject(responseContent);
     if (!rawJson) {

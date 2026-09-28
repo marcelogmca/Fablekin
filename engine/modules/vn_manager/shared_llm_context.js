@@ -45,48 +45,79 @@ function initializeCoreVnSharedLlmContext(turnContext) {
   }
 
   const existing = turnContext.runtime.vnManager.sharedLlmContext;
-  if (existing?.systemPrompt && existing?.sceneCapsule) return existing;
+  if (existing?.systemPrompt && existing?.sceneCapsule) {
+    // Prepared-prefix upgrade: memoized plain context gains the frozen
+    // PreparedPrompt + hash without recomputing the capsule bytes.
+    if (existing?.prepared && typeof existing.prefixHash === 'string') return existing;
+    const upgraded = freezeCoreVnSharedContext(turnContext, existing.systemPrompt, existing.sceneCapsule);
+    turnContext.runtime.vnManager.sharedLlmContext = upgraded;
+    return upgraded;
+  }
 
   const sceneCapsule = buildSceneCapsule(turnContext);
-  const prefixHash = crypto
-    .createHash('sha256')
-    .update(JSON.stringify([
-      { role: 'system', content: CORE_VN_SHARED_SYSTEM_PROMPT },
-      { role: 'user', content: sceneCapsule }
-    ]))
-    .digest('hex')
-    .slice(0, 16);
-
-  const sharedContext = Object.freeze({
-    systemPrompt: CORE_VN_SHARED_SYSTEM_PROMPT,
-    sceneCapsule,
-    prefixHash
-  });
+  const sharedContext = freezeCoreVnSharedContext(turnContext, CORE_VN_SHARED_SYSTEM_PROMPT, sceneCapsule);
   turnContext.runtime.vnManager.sharedLlmContext = sharedContext;
   return sharedContext;
 }
 
-function getCoreVnSharedLlmMessages(turnContext) {
-  const sharedContext = initializeCoreVnSharedLlmContext(turnContext);
-  if (!sharedContext) return [];
-  return [
-    { role: 'system', content: sharedContext.systemPrompt },
-    { role: 'user', content: sharedContext.sceneCapsule }
-  ];
+// Prepared core VN prefix: the SAME two leading messages as the legacy
+// array builder, frozen as a PreparedPrompt with named core VN spans.
+// Derived hash equals the legacy 16-char prefixHash (same JSON of the same
+// two {role,content} messages).
+function freezeCoreVnSharedContext(turnContext, systemPrompt, sceneCapsule) {
+  const { Prompt } = require('../prompt/prompt.js');
+  const prompt = new Prompt({ id: 'core.vn.shared', turnContext });
+  prompt.system(message => {
+    message.add('core.vn.system', systemPrompt);
+  });
+  prompt.user(message => {
+    message.add('core.vn.scene_capsule', sceneCapsule);
+  });
+  const prepared = prompt.prepare();
+  const prefixHash = crypto
+    .createHash('sha256')
+    .update(JSON.stringify(prepared.messages.map(({ role, content }) => ({ role, content }))))
+    .digest('hex')
+    .slice(0, 16);
+  return Object.freeze({
+    systemPrompt,
+    sceneCapsule,
+    prepared,
+    prefixHash
+  });
 }
 
-function buildCoreVnLlmMessages(turnContext, taskPrompt, options = {}) {
-  const sceneMessage = buildSceneMessage(turnContext, options.scene || 'none');
-  return [
-    ...getCoreVnSharedLlmMessages(turnContext),
-    ...(sceneMessage ? [{ role: 'user', content: sceneMessage }] : []),
-    { role: 'user', content: String(taskPrompt || '') }
-  ];
+// Core-module helper: shared prefix + optional formatted scene + named task.
+// Core modules import Prompt/shared_llm_context directly — no PluginManager
+// tooling. `id` must be a stable per-call id (e.g.
+// 'core.asset_selector.background.basic').
+function buildCoreVnPreparedPrompt(turnContext, { id, task, scene = 'none', taskComponentId = 'core.vn.task', sceneComponentId = 'core.vn.scene' } = {}) {
+  if (typeof id !== 'string' || !id) {
+    throw new TypeError('buildCoreVnPreparedPrompt requires a stable string id.');
+  }
+  const shared = initializeCoreVnSharedLlmContext(turnContext);
+  if (!shared?.prepared) throw new Error('Core VN shared context is unavailable.');
+  const { Prompt } = require('../prompt/prompt.js');
+  const prompt = new Prompt({ id, turnContext });
+  prompt.usePrefix(shared.prepared);
+  const sceneMessage = buildSceneMessage(turnContext, scene);
+  if (sceneMessage) {
+    prompt.user(message => {
+      message.add(sceneComponentId, sceneMessage);
+    });
+  }
+  prompt.user(message => {
+    message.add(taskComponentId, String(task ?? ''));
+  });
+  return prompt.prepare();
 }
 
+// REMOVED (core VN cutover): buildCoreVnLlmMessages /
+// getCoreVnSharedLlmMessages — the array twin is gone. Consumers use the
+// prepared prefix via buildCoreVnPreparedPrompt(); raw access stays behind
+// `initializeCoreVnSharedLlmContext` for diagnostics only.
 module.exports = {
-  buildCoreVnLlmMessages,
-  getCoreVnSharedLlmMessages,
+  buildCoreVnPreparedPrompt,
   initializeCoreVnSharedLlmContext,
   _private: {
     buildSceneCapsule,

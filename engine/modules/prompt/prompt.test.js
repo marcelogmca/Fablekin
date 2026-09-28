@@ -330,23 +330,74 @@ test('finalizeText transforms owned units inside preparation, keeping provenance
   );
   assert.equal(prepared.manifest.messageFormats.length, plain.manifest.messageFormats.length);
 
-  // Mixing finalizable composition with pre-rendered inclusions is rejected:
-  // an inclusion was already finalized under its own transform.
+  // Inclusions keep the bytes their own composer finalized: the receiving
+  // prompt's finalizeText applies to suffix pieces only, never rewrites the
+  // included prefix. The transform boundary is the prompt that rendered them.
   const frozen = writerPrompt()
-    .system(message => message.add('core.shared.engine_contract', 'FROZEN'))
+    .system(message => message.add('core.shared.engine_contract', '[HERO] FROZEN'))
     .prepare();
-  assert.throws(
-    () => new Prompt({ id: 'core.writer', finalizeText: (text) => text })
-      .usePrefix(frozen)
-      .prepare(),
-    /finalizeText with prefix inclusion/
+  const combined = new Prompt({ id: 'core.writer', finalizeText: (text) => text.replaceAll('[HERO]', 'Ari') })
+    .usePrefix(frozen)
+    .user(message => message.add('core.writer.current_action', '[HERO] acts'))
+    .prepare();
+  assert.equal(combined.messages[0].content, '[HERO] FROZEN');
+  assert.equal(combined.messages[1].content, 'Ari acts');
+});
+
+test('rehydrate restores a prepared result and rejects stale copies', () => {
+  const original = writerPrompt()
+    .system(message => message.add('core.shared.engine_contract', 'CONTRACT'))
+    .prepare();
+  const plain = {
+    id: original.id,
+    messages: original.messages.map(message => ({ role: message.role, content: message.content })),
+    manifest: JSON.parse(JSON.stringify(original.manifest))
+  };
+  const restored = PreparedPrompt.rehydrate(plain);
+  assert.ok(restored instanceof PreparedPrompt);
+  assert.deepEqual(
+    restored.messages.map(message => ({ role: message.role, content: message.content })),
+    plain.messages
   );
-  assert.throws(
-    () => new Prompt({ id: 'core.writer', finalizeText: (text) => text })
-      .append(frozen)
-      .prepare(),
-    /finalizeText with block inclusion/
-  );
+  assert.equal(restored.hash, original.hash);
+
+  // A tampered copy (messages no longer match the manifest spans) throws
+  // instead of claiming false provenance.
+  const tampered = {
+    id: plain.id,
+    messages: [{ role: 'system', content: 'TAMPERED ENTIRELY DIFFERENT BYTES' }],
+    manifest: plain.manifest
+  };
+  assert.throws(() => PreparedPrompt.rehydrate(tampered), /do not cover message/);
+  assert.throws(() => PreparedPrompt.rehydrate({ id: '', messages: plain.messages, manifest: plain.manifest }), /non-empty string id/);
+  // Forged provenance fails even when bytes are intact: duplicate occurrence
+  // ids, dangling span references, unknown physical parents, cycles, and
+  // malformed source refs are all structure errors.
+  const forgedDup = JSON.parse(JSON.stringify(plain));
+  forgedDup.manifest.occurrences.push({ ...forgedDup.manifest.occurrences[0] });
+  assert.throws(() => PreparedPrompt.rehydrate(forgedDup), /Duplicate manifest occurrence/);
+  const forgedSpan = JSON.parse(JSON.stringify(plain));
+  // A zero-length span at the message start: span coverage still holds, but
+  // the occurrence reference is dangling — structure validation must catch it.
+  forgedSpan.manifest.spans.unshift({ occurrenceId: 'occ-nope', messageIndex: 0, start: 0, end: 0 });
+  assert.throws(() => PreparedPrompt.rehydrate(forgedSpan), /unknown occurrence/);
+  const forgedParent = JSON.parse(JSON.stringify(plain));
+  forgedParent.manifest.occurrences[0].containerOccurrenceId = 'occ-nope';
+  assert.throws(() => PreparedPrompt.rehydrate(forgedParent), /unknown physical parent/);
+  const forgedCycle = JSON.parse(JSON.stringify(plain));
+  // Self-parent: the occurrence claims itself as its own physical container.
+  forgedCycle.manifest.occurrences[0].containerOccurrenceId = forgedCycle.manifest.occurrences[0].occurrenceId;
+  assert.throws(() => PreparedPrompt.rehydrate(forgedCycle), /Cycle in prompt manifest/);
+  // v1 manifests carry no source refs: a v1 manifest WITH source refs is a
+  // version lie and must throw; a clean v1 manifest rehydrates as v1.
+  const v1lie = JSON.parse(JSON.stringify(plain));
+  v1lie.manifest.version = 1;
+  v1lie.manifest.occurrences[0].source = { target: 'root', slot: 'protocol', sourceId: 'pcs-x' };
+  assert.throws(() => PreparedPrompt.rehydrate(v1lie), /v1 carries no source refs/);
+  const v1clean = JSON.parse(JSON.stringify(plain));
+  v1clean.manifest.version = 1;
+  for (const o of v1clean.manifest.occurrences) delete o.source;
+  assert.ok(PreparedPrompt.rehydrate(v1clean) instanceof PreparedPrompt);
 });
 
 test('per-occurrence finalizeText marks pre-finalized inputs without forking bytes', () => {
@@ -365,4 +416,246 @@ test('per-occurrence finalizeText marks pre-finalized inputs without forking byt
   const sorted = prepared.manifest.spans.slice().sort((a, b) => a.start - b.start);
   const reconstructed = sorted.map(span => prepared.messages[0].content.slice(span.start, span.end)).join('');
   assert.equal(reconstructed, prepared.messages[0].content);
+});
+
+test('agent-only role policy preserves a late system message without relaxing ordinary prompts', () => {
+  const agent = new Prompt({ id: 'core.agent_review', rolePolicy: 'agent' });
+  agent.system(message => message.add('core.shared.engine_contract', 'First system.'));
+  agent.user(message => message.add('core.writer.current_action', 'Do the task.'));
+  agent.system(message => message.add('core.shared.interpretation_lock', 'Finalize now.'));
+  const prepared = agent.prepare();
+  assert.deepEqual(prepared.messages.map(message => message.role), ['system', 'user', 'system']);
+  assert.equal(prepared.manifest.rolePolicy, 'agent');
+  assert.deepEqual(PreparedPrompt.rehydrate(JSON.parse(JSON.stringify(prepared))).messages, prepared.messages);
+  const standard = new Prompt({ id: 'core.standard_review' });
+  standard.user(message => message.add('core.writer.current_action', 'Do the task.'));
+  assert.throws(() => standard.system(message => message.add('core.shared.interpretation_lock', 'Finalize now.')),
+    /first message/);
+  const disguised = JSON.parse(JSON.stringify(prepared));
+  delete disguised.manifest.rolePolicy;
+  assert.throws(() => PreparedPrompt.rehydrate(disguised), /initial system message/);
+});
+
+test('include() renders a stored occurrence without reparenting it', () => {
+  // Trusted inclusion: the caller supplies ONLY {target, slot, sourceId};
+  // the componentId is DERIVED from the resolved source (never caller input,
+  // so a source cannot be mislabelled). Uses a real TurnContext so identity
+  // flows through validated registration + getPromptSource().
+  const TurnContext = require('../turncontext.js');
+  const context = new TurnContext('Include Test');
+  const { buildTools } = require('../plugin_manager/runtime/tools_builder.js');
+  const tools = buildTools(
+    { plugins: new Map(), disabledPlugins: new Map(), promptRegistry: new Map() },
+    'world_state_tracker', context
+  );
+  tools.prompt.contribute({
+    id: 'world_state_context', to: 'root.simulation',
+    label: 'World state context', description: 'Pre-action world state.',
+    children: { current_state: 'Harbor at dawn.' }, directable: true
+  });
+  const storedId = context.promptComponents.root.simulation[0].sourceId;
+  const prompt = new Prompt({ id: 'core.vn_background.shared', turnContext: context });
+  prompt.registerOccurrenceIdentity(context.promptComponents.root.simulation[0], ['root.simulation']);
+  prompt.registerDynamicComponent('core.vn_background.capsule', {
+    parent: 'root', label: 'VN background capsule', description: 'Test layout container.', owner: 'core'
+  });
+  prompt.user(message => {
+    message.add('core.vn_background.capsule', capsule => {
+      capsule.text('HEAD\n');
+      capsule.include(context, 'root', 'simulation', storedId);
+      capsule.text('\nTAIL');
+    });
+  });
+  const prepared = prompt.prepare();
+  assert.match(prepared.messages[0].content, /Harbor at dawn/);
+  assert.match(prepared.messages[0].content, /directable_plugin="world_state_tracker"/);
+  // Semantic ancestry unchanged: catalogue snapshot (core + validated plugin
+  // declarations, resolved through the PluginManager module test double).
+  assert.equal(prepared.manifest.components['world_state_tracker.world_state_context'].parent, 'root.simulation');
+  assert.equal(prepared.manifest.components['world_state_tracker.world_state_context'].owner, 'world_state_tracker');
+  // EXACT tree: one occurrence per stored node (parent + child = 2, plus the
+  // capsule layout wrapper — no synthetic duplicate parents).
+  const wstOccs = prepared.manifest.occurrences.filter(o => String(o.componentId || '').startsWith('world_state_tracker.'));
+  assert.equal(wstOccs.length, 2, `exactly parent + child occurrences (have ${wstOccs.length})`);
+  const parentOcc = wstOccs.find(o => o.componentId === 'world_state_tracker.world_state_context');
+  const childOcc = wstOccs.find(o => o.componentId === 'world_state_tracker.world_state_context.current_state');
+  assert.ok(parentOcc && childOcc, 'parent and child must both render');
+  // Source reference ties this rendering to the stored occurrence.
+  assert.deepEqual(parentOcc.source, { target: 'root', slot: 'simulation', sourceId: storedId });
+  const storedChildId = context.promptComponents.root.simulation[0].children[0].sourceId;
+  assert.ok(typeof storedChildId === 'string' && storedChildId, 'stored child must carry a stable sourceId');
+  assert.notEqual(storedChildId, storedId, 'parent and child sourceIds must differ');
+  assert.deepEqual(childOcc.source, { target: 'root', slot: 'simulation', sourceId: storedChildId });
+  // Physical containment: child nests under the rendered parent, not a wrapper.
+  assert.equal(childOcc.containerOccurrenceId, parentOcc.occurrenceId);
+  // Child span slices to its actual text.
+  const childBytes = prepared.manifest.spans
+    .filter(s => s.occurrenceId === childOcc.occurrenceId)
+    .sort((a, b) => a.start - b.start)
+    .map(s => prepared.messages[0].content.slice(s.start, s.end)).join('');
+  assert.equal(childBytes, 'Harbor at dawn.');
+  // Unknown sources throw instead of rendering phantom bytes. (Resolution
+  // is eager at include() time — identity must exist before bytes do.)
+  const bad = new Prompt({ id: 'bad', turnContext: context });
+  assert.throws(() => bad.user(message => {
+    message.add('root', container => {
+      container.include(context, 'root', 'simulation', 'pcs-does-not-exist');
+    });
+  }), /Unknown prompt source/);
+  // Mismatched identity is impossible by construction: include() derives the
+  // componentId from the resolved source. Re-resolving the same sourceId
+  // yields the same id; a different stored node yields a different id.
+  const prompt2 = new Prompt({ id: 'second', turnContext: context });
+  prompt2.registerOccurrenceIdentity(context.promptComponents.root.simulation[0], ['root.simulation']);
+  prompt2.user(message => {
+    message.add('root', container => {
+      container.include(context, 'root', 'simulation', storedId);
+    });
+  });
+  const prepared2 = prompt2.prepare();
+  const parent2 = prepared2.manifest.occurrences.find(o => o.componentId === 'world_state_tracker.world_state_context');
+  assert.deepEqual(parent2.source.sourceId, storedId, 'same stored source renders the same identity everywhere');
+});
+
+test('include() renders a three-level plugin tree with exact physical nesting', () => {
+  // time -> date: the plan's canonical deep-tree case. Proves recursion (not
+  // one-level flattening) and immediate-parent containment at every level.
+  const TurnContext = require('../turncontext.js');
+  const context = new TurnContext('Deep Tree Test');
+  const { buildTools } = require('../plugin_manager/runtime/tools_builder.js');
+  const tools = buildTools(
+    { plugins: new Map(), disabledPlugins: new Map(), promptRegistry: new Map() },
+    'world_state_tracker', context
+  );
+  tools.prompt.contribute({
+    id: 'world_state_context', to: 'root.simulation',
+    label: 'World state context', description: 'Pre-action world state.',
+    children: { time: { date: 'The 3rd of March.' } }
+  });
+  const stored = context.promptComponents.root.simulation[0];
+  const prompt = new Prompt({ id: 'deep-tree', turnContext: context });
+  prompt.registerOccurrenceIdentity(stored, ['root.simulation']);
+  prompt.user(message => {
+    message.add('root', container => {
+      container.include(context, 'root', 'simulation', stored.sourceId);
+    });
+  });
+  const prepared = prompt.prepare();
+  const wstOccs = prepared.manifest.occurrences.filter(o => String(o.componentId || '').startsWith('world_state_tracker.'));
+  assert.equal(wstOccs.length, 3, `exactly one occurrence per stored node (have ${wstOccs.length})`);
+  const byId = new Map(wstOccs.map(o => [o.componentId, o]));
+  const ctxNode = byId.get('world_state_tracker.world_state_context');
+  const timeNode = byId.get('world_state_tracker.world_state_context.time');
+  const dateNode = byId.get('world_state_tracker.world_state_context.time.date');
+  assert.ok(ctxNode && timeNode && dateNode, 'all three levels must render');
+  assert.equal(timeNode.containerOccurrenceId, ctxNode.occurrenceId, 'time nests under context');
+  assert.equal(dateNode.containerOccurrenceId, timeNode.occurrenceId, 'date nests under time');
+  assert.deepEqual(dateNode.source.sourceId, stored.children[0].children[0].sourceId);
+  const dateBytes = prepared.manifest.spans
+    .filter(s => s.occurrenceId === dateNode.occurrenceId)
+    .sort((a, b) => a.start - b.start)
+    .map(s => prepared.messages[0].content.slice(s.start, s.end)).join('');
+  assert.equal(dateBytes, 'The 3rd of March.');
+  // Catalogue ancestry unchanged at every level.
+  assert.equal(prepared.manifest.components['world_state_tracker.world_state_context.time.date'].parent, 'world_state_tracker.world_state_context.time');
+});
+
+test('registerOccurrenceIdentity rejects forged owner, unknown id, and wrong anchor', () => {
+  const TurnContext = require('../turncontext.js');
+  const context = new TurnContext('Forgery Test');
+  const { buildTools } = require('../plugin_manager/runtime/tools_builder.js');
+  const tools = buildTools(
+    { plugins: new Map(), disabledPlugins: new Map(), promptRegistry: new Map() },
+    'world_state_tracker', context
+  );
+  tools.prompt.contribute({
+    id: 'world_state_context', to: 'root.simulation',
+    label: 'World state context', description: 'Pre-action world state.',
+    text: 'Harbor at dawn.'
+  });
+  const stored = context.promptComponents.root.simulation[0];
+
+  const prompt = new Prompt({ id: 'forgery', turnContext: context });
+  // Correct placement resolves.
+  prompt.registerOccurrenceIdentity(stored, ['root.simulation']);
+
+  // Unknown component id is never grantable, even with a plausible shape.
+  assert.throws(
+    () => prompt.registerOccurrenceIdentity({ ...stored, componentId: 'evil.forged' }, ['root.simulation']),
+    /not registered/
+  );
+  // Forged owner disagrees with the validated registration.
+  assert.throws(
+    () => prompt.registerOccurrenceIdentity({ ...stored, owner: 'imaginary_plugin' }, ['root.simulation']),
+    /claims owner 'imaginary_plugin'/
+  );
+  // Wrong slot anchor: catalogue ancestry does not lead under root.canon.
+  assert.throws(
+    () => prompt.registerOccurrenceIdentity(stored, ['root.canon']),
+    /not catalogue-ancestored under slot anchor root.canon/
+  );
+});
+
+test('registerOccurrenceIdentity enforces descendant catalogue parentage', () => {
+  const TurnContext = require('../turncontext.js');
+  const context = new TurnContext('Descendant Test');
+  const { buildTools } = require('../plugin_manager/runtime/tools_builder.js');
+  const tools = buildTools(
+    { plugins: new Map(), disabledPlugins: new Map(), promptRegistry: new Map() },
+    'world_state_tracker', context
+  );
+  tools.prompt.contribute({
+    id: 'world_state_context', to: 'root.simulation',
+    label: 'World state context', description: 'Pre-action world state.',
+    children: { current_state: 'Harbor at dawn.' }
+  });
+  const stored = context.promptComponents.root.simulation[0];
+  const prompt = new Prompt({ id: 'descendant', turnContext: context });
+  prompt.registerOccurrenceIdentity(stored, ['root.simulation']);
+
+  // A child claiming a catalogue parent that is not the node it nests under
+  // (or is unregistered) fails.
+  const forged = {
+    ...stored,
+    children: [{ ...stored.children[0], componentId: 'world_state_tracker.world_state_context.time' }]
+  };
+  assert.throws(() => prompt.registerOccurrenceIdentity(forged, ['root.simulation']), /not registered/);
+});
+
+test('includeComponent selects one repeated source by instanceKey without claiming its key twice', () => {
+  const TurnContext = require('../turncontext.js');
+  const context = new TurnContext('Repeated lore');
+  for (const [instanceKey, text] of [['first', 'Old lore.'], ['second', 'Current lore.']]) {
+    context.addPromptOccurrence('root', 'canon', {
+      kind: 'component', componentId: 'core.canon.static_lore_file',
+      instanceKey, text, children: [], owner: 'core'
+    });
+  }
+  const selected = context.promptComponents.root.canon[1];
+  const prompt = new Prompt({ id: 'selected-lore', turnContext: context });
+  prompt.user(message => message.includeComponent('core.canon.static_lore_file', { instanceKey: 'second' }));
+  const prepared = prompt.prepare();
+  assert.equal(prepared.messages[0].content, 'Current lore.');
+  const occurrence = prepared.manifest.occurrences.find(item => item.componentId === 'core.canon.static_lore_file');
+  assert.equal(occurrence.instanceKey, 'second');
+  assert.equal(occurrence.source.sourceId, selected.sourceId);
+  const bySourceId = new Prompt({ id: 'selected-by-source', turnContext: context });
+  bySourceId.user(message => message.includeComponent('core.canon.static_lore_file', { sourceId: selected.sourceId }));
+  assert.equal(bySourceId.prepare().messages[0].content, 'Current lore.');
+  const ambiguous = new Prompt({ id: 'ambiguous-lore', turnContext: context });
+  assert.throws(() => ambiguous.user(message => message.includeComponent('core.canon.static_lore_file')), /Ambiguous prompt component/);
+});
+
+test('included source must reside beneath its registered slot, including low-level includes', () => {
+  const TurnContext = require('../turncontext.js');
+  const context = new TurnContext('Misplaced lore');
+  context.addPromptOccurrence('root', 'simulation', {
+    kind: 'component', componentId: 'core.canon.static_lore_file',
+    instanceKey: null, text: 'Misplaced lore.', children: [], owner: 'core'
+  });
+  const sourceId = context.promptComponents.root.simulation[0].sourceId;
+  const byId = new Prompt({ id: 'bad-id', turnContext: context });
+  assert.throws(() => byId.user(message => message.includeComponent('core.canon.static_lore_file')), /root\.simulation/);
+  const bySource = new Prompt({ id: 'bad-source', turnContext: context });
+  assert.throws(() => bySource.user(message => message.include(context, 'root', 'simulation', sourceId)), /root\.simulation/);
 });

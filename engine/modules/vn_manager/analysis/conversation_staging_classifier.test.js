@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const { computeSpritePositions } = require('../rendering/sprite_positioner.js');
-const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { buildCoreVnPreparedPrompt } = require('../shared_llm_context.js');
 const {
   TIMING_OFFSETS_MS,
   applyConversationStaging,
@@ -62,7 +62,12 @@ test('builds a full indexed-scene prompt with explicit output cardinality', () =
     expectedRowCount: entries.length,
     projectDirectives: 'Keep interruptions rare.'
   });
-  const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'indexedScene' });
+  const prepared = buildCoreVnPreparedPrompt(turnContext, {
+    id: 'core.vn.test.conversation_staging',
+    task: prompt,
+    scene: 'indexedScene'
+  });
+  const messages = prepared.messages;
 
   assert.match(messages[2].content, /0\. The room falls quiet\./);
   assert.match(messages[2].content, /2\. Ari: Please\./);

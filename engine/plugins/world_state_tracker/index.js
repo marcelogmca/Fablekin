@@ -551,11 +551,12 @@ module.exports = {
                 if (worldState && worldState.synthesizedText) {
                     const wrappedSnapshot = tools.prompt.wrap('world_state', worldState.synthesizedText);
                     const directorPluginFeedbackEnabled = tools.settings.get('narrative_agents.director.direct_plugins_enabled') !== false;
-                    const pluginPromptParts = [];
+                    const contentByKey = {};
                     if (directorPluginFeedbackEnabled) {
                         const previousTurnUpdate = await logic.buildPreviousTurnUpdate(turnContext, tools, synthTurn);
-                        pluginPromptParts.push(tools.prompt.wrap('previous_turn_update', previousTurnUpdate || 'No previous turn update is available.'));
+                        contentByKey.previous_turn_update = tools.prompt.wrap('previous_turn_update', previousTurnUpdate || 'No previous turn update is available.');
                     }
+                    let disposalText = null;
                     try {
                         const deletedRows = await tools.db.chat.query(
                             `SELECT target AS item, SUM(ABS(fact_value)) AS quantity
@@ -574,17 +575,23 @@ module.exports = {
                             const itemList = deletedRows
                                 .map(row => `${row.item}${Number(row.quantity || 0) > 1 ? ` x${Number(row.quantity || 0)}` : ''}`)
                                 .join(', ');
-                            pluginPromptParts.push(tools.prompt.wrap(
+                            contentByKey.previous_inventory_disposal = tools.prompt.wrap(
                                 'previous_inventory_disposal',
                                 `${playerName} got rid of the following carried item(s) last turn: ${itemList}. This is a one-turn reminder only; acknowledge the changed inventory if relevant, but do not keep repeating it.`
-                            ));
+                            );
                         }
                     } catch (error) {
                         tools.logger.warn('Prompt', `Failed to build one-turn inventory disposal reminder: ${error.message}`);
                     }
-                    pluginPromptParts.push(tools.prompt.wrap('current_state', wrappedSnapshot));
-                    const pluginPrompt = pluginPromptParts.join('\n\n');
-                    tools.prompt.inject('simulation', pluginPrompt, 'root', { directable: true });
+                    contentByKey.current_state = tools.prompt.wrap('current_state', wrappedSnapshot);
+                    tools.prompt.contribute({
+                        id: 'world_state_context',
+                        to: 'root.simulation',
+                        label: 'World state context',
+                        description: 'Pre-action world state and continuity updates.',
+                        children: contentByKey,
+                        directable: true
+                    });
 
                     // Store structured data for other modules
                     turnContext.processed.worldState = worldState.structuredData;

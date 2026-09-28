@@ -1,9 +1,10 @@
 const { RecursiveCharacterTextSplitter } = require("@langchain/textsplitters");
-const { Logger, generateHash, TurnLogger, readSettings } = require("../../utils");
+const { Logger, generateHash, readSettings, resolveModelAlias } = require("../../utils");
 const { callLLM } = require("../../llm.js");
 const { getStore } = require("../storage/vector_store_manager");
 const { CONFIG } = require("../memory_config.js");
 const { runWithDiagnosticContext } = require("../../diagnostic_context.js");
+const { Prompt } = require("../../prompt/prompt.js");
 
 
 
@@ -77,10 +78,14 @@ async function runRAGPipeline(text, turnNumber, metadata = {}, projectName = "de
     // of a retrieved snippet.
     let overview = metadata.overview;
     if (!overview) {
-        const messages = [
-            { role: 'system', content: "Create ultra-brief overview (max 25 words) capturing core setting and main event:" },
-            { role: 'user', content: text }
-        ];
+        const prompt = new Prompt({ id: 'core.memory.rag_overview' });
+        prompt.system(message => {
+            message.add('core.memory.rag_overview', 'Create ultra-brief overview (max 25 words) capturing core setting and main event:');
+        });
+        prompt.user(message => {
+            message.add('core.memory.rag_overview', text, { instanceKey: 'source' });
+        });
+        const prepared = prompt.prepare();
 
         const currentSettings = readSettings();
         const modelUsed = currentSettings.narrative_agents?.summarizer?.summary_model || 'mediumendmodel';
@@ -92,12 +97,8 @@ async function runRAGPipeline(text, turnNumber, metadata = {}, projectName = "de
             taskKey: 'ragOverview',
             blocking: true
         }, async () => {
-            if (TurnLogger && TurnLogger.logRequest) {
-                TurnLogger.logRequest(`RAG Overview`, { messages }, modelUsed, providerUsed);
-            }
-
             const result = await callLLM({
-                messages,
+                prompt: prepared,
                 model: modelUsed,
                 provider: providerUsed,
                 retries: currentSettings.narrative_agents?.summarizer?.retries,
@@ -106,9 +107,6 @@ async function runRAGPipeline(text, turnNumber, metadata = {}, projectName = "de
                 turnLogTitle: 'RAG Overview'
             });
 
-            if (TurnLogger && TurnLogger.logResponse) {
-                TurnLogger.logResponse(`RAG Overview`, result, modelUsed, providerUsed);
-            }
             return result;
         });
         overview = response.content;

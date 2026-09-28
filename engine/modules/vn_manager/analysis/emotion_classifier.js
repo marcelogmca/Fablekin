@@ -505,28 +505,31 @@ function parseEmotionResponse(response, classificationContext, dialogues, custom
 // #endregion
 
 // #region CORE CLASSIFICATION
-function buildEmotionClassificationMessages(prompt) {
-  return [{ role: 'user', content: String(prompt || '') }];
+function buildEmotionClassificationPrompt(turnContext, dialogues, classificationContext, customMoods, chunkIndex = 0) {
+  const { Prompt } = require('../../prompt/prompt.js');
+  const promptText = createEmotionClassificationPrompt(turnContext, dialogues, classificationContext, customMoods);
+  const prompt = new Prompt({ id: 'core.vn.emotion_chunk' });
+  prompt.user(message => {
+    message.add('core.vn.emotion_classification', promptText, { instanceKey: `chunk-${chunkIndex}` });
+  });
+  return prompt.prepare();
 }
 
 /**
  * Helper to process a single chunk of dialogues.
  */
-async function _classifyEmotionChunk(turnContext, dialogues, classificationContext, customMoods) {
-  const prompt = createEmotionClassificationPrompt(turnContext, dialogues, classificationContext, customMoods);
-  const messages = buildEmotionClassificationMessages(prompt);
+async function _classifyEmotionChunk(turnContext, dialogues, classificationContext, customMoods, chunkIndex = 0) {
+  const prepared = buildEmotionClassificationPrompt(turnContext, dialogues, classificationContext, customMoods, chunkIndex);
   try {
-    TurnLogger.logRequest('Emotion Classifier - Chunk', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.MODEL,
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
-      messages,
+      prompt: prepared,
       ...CONFIG.LLM_PARAMS,
       callingModule: 'EmotionClassifier',
       turnLogTitle: 'Emotion Classifier - Chunk'
     });
-    TurnLogger.logResponse('Emotion Classifier - Chunk', responseContent, resolvedModel, resolveModelAlias(CONFIG.MODEL).provider);
     return parseEmotionResponse(responseContent, classificationContext, dialogues, customMoods);
   } catch (error) {
     Logger.error('EmotionClassifier', 'ChunkClassification', 'Emotion classification chunk failed:', error);
@@ -645,7 +648,7 @@ module.exports = {
   getAllowedEmotionsForDialogueLine,
   resolveCatalogCharacterKey,
   _private: {
-    buildEmotionClassificationMessages,
+    buildEmotionClassificationPrompt,
     createEmotionClassificationPrompt,
     parseEmotionResponse
   }

@@ -1,6 +1,6 @@
 const { Logger, TurnLogger, settings, readFileSync } = require('../../utils.js');
 const { callLLM, resolveModelAlias } = require('../../llm.js');
-const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { buildCoreVnPreparedPrompt } = require('../shared_llm_context.js');
 
 const TIMING_OFFSETS_MS = Object.freeze({
   interrupt: -250,
@@ -151,30 +151,26 @@ async function classifyConversationStaging(turnContext) {
       projectDirectives
     });
 
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'indexedScene' });
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.vn_analysis.conversation_staging',
+      task: prompt,
+      scene: 'indexedScene'
+    });
     Logger.log(
       'ConversationStagingClassifier',
       'Request',
       `Classifying ${npcDialogueEntries.length} NPC dialogue lines...`,
       'start'
     );
-    TurnLogger.logRequest('Conversation Staging Classifier', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);
 
     const { content: responseContent, model: actualModel } = await callLLM({
       model: CONFIG.MODEL,
-      messages,
+      prompt: prepared,
       callingModule: 'ConversationStagingClassifier',
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
       turnLogTitle: 'Conversation Staging Classifier'
     });
-
-    TurnLogger.logResponse(
-      'Conversation Staging Classifier',
-      responseContent,
-      actualModel,
-      resolveModelAlias(CONFIG.MODEL).provider
-    );
 
     const parsed = parseClassificationResponse(responseContent, npcDialogueEntries, presentCharacters);
     if (parsed.receivedRowCount !== parsed.expectedRowCount) {

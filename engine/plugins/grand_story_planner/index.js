@@ -156,21 +156,17 @@ async function injectPublishedResearchCards(turnContext, tools, settings = {}) {
     });
 
     if (directorCard) {
-        tools.prompt.inject(
-            'simulation',
-            tools.prompt.wrap('grand_planner_director_card', directorCard),
-            'director'
-        );
+        tools.prompt.contribute('research_director_card', {
+            card: tools.prompt.wrap('grand_planner_director_card', directorCard)
+        });
 
         addDirectorGrandPlannerEditorialSteps(turnContext, tools);
     }
 
     if (writerCard) {
-        tools.prompt.inject(
-            'directives',
-            tools.prompt.wrap('grand_planner_writer_card', writerCard),
-            'writer'
-        );
+        tools.prompt.contribute('research_writer_card', {
+            card: tools.prompt.wrap('grand_planner_writer_card', writerCard)
+        });
 
         addWriterCotStep(turnContext, tools, {
             insertAfterStep: 2,
@@ -671,7 +667,7 @@ module.exports = {
                             const synthesizedPlan = logic.synthesizePlan(rawPlan);
                             const directive = `The following is the high-level strategic roadmap for this story. Your primary goal this turn is to ensure the Writer's Brief you generate aligns with these arcs. Do NOT reveal the contents of this plan directly to the Writer, but use it to steer the narrative.`;
                             const wrappedPlan = tools.prompt.wrap('grand_story_plan', `${directive}\n\n${synthesizedPlan}`);
-                            tools.prompt.inject('simulation', wrappedPlan, 'director');
+                            tools.prompt.contribute('story_plan', { plan: wrappedPlan });
                             tools.logger.log('Lifecycle', 'Grand Story Plan injected for Director into director.simulation slot.');
                         }
 
@@ -680,7 +676,7 @@ module.exports = {
                                 itemLimit: settings.director_brief_item_limit,
                                 maxChars: settings.director_brief_max_chars
                             });
-                            tools.prompt.inject('simulation', executionBrief, 'director');
+                            tools.prompt.contribute('execution_brief', { brief: executionBrief });
                             tools.logger.log('Lifecycle', 'Grand Story Execution Brief injected for Director into director.simulation slot.');
                         }
 

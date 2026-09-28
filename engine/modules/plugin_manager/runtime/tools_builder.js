@@ -67,12 +67,48 @@ function escapeXmlAttribute(value) {
         .replace(/>/g, '&gt;');
 }
 
+
+
 function wrapDirectablePluginPrompt(pluginId, content) {
     const trimmed = typeof content === 'string' ? content.trim() : content;
     return `<plugin_context directable_plugin="${escapeXmlAttribute(pluginId)}">
 ${trimmed}
 </plugin_context>`;
 }
+
+// --- Structured prompt contributions -------------------------------------
+// Contribution-time definitions only: tools.prompt.contribute({id, to, ...})
+// registers/validates the stable scoped id on first use and stores a typed
+// occurrence. Parents derive from target+slot via the core catalogue;
+// plugins never author hierarchy.
+
+function isPlainObject(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function assertNoEmptyTextNodes(occurrence) {
+    const texts = [];
+    const walk = (node) => {
+        if (typeof node.text === 'string' && node.text.trim()) texts.push(node.text);
+        for (const child of node.children || []) walk(child);
+    };
+    walk(occurrence);
+    if (texts.length === 0) {
+        throw new Error(`Prompt contribution '${occurrence.componentId}' rendered empty; refusing to record an empty occurrence.`);
+    }
+}
+
+function wrapOccurrenceDirectable(pluginId, occurrence) {
+    // Directable framing is toolkit-owned: the entry wrapper renders as
+    // anchor-owned framing at assembly, never as plugin text. Stored here so
+    // renderPromptSlot() and the composer agree on the bytes.
+    occurrence.directablePluginId = pluginId;
+}
+
+// REMOVED (cutover): flattenContributionPieceIds, renderContributionPieces,
+// contributeStructuredPromptPieces, injectPromptContent — the string-slot
+// sidecar (promptContributions + slotIndex verification) is gone. Slots hold
+// occurrences directly; provenance is exact by construction.
 
 function registerDirectorCotPatch(context, pluginId, logger, patch = {}) {
     const director = ensureDirectorRuntime(context);
@@ -196,6 +232,12 @@ async function readDirectorLedgerEntries(context, options = {}) {
  * @returns {Object}
  */
 function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, extra = {}) {
+    // Back-reference so Prompt composers can resolve the live validated
+    // catalogue snapshot (core + every ACTIVE plugin's declarations) for
+    // registry-backed identity checks. Cleared when the turn changes.
+    if (turnContext && typeof turnContext === 'object' && pluginManager) {
+        try { turnContext.pluginManager = pluginManager; } catch { /* frozen test doubles */ }
+    }
     const { sendUiNotification, updateSettings, readSettings } = require('../../utils.js');
     let interceptCounter = 0;
 
@@ -453,43 +495,31 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
         }
     };
 
-    const llmCall = async (messages, params = {}, options = {}) => {
+    const llmCall = async (promptOrTask, params = {}, options = {}) => {
+        // Prepared-only (cutover): tools.llm.call(prepared, params?, options?).
+        // The legacy call(messages, params) shape is gone — compose first.
         const { callLLM } = require('../../llm.js');
+        const { PreparedPrompt } = require('../../prompt/prompt.js');
+        if (!(promptOrTask instanceof PreparedPrompt)) {
+            throw new TypeError(`tools.llm.call requires a PreparedPrompt for plugin '${pluginId}'. Compose the request with Prompt first.`);
+        }
         const normalizedParams = normalizeLlmParams(params);
         const route = resolveLlmRoute(normalizedParams.model);
         const effectiveModule = normalizedParams?.callingModule || `Plugin:${pluginId}`;
-        const shouldLog = options.log !== false;
         const logTitle = options.logTitle || normalizedParams.logTitle || normalizedParams.title || normalizedParams.msg || effectiveModule;
 
         const executeCall = async () => {
-            if (shouldLog) {
-                TurnLogger.logRequest(logTitle, messages, route?.model || normalizedParams.model, route?.provider || normalizedParams.provider);
-            }
-
             let response;
             try {
                 response = await callLLM({
                     ...normalizedParams,
-                    messages,
+                    prompt: promptOrTask,
                     callingModule: effectiveModule,
-                    turnLogTitle: shouldLog ? logTitle : normalizedParams.turnLogTitle
+                    turnLogTitle: logTitle
                 });
                 response = enrichLlmResponseRoute(response, route);
             } catch (error) {
-                if (shouldLog && !error?.turnLoggerLogged) {
-                    TurnLogger.logError(logTitle, error, route?.model || normalizedParams.model, route?.provider || normalizedParams.provider);
-                    error.turnLoggerLogged = true;
-                }
                 throw error;
-            }
-
-            if (shouldLog) {
-                TurnLogger.logResponse(
-                    logTitle,
-                    response?.content,
-                    response?.model || route?.model || normalizedParams.model,
-                    response?.provider || route?.provider || normalizedParams.provider
-                );
             }
 
             return response;
@@ -595,10 +625,17 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
     };
 
     const buildLlmTaskPayload = (task = {}, overrides = {}) => {
-        const base = Array.isArray(task)
-            ? { messages: task }
-            : ((task && typeof task === 'object') ? { ...task } : {});
+        const base = (task && typeof task === 'object' && !Array.isArray(task)) ? { ...task } : {};
+        if (Array.isArray(task)) {
+            throw new TypeError(`tools.llm tasks no longer accept raw message arrays for plugin '${pluginId}'. Pass { prompt: prepared, ... }.`);
+        }
+        if (base.messages !== undefined) {
+            throw new TypeError(`tools.llm tasks no longer accept task.messages for plugin '${pluginId}'. Pass { prompt: prepared, ... }.`);
+        }
         const overrideObj = (overrides && typeof overrides === 'object') ? { ...overrides } : {};
+        if (overrideObj.messages !== undefined) {
+            throw new TypeError(`tools.llm overrides no longer accept messages for plugin '${pluginId}'. Pass { prompt: prepared, ... }.`);
+        }
         const params = {
             ...((base.params && typeof base.params === 'object') ? base.params : {}),
             ...((overrideObj.params && typeof overrideObj.params === 'object') ? overrideObj.params : {})
@@ -617,9 +654,32 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
             if (payload[key] !== undefined) params[key] = payload[key];
         }
 
-        payload.messages = Array.isArray(payload.messages) ? payload.messages : [];
         payload.params = normalizeLlmParams(params);
         return payload;
+    };
+
+    // Public string and named multi-message requests share one compiler. Core
+    // callLLM always receives an immutable PreparedPrompt, never raw arrays.
+    const prepareSimplePluginRequest = (payload) => {
+        const { PreparedPrompt } = require('../../prompt/prompt.js');
+        if (payload.prompt instanceof PreparedPrompt) {
+            if (payload.instruction !== undefined) {
+                throw new TypeError('Supply a prepared prompt OR an instruction, not both.');
+            }
+            if (payload.context !== undefined) {
+                throw new TypeError('History context cannot be combined with an already-prepared prompt; place {history} in the structured request instead.');
+            }
+            return payload.prompt;
+        }
+        const instruction = payload.instruction === undefined ? payload.prompt : payload.instruction;
+        if (payload.instruction !== undefined && payload.prompt !== undefined) {
+            throw new TypeError('Supply prompt text OR instruction text, not both.');
+        }
+        const { compilePluginRequest } = require('../../prompt/request_compiler.js');
+        return compilePluginRequest(pluginId, payload.requestId, instruction, {
+            turnContext: context, pluginManager,
+            ...(payload.context !== undefined ? { context: payload.context } : {})
+        });
     };
 
     const validateSchemaValue = (value, schema, pathLabel = 'value') => {
@@ -728,53 +788,18 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
 
     const llmRunTask = async (task = {}, overrides = {}) => {
         const payload = buildLlmTaskPayload(task, overrides);
-        const messages = payload.messages;
-        if (messages.length === 0) {
-            throw new Error(`tools.llm.runTask requires a non-empty messages array for plugin '${pluginId}'.`);
-        }
+        const prepared = prepareSimplePluginRequest(payload);
 
         const params = payload.params;
         const route = resolveLlmRoute(params.model);
         const requestMsg = payload.msg || payload.title || 'Plugin LLM Task';
-        const shouldLogRequest = payload.logRequest !== false;
-        const shouldLogResponse = payload.logResponse !== false;
-
-        if (shouldLogRequest) {
-            TurnLogger.logRequest({
-                msg: requestMsg,
-                messages,
-                model: route?.model || params.model,
-                provider: route?.provider || params.provider
-            });
-        }
-
-        let response;
-        try {
-            response = await llmCall(messages, { ...params, turnLogTitle: shouldLogRequest ? requestMsg : params.turnLogTitle }, { log: false });
-            response = enrichLlmResponseRoute(response, route);
-        } catch (error) {
-            if (shouldLogRequest && !error?.turnLoggerLogged) {
-                TurnLogger.logError({
-                    msg: requestMsg,
-                    error,
-                    model: route?.model || params.model,
-                    provider: route?.provider || params.provider
-                });
-                error.turnLoggerLogged = true;
-            }
-            throw error;
-        }
-
-        if (shouldLogResponse) {
-            TurnLogger.logResponse({
-                msg: requestMsg,
-                content: response?.content,
-                model: response?.model || route?.model || params.model,
-                provider: response?.provider || route?.provider || params.provider
-            });
-        }
-
-        return response;
+        // Central logging lives in callLLM for prepared calls; wrappers only
+        // enrich the route, never log request/response themselves.
+        return await llmCall(prepared, {
+            ...params,
+            callingModule: params.callingModule || `Plugin:${pluginId}`,
+            turnLogTitle: requestMsg
+        });
     };
 
     const llmJson = async (task = {}, overrides = {}) => {
@@ -799,9 +824,10 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
     };
 
     const llmWithSchema = async (task = {}, schema = null, overrides = {}) => {
-        const baseTask = Array.isArray(task)
-            ? { messages: task }
-            : ((task && typeof task === 'object') ? { ...task } : {});
+        const baseTask = (task && typeof task === 'object' && !Array.isArray(task)) ? { ...task } : {};
+        if (Array.isArray(task) || baseTask.messages !== undefined) {
+            throw new TypeError(`tools.llm.withSchema no longer accepts message arrays for plugin '${pluginId}'. Pass { prompt: prepared, ... }.`);
+        }
         const schemaToUse = schema || baseTask.schema;
         if (!schemaToUse) {
             throw new Error(`tools.llm.withSchema requires a schema for plugin '${pluginId}'.`);
@@ -866,18 +892,44 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
         const getMessages = (suffix, options = {}) => buildVnBackgroundMessages(context, suffix, options);
         const buildTask = async (task = {}) => {
             const source = task && typeof task === 'object' ? { ...task } : {};
-            if (source.model !== undefined || source.provider !== undefined || source.messages !== undefined) {
-                throw new Error(`tools.llm.vnBackground does not accept model, provider, or messages overrides for plugin '${pluginId}'.`);
+            if (source.model !== undefined || source.provider !== undefined || source.messages !== undefined || source.prompt !== undefined) {
+                throw new Error(`tools.llm.vnBackground does not accept model, provider, messages, or prompt overrides for plugin '${pluginId}'.`);
             }
-            const suffix = source.suffix;
+            // Cutover: plugin VN tasks always carry a requestId so the suffix
+            // is plugin-owned. A bare {suffix} without identity is removed —
+            // old callers fail here, loudly.
+            if (source.suffix !== undefined && source.instruction === undefined && source.requestId === undefined) {
+                throw new TypeError(`tools.llm.vnBackground requires requestId for plugin '${pluginId}'. Pass {scene, instruction, requestId}.`);
+            }
+            if (source.instruction !== undefined && source.suffix !== undefined) {
+                throw new TypeError('Specify VN background instruction or suffix, not both.');
+            }
+            const suffix = source.instruction === undefined ? source.suffix : source.instruction;
+            const requestId = source.requestId;
+            if (source.instruction !== undefined && requestId === undefined) {
+                throw new TypeError('Named VN background instructions require requestId.');
+            }
             const scene = source.scene || 'none';
             delete source.suffix;
+            delete source.instruction;
+            delete source.requestId;
             delete source.scene;
             const assignment = getAssignment();
             await waitForVnBackgroundCacheSlot(context, `plugin:${pluginId}:${source.msg || source.title || 'task'}`);
+            const { PreparedPrompt } = require('../../prompt/prompt.js');
+            const { buildVnBackgroundPrompt } = require('../../vn_manager/background_llm_cache.js');
+            const prepared = buildVnBackgroundPrompt(context, null, {
+                scene,
+                    preparedSuffix: require('../../prompt/request_compiler.js').compilePluginRequest(
+                    pluginId, requestId, suffix, { turnContext: context, pluginManager }
+                )
+            });
+            if (!(prepared instanceof PreparedPrompt)) {
+                throw new Error(`VN background prompt composition failed for plugin '${pluginId}'.`);
+            }
             return {
                 ...source,
-                messages: getMessages(suffix, { scene }),
+                prompt: prepared,
                 model: assignment.model,
                 provider: assignment.provider,
                 params: {
@@ -913,7 +965,10 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
 
         const runOne = async (item, index) => {
             const produced = await factory(item, index, items);
-            if (produced && typeof produced === 'object' && Array.isArray(produced.messages)) {
+            if (produced && typeof produced === 'object' && produced.messages !== undefined) {
+                throw new TypeError(`tools.llm.batch item ${index} cannot supply raw messages; use a named structured prompt.`);
+            }
+            if (produced && typeof produced === 'object' && (produced.prompt !== undefined || produced.instruction !== undefined)) {
                 const task = { ...produced };
                 if (options.schema && !task.schema) task.schema = options.schema;
                 if (task.schema) return await llmWithSchema(task);
@@ -1408,7 +1463,13 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
                 const agentOptions = (options && typeof options === 'object') ? { ...options } : {};
                 if (typeof agentOptions.callModel !== 'function') {
                     agentOptions.callModel = async ({ messages, llm = {}, expectJson = false, validateAction = null }) => {
-                        return await llmCall(messages, {
+                        const { compileAgentMessages } = require('../../prompt/request_compiler.js');
+                        const name = String(agentOptions.id || llm.taskKey || llm.callingModule || 'session')
+                            .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+                        const prepared = compileAgentMessages(pluginId, `agent_${name || 'session'}`, messages, {
+                            turnContext: context, pluginManager
+                        });
+                        return await llmCall(prepared, {
                             ...llm,
                             expectJson,
                             validateFn: validateAction,
@@ -1540,27 +1601,140 @@ function buildTools(pluginManager, pluginId, turnContext, activeSocket = null, e
 ${trimmed}
 </${tagName}>`;
             },
-            inject: (slot, content, target = 'root', options = {}) => {
-                if (!context || !context.promptComponents) return;
-                if (target === 'root') {
+            contribute: (input, build, options = {}) => {
+                // Contribution-time definitions only; a bare string cannot
+                // establish an attributable owner or destination.
+                if (!context || !context.promptComponents) return false;
+                if (typeof input === 'string') {
+                    throw new Error(`tools.prompt.contribute(key, content) was removed for plugin '${pluginId}'. Use contribute({id, to, ...}).`);
+                }
+                const { preparePromptContribution } = require('./prompt_contribution.js');
+                const contributionOptions = build === undefined ? options : build;
+                if (contributionOptions === null || typeof contributionOptions !== 'object' || Array.isArray(contributionOptions)) {
+                    throw new TypeError('Contribution options must be an object.');
+                }
+                if (!context.addPromptOccurrence) {
+                    throw new Error('In-place prompt definitions require an active TurnContext.');
+                }
+                if (input?.to?.startsWith?.('root.')) {
                     const { isSharedPrefixFrozen } = require('../../shared_narrative_prompt.js');
-                    if (isSharedPrefixFrozen(context)) {
-                        Logger.warn(`Plugin:${pluginId}`, `Rejected late shared prompt injection into root.${slot}; HOOK_PRE_ORCHESTRATOR is the final shared-prefix mutation point.`);
-                        return false;
+                    if (isSharedPrefixFrozen(context)) throw new Error(`Cannot contribute to ${input.to} after the shared prefix froze.`);
+                }
+                const prepared = preparePromptContribution(pluginManager, pluginId, input, contributionOptions);
+                context.addPromptOccurrence(prepared.target, prepared.slot, prepared.occurrence);
+                let registration;
+                const previousDefinitions = context.promptDefinitions;
+                try {
+                    registration = prepared.commit();
+                    context.promptDefinitions = context.promptDefinitions || {};
+                    context.promptDefinitions[pluginId] = structuredClone(registration.pieces);
+                } catch (error) {
+                    registration?.rollback();
+                    context.promptDefinitions = previousDefinitions;
+                    // Roll back the stored occurrence if registration or
+                    // snapshotting failed after insertion.
+                    const items = context.promptComponents[prepared.target][prepared.slot];
+                    const index = items.indexOf(prepared.occurrence);
+                    if (index !== -1) items.splice(index, 1);
+                    throw error;
+                }
+                return true;
+            },
+            // Advanced role-by-role composition. Request-local pieces register
+            // at first add(), under the request id — no static manifest.
+            compose: (requestId, build) => {
+                if (typeof requestId !== 'string' || !requestId.trim()) {
+                    throw new TypeError(`tools.prompt.compose requires a non-empty request id for plugin '${pluginId}'.`);
+                }
+                if (typeof build !== 'function') {
+                    throw new TypeError(`tools.prompt.compose requires a build callback for plugin '${pluginId}'.`);
+                }
+                const { createPluginPromptScope } = require('../../prompt/request_compiler.js');
+                const scope = createPluginPromptScope(pluginId, requestId, { turnContext: context, pluginManager });
+                const draft = scope.prompt;
+                const resolveId = (id, containerId = scope.rootId) => {
+                    if (typeof id !== 'string' || !id.trim()) throw new TypeError('draft.add needs a named piece id.');
+                    const catalog = draft._effectiveCatalog();
+                    if (id.startsWith(`${scope.rootId}.`)) {
+                        if (!Object.hasOwn(catalog, id)) throw new Error(`Unknown request component '${id}'. Use a local id under this request.`);
+                        return id;
                     }
-                }
-                const pillar = context.promptComponents[target];
-                if (pillar && pillar[slot]) {
-                    const injectedContent = options?.directable === true
-                        ? wrapDirectablePluginPrompt(pluginId, content)
-                        : content;
-                    pillar[slot].push(injectedContent);
-                    return true;
-                } else {
-                    Logger.warn(`Plugin:${pluginId}`, `Attempted to inject into invalid target/slot: ${target}.${slot}`);
-                    return false;
-                }
-            }
+                    if (Object.hasOwn(catalog, id) || id.startsWith(`${pluginId}.`) || /^(root|writer|director|core)\./.test(id)) {
+                        throw new Error(`Cannot author text under '${id}' from request '${scope.rootId}'. Use message.include(id) for unchanged context, or a local piece id for new wording.`);
+                    }
+                    const nestedId = `${containerId}.${id}`;
+                    if (Object.hasOwn(catalog, nestedId)) return nestedId;
+                    return scope.addPiece(id, { parentId: containerId });
+                };
+                const draftApi = {
+                    _prompt: draft,
+                    message: (role, buildFn, options) => {
+                        draft.message(role, (message) => buildFn(wrapMessageBuilder(message)), options);
+                        return draftApi;
+                    },
+                    user: (buildFn) => draftApi.message('user', buildFn),
+                    system: (buildFn) => draftApi.message('system', buildFn),
+                    assistant: (buildFn) => draftApi.message('assistant', buildFn),
+                    usePrefix: (prepared) => { draft.usePrefix(prepared); return draftApi; },
+                    append: (prepared) => { draft.append(prepared); return draftApi; },
+                    include: (componentId, options = {}) => {
+                        // Verbatim reuse of a KNOWN component id: exact lookup,
+                        // catalogue-checked, disambiguated. Renders unchanged
+                        // under the source identity — never re-labeled.
+                        draft.message('user', message => message.includeComponent(componentId, {
+                            includeTurnContext: context, ...(options || {})
+                        }));
+                        return draftApi;
+                    },
+                };
+                const wrapMessageBuilder = (message) => ({
+                    add: (id, textOrBuild, options) => {
+                        const componentId = resolveId(id);
+                        if (typeof textOrBuild === 'function') {
+                            message.add(componentId, (nested) => textOrBuild(wrapComponentBuilder(nested)));
+                        } else {
+                            message.add(componentId, textOrBuild, options);
+                        }
+                        return wrapMessageBuilder(message);
+                    },
+                    include: (componentId, options = {}) => {
+                        message.includeComponent(componentId, { includeTurnContext: context, ...(options || {}) });
+                        return wrapMessageBuilder(message);
+                    },
+                    history: (presetOrSelection) => {
+                        message.history(presetOrSelection);
+                        return wrapMessageBuilder(message);
+                    },
+                    prepend: (id, textOrBuild, options) => {
+                        const componentId = resolveId(id);
+                        if (typeof textOrBuild === 'function') {
+                            message.prepend(componentId, nested => textOrBuild(wrapComponentBuilder(nested)), options);
+                        } else {
+                            message.prepend(componentId, textOrBuild, options);
+                        }
+                        return wrapMessageBuilder(message);
+                    },
+                    text: () => { throw new Error('Name message text with message.add(id, text); top-level anonymous text is not supported.'); },
+                    separator: (value) => { message.separator(value); return wrapMessageBuilder(message); }
+                });
+                const wrapComponentBuilder = (builder) => ({
+                    add: (id, textOrBuild, options) => {
+                        const componentId = resolveId(id, builder.containerId);
+                        if (typeof textOrBuild === 'function') {
+                            builder.add(componentId, nested => textOrBuild(wrapComponentBuilder(nested)), options);
+                        } else {
+                            builder.add(componentId, textOrBuild, options);
+                        }
+                        return wrapComponentBuilder(builder);
+                    },
+                    text: (value) => { builder.text(value); return wrapComponentBuilder(builder); },
+                    registerDynamicComponent: (...args) => { builder.registerDynamicComponent(...args); return wrapComponentBuilder(builder); }
+                });
+                build(draftApi);
+                return draft.prepare();
+            },
+            // Direct string injection is unsupported; contribute a named
+            // occurrence or compose a named request instead.
         },
         socket: {
             emit: (event, data) => {
@@ -2167,4 +2341,4 @@ ${trimmed}
     };
 }
 
-module.exports = { buildTools, resolveProjectPluginStorage };
+module.exports = { buildTools, resolveProjectPluginStorage, escapeXmlAttribute };

@@ -804,34 +804,24 @@ function normalizeUsageData(providerKey, response) {
  * @returns {Promise<{content: (string|object), model: string}>} A promise that resolves to an object containing the LLM's response content (as a string, or a parsed object if expectJson is true) and the final resolved model name used for the call.
  * @throws {Error} Throws an error if the provider is invalid, or if all retry attempts fail. The error will contain the message from the last failed attempt.
  */
-async function callLLM({ messages, prompt = null, model, provider = null, retries = 1, timeout = DEFAULT_LLM_TIMEOUT_MS, extra = {}, expectJson = false, validationRegex = null, validateFn = null, minCharacters = 0, minWords = 0, callingModule = 'LLM', turnLogTitle = null }) {
+async function callLLM({ prompt, model, provider = null, retries = 1, timeout = DEFAULT_LLM_TIMEOUT_MS, extra = {}, expectJson = false, validationRegex = null, validateFn = null, minCharacters = 0, minWords = 0, callingModule = 'LLM', turnLogTitle = null }) {
   const safeModule = callingModule || 'LLM';
   const numericMinWords = Number(minWords);
   const effectiveMinWords = Number.isFinite(numericMinWords) ? Math.max(0, Math.floor(numericMinWords)) : 0;
   const settings = readSettings();
-  // Prepared-prompt path: derive the provider payload from the immutable
-  // PreparedPrompt. Exactly one of messages/prompt is required; the manifest
-  // never reaches the provider, only central logging.
-  let promptTrace = null;
-  if (prompt != null) {
-    if (messages != null) {
-      throw new Error('callLLM accepts exactly one of messages or prompt, not both.');
-    }
-    const { PreparedPrompt } = require('./prompt/prompt.js');
-    if (!(prompt instanceof PreparedPrompt)) {
-      throw new TypeError('callLLM prompt must be a PreparedPrompt returned by Prompt.prepare().');
-    }
-    messages = prompt.messages.map(message => ({ role: message.role, content: message.content }));
-    promptTrace = {
-      promptId: prompt.id,
-      hash: prompt.hash,
-      characterCount: prompt.characterCount,
-      manifest: prompt.manifest
-    };
+  // Prepared-only (cutover): the provider payload derives from the immutable
+  // PreparedPrompt. The manifest never reaches the provider, only logging.
+  const { PreparedPrompt } = require('./prompt/prompt.js');
+  if (!(prompt instanceof PreparedPrompt)) {
+    throw new TypeError('callLLM requires a PreparedPrompt returned by Prompt.prepare(). Migrate the caller to compose its request.');
   }
-  if (!Array.isArray(messages) || messages.length === 0) {
-    throw new Error('callLLM requires a non-empty messages array (or a PreparedPrompt).');
-  }
+  const messages = prompt.messages.map(message => ({ role: message.role, content: message.content }));
+  const promptTrace = {
+    promptId: prompt.id,
+    hash: prompt.hash,
+    characterCount: prompt.characterCount,
+    manifest: prompt.manifest
+  };
   cancellation.throwIfCancelled(`LLM request for ${safeModule}`);
 
   const primaryRoute = resolveModelAlias(model);
@@ -880,10 +870,9 @@ async function callLLM({ messages, prompt = null, model, provider = null, retrie
     provider: primaryAttemptRoute.providerKey,
     maxAttempts: totalAttempts
   });
-  // Prepared-prompt calls log centrally here (legacy callers keep their own
-  // manual TurnLogger calls). The promptTrace joins the request entry; the
+  // Central logging: the promptTrace joins the request entry; the
   // response/error entries reuse the same callId instead of the title.
-  if (promptTrace && turnLogTitle) {
+  if (turnLogTitle) {
     TurnLogger.logRequest(turnLogTitle, messages, model, provider, false, null, {
       promptTrace: { ...promptTrace, callId: liveCallId }
     });

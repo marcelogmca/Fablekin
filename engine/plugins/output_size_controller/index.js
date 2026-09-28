@@ -62,9 +62,6 @@ module.exports = {
             const wordCount = metadata?.word_count || logic.DEFAULT_WORD_COUNT;
 
             turnContext.writerMinimumWordCount = Math.ceil(wordCount * MINIMUM_ACCEPTANCE_RATIO);
-            const estimatedVnLines = Math.max(1, Math.round((wordCount / 2000) * 150));
-            const minimumVoiceLines = Math.floor(estimatedVnLines / 2) + 1;
-
             const directive = `Output around ${wordCount} words.`;
 
             // 1. Bottom Instruction (Prose reinforcement)
@@ -75,15 +72,14 @@ module.exports = {
             const cotDirective = `Step 8: Target Length Alignment
 - Word Count Goal: ${wordCount} words.
 - Strategy: Plan the scene beats and depth of interaction to ensure the narrative reaches the target word count while maintaining high engagement and meaningful prose.
-- If the planned scene would end far below the target, do not summarize or close early. Extend the current exchange with more present-moment interaction: dialogue turns, interruptions, physical business, emotional pushback, practical details, and NPC initiative.
+- If the planned scene would end far below the target, do not summarize or close early. Deepen the present interaction: let characters pursue different wants, answer specific points, reveal useful details, resist each other, and act on what was said. Give a speaker room to develop a thought rather than adding filler replies.
 - Do not pad with scenery. Extend the live interaction.`;
 
             const finalQuantityCheck = `Final Quantity Check
 - Beat Word Budget: [Allocate the ${wordCount}-word target across the locked beats: Beat A ~X words, Beat B ~Y words, etc. Does the total satisfy the target and stay safely above the ${turnContext.writerMinimumWordCount}-word hard minimum?]
-- VN Line Estimate: [Reference: 2000 words ~= 150 VN-rendered lines. For ${wordCount} words, expect roughly ${estimatedVnLines} total VN lines.]
-- Voice Line Floor: [A clear majority of VN lines should be spoken dialogue; for this target, plan for at least ${minimumVoiceLines} voiced dialogue lines across the chapter. Do not list individual voice lines here; distribute dialogue through the beat budget.]
-- Compliance Before Writing: [If the beat budget misses the word target or cannot support the voice-line floor, expand dialogue-heavy beats before writing.]
-- Commit: [Now write each beat and stick to the word count and voice-line requirements.]`;
+- Conversation Depth: [Do the dialogue-led beats contain sustained thoughts, specific responses, differences in viewpoint, and a change in the scene? Vary speaking-turn length. Delete exchanges made only of acknowledgements, echoed questions, or repeated promises.]
+- Compliance Before Writing: [If the beat budget misses the word target, deepen consequential interactions and actions before writing. Do not add short voice lines merely to increase the rendered line count.]
+- Commit: [Now write each beat and meet the word target through substantive scene development.]`;
 
             if (!Array.isArray(turnContext.processed.writerCoTInsertions)) {
                 turnContext.processed.writerCoTInsertions = [];
@@ -127,7 +123,7 @@ module.exports = {
                 try {
                     const originalMessages = turnContext.processed.promptBuilder.messages || [];
                     const continuationProtocol = `[SYSTEM PROTOCOL: LENGTH ENFORCEMENT]
-The scene ended prematurely. Do not summarize or conclude the event yet. Pick up exactly where the last sentence left off, maintain the exact same formatting, and continue exploring the current interaction in deep detail.`;
+The scene ended prematurely. Do not summarize or conclude the event yet. Pick up exactly where the last sentence left off and maintain the same formatting. Deepen the current interaction through specific responses, differing motives, consequential action, and speaking turns long enough to develop a thought. Do not pad the continuation with echoed questions, acknowledgements, or short replies that repeat what is already understood.`;
 
                     const expansionMessages = [
                         ...originalMessages,

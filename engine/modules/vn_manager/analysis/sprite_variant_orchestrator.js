@@ -1,6 +1,6 @@
 const { Logger, TurnLogger, settings, readFileSync, normalizeText } = require('../../utils.js');
 const { callLLM } = require('../../llm.js');
-const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { buildCoreVnPreparedPrompt } = require('../shared_llm_context.js');
 
 const CONFIG = {
   ENABLED: settings.narrative_agents?.sprite_variant_orchestrator?.enabled !== false,
@@ -411,22 +411,23 @@ async function orchestrateSpriteVariants(turnContext, spriteCatalog = null) {
       .replace('{{dialogues}}', 'Use the CURRENT INDEXED SCENE message above')
       .replace('{{worldState}}', getWorldStateHint(turnContext))
       .replace('${project_directives}', turnContext.getFormattedDirective('sprite_variant_orchestrator', { header: '=== PROJECT DIRECTIVES ===' }));
-    const messages = buildCoreVnLlmMessages(turnContext, prompt, { scene: 'indexedScene' });
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.vn_analysis.sprite_variants',
+      task: prompt,
+      scene: 'indexedScene'
+    });
 
     Logger.log('SpriteVariantOrchestrator', 'Request', `Analyzing ${sceneEntries.length} variant-aware characters...`, 'start');
-    TurnLogger.logRequest('Sprite Variant Orchestrator', messages, CONFIG.MODEL, CONFIG.PROVIDER);
 
     const { content: responseContent, model: actualModel } = await callLLM({
       model: CONFIG.MODEL,
       provider: CONFIG.PROVIDER,
-      messages,
+      prompt: prepared,
       callingModule: 'SpriteVariantOrchestrator',
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
       turnLogTitle: 'Sprite Variant Orchestrator'
     });
-
-    TurnLogger.logResponse('Sprite Variant Orchestrator', responseContent, actualModel, CONFIG.PROVIDER);
 
     const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {

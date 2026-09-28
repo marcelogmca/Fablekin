@@ -1,5 +1,4 @@
-const { callLLM, repairJson, resolveModelAlias } = require('./llm.js');
-const { TurnLogger } = require('./utils.js');
+const { callLLM, repairJson } = require('./llm.js');
 const { runWithDiagnosticContext } = require('./diagnostic_context.js');
 
 const DEFAULT_MAX_ITERATIONS = 3;
@@ -284,15 +283,11 @@ async function callAgentModel(messages, options) {
         taskKey: String(title || DEFAULT_CALLING_MODULE),
         blocking: llm.blocking !== false
     }, async () => {
-        const route = llm.model && typeof options.callLLM !== 'function'
-            ? resolveModelAlias(llm.model)
-            : null;
-        const loggedModel = route?.model || llm.model;
-        const loggedProvider = route?.provider || llm.provider;
-        TurnLogger.logRequest(title, messages, loggedModel, loggedProvider);
         const llmCall = typeof options.callLLM === 'function' ? options.callLLM : callLLM;
+        const { compileAgentMessages } = require('./prompt/request_compiler.js');
+        const prepared = compileAgentMessages('core', 'agent_runner', messages);
         const response = await llmCall({
-            messages,
+            prompt: prepared,
             model: llm.model,
             retries: llm.retries ?? 1,
             timeout: llm.timeout ?? 60000,
@@ -301,11 +296,6 @@ async function callAgentModel(messages, options) {
             validateFn: options.validateAction,
             callingModule: llm.callingModule || DEFAULT_CALLING_MODULE,
             turnLogTitle: title
-        });
-        TurnLogger.logResponse(title, {
-            ...response,
-            model: response?.model || loggedModel,
-            provider: response?.provider || loggedProvider
         });
         return response;
     });

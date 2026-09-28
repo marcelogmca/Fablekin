@@ -137,6 +137,13 @@ function makeTurnContext() {
         const llmModule = require('./llm.js');
         const originalCallLLM = llmModule.callLLM;
         llmModule.callLLM = async options => {
+            const { PreparedPrompt } = require('./prompt/prompt.js');
+            assert.ok(options.prompt instanceof PreparedPrompt);
+            assert.strictEqual(options.prompt.manifest.rolePolicy, 'agent');
+            assert.strictEqual(options.prompt.messages.at(-1).role, 'system');
+            assert.match(options.prompt.messages.at(-1).content, /FINAL ITERATION/);
+            assert.ok(options.prompt.manifest.occurrences.every(item =>
+                options.prompt.manifest.components[item.componentId].owner === 'agent_test'));
             assert.strictEqual(options.expectJson, false);
             assert.strictEqual(typeof options.validateFn, 'function');
             await options.validateFn('## Research Dossier\n\nUseful markdown final answer.');
@@ -389,6 +396,8 @@ function makeTurnContext() {
             },
             callLLM: async options => {
                 requestOptions = options;
+                assert.strictEqual(options.prompt.manifest.rolePolicy, 'agent');
+                assert.strictEqual(options.prompt.messages.at(-1).role, 'system');
                 return { content: { type: 'final', answer: 'finished' } };
             }
         });

@@ -875,10 +875,15 @@ module.exports = {
                     writer_dynamic: ['dynamic_knowledge', 'writer'],
                     director_dynamic: ['dynamic_knowledge', 'director']
                 };
+                const placementPieces = {
+                    shared_dynamic: 'lore_shared_dynamic',
+                    shared_canon: 'lore_shared_canon',
+                    writer_dynamic: 'lore_writer_dynamic',
+                    director_dynamic: 'lore_director_dynamic'
+                };
                 for (const [placement, entries] of placementGroups) {
                     const loreBlock = buildPromptBlock(tools, entries);
-                    const [slot, target] = placementTargets[placement] || placementTargets.shared_dynamic;
-                    if (loreBlock) tools.prompt.inject(slot, loreBlock, target);
+                    if (loreBlock) tools.prompt.contribute(placementPieces[placement] || 'lore_shared_dynamic', { entries: loreBlock });
                 }
 
                 const totalInjected = triggeredEntries.length;

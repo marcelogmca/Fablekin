@@ -1,6 +1,6 @@
 const { Logger, TurnLogger, settings, readFileSync } = require('../../utils.js');
 const { callLLM, resolveModelAlias } = require('../../llm.js');
-const { buildCoreVnLlmMessages } = require('../shared_llm_context.js');
+const { buildCoreVnPreparedPrompt } = require('../shared_llm_context.js');
 
 // #region CONFIGURATION
 const CONFIG = {
@@ -44,21 +44,22 @@ async function identifyFocusInstructions(turnContext) {
     focusPrompt = focusPrompt
       .replace('{{dialogues}}', 'Use the CURRENT INDEXED SCENE message above')
       .replace('${project_directives}', projectDirectives);
-    const messages = buildCoreVnLlmMessages(turnContext, focusPrompt, { scene: 'indexedScene' });
+    const prepared = buildCoreVnPreparedPrompt(turnContext, {
+      id: 'core.vn_analysis.gaze_director',
+      task: focusPrompt,
+      scene: 'indexedScene'
+    });
 
     Logger.log('FocusAnalyzer', 'Request', `Identifying exceptional gaze for ${sceneLines.length} scene lines...`, 'start');
-    TurnLogger.logRequest('Gaze Director', messages, CONFIG.MODEL, resolveModelAlias(CONFIG.MODEL).provider);
 
     const { content: responseContent, model: actualModel } = await callLLM({
       model: CONFIG.MODEL,
-      messages,
+      prompt: prepared,
       callingModule: 'FocusAnalyzer',
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
       turnLogTitle: 'Gaze Director'
     });
-
-    TurnLogger.logResponse('Gaze Director', responseContent, actualModel, resolveModelAlias(CONFIG.MODEL).provider);
 
     // Parse JSON from the response (now looking for the "script" field)
     const jsonMatch = responseContent.match(/\{[\s\S]*\}/);

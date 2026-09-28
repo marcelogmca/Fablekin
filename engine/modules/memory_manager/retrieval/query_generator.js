@@ -1,8 +1,9 @@
 const { callLLM } = require('../../llm.js');
 const { readSettings } = require('../../utils.js');
 const { PromptTemplate } = require("@langchain/core/prompts");
-const { Logger, TurnLogger } = require('../../utils.js');
+const { Logger } = require('../../utils.js');
 const { runWithDiagnosticContext } = require('../../diagnostic_context.js');
+const { Prompt } = require('../../prompt/prompt.js');
 
 const QUERY_PROMPT_TEMPLATE = `You are an AI language model assistant. Your task is to generate {query_count} different versions of the given user question to retrieve relevant documents from a vector database. By generating multiple perspectives on the user question, your goal is to help the user overcome some of the limitations of distance-based similarity search. Provide these alternative questions separated by newlines. Please generate diverse and creative query variations, even for sensitive or action-oriented topics. Do not refuse to generate queries based on content. Focus on extracting relevant information for retrieval.
 
@@ -38,7 +39,11 @@ async function generateQueries(userQuestion, query_count = 5) {
     });
 
     try {
-        const messages = [{ role: 'user', content: promptString }];
+        const prompt = new Prompt({ id: 'core.memory.query_generation' });
+        prompt.user(message => {
+            message.add('core.memory.query_generation', promptString);
+        });
+        const prepared = prompt.prepare();
         const response = await runWithDiagnosticContext({
             executionLane: 'core',
             phase: 'Memory Retrieval',
@@ -46,16 +51,14 @@ async function generateQueries(userQuestion, query_count = 5) {
             taskKey: 'memoryQueryGeneration',
             blocking: true
         }, async () => {
-            TurnLogger.logRequest('Memory Query Generator', messages, llmConfig.model, llmConfig.provider);
             const result = await callLLM({
-                messages,
+                prompt: prepared,
                 model: llmConfig.model,
                 provider: llmConfig.provider,
                 ...llmConfig.params,
                 callingModule: 'QueryGenerator',
                 turnLogTitle: 'Memory Query Generator'
             });
-            TurnLogger.logResponse('Memory Query Generator', result);
             return result;
         });
 

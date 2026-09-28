@@ -9,6 +9,7 @@ const factManager = require('./memory_manager/storage/fact_manager.js');
 const narrativeAnalyzer = require('./vn_manager/analysis/narrative_analyzer.js');
 const { runWithDiagnosticContext } = require('./diagnostic_context.js');
 const { logSharedPrefixUsage } = require('./shared_narrative_prompt.js');
+const { Prompt, PreparedPrompt } = require('./prompt/prompt.js');
 
 // Load modular prompt files
 const systemPrompt = readFileSync(path.join(__dirname, '../prompts/director/system.txt'));
@@ -742,7 +743,7 @@ async function createDirectorPrompt(turnContext, config) {
   const notes = await factManager.getFormattedLedger('director', turnContext.projectName);
 
   const playerName = turnContext.input.playerCharacterName || 'Player';
-  const canonData = [promptData.canon, ...(director.additionalInputs || [])].filter(Boolean).join('\n\n');
+  const canonData = [promptData.canon, ...(director.additionalInputs || [])].filter(item => typeof item === 'string' ? Boolean(item) : Boolean(item?.text)).map(item => typeof item === 'string' ? item : item.text).join('\n\n');
   const dynamicKnowledge = promptData.dynamicKnowledge;
   const simulationState = promptData.simulation;
   const privateHistory = promptData.history;
@@ -774,25 +775,31 @@ ${notes || 'Empty.'}
     postWriterPacingAdvisorySection.trim()
   ].filter(Boolean).join('\n\n');
 
-  const contextMessage = `# AGENT TASK: DIRECTOR
-${systemPrompt.trim()}
+  // The context message is decomposed into catalogue-attributed pieces for the
+  // prepared composer. The joined contextMessage stays the behavioral string;
+  // the pieces below must reproduce it exactly (same order, same separators).
+  const taskText = `${systemPrompt.trim()}
 
 The shared messages before this task contain the authoritative narrative foundation. Review that context and the Director-private data below, then produce strategic guidance for the Writer.
-${privateData}
-
-<global_constraints>
+${privateData}`;
+  const constraintsText = `<global_constraints>
 PLAYER CHARACTER: ${playerName}
 ${promptData.directives}
-</global_constraints>
-
-${buildInventoryIntentSection(turnContext)}
-
-# CURRENT ACTION
+</global_constraints>`;
+  const inventoryIntentText = buildInventoryIntentSection(turnContext);
+  const currentActionText = `# CURRENT ACTION
 This is the latest player's input, and it will be hugely responsible for the events of this turn. So give it utmost importance.
 However, if you find that the player's input contradicts and established truth, has irrealistic relational boundaries, or is otherwise illogical, hint the writer how it can be fixed without ignoring it out right. (E.g. a rejected action that causes a funny moment or even a misunderstanding that can make the characters be mad, like an improper flirt, attempting to use a flaming sword he never had, trying to cast magic that does not exist, etc)
 <current_player_action>
 ${turnContext.input.userPrompt || 'No direct action provided.'}
 </current_player_action>`;
+  const contextParts = [
+    `# AGENT TASK: DIRECTOR\n${taskText}`,
+    constraintsText,
+    inventoryIntentText,
+    currentActionText
+  ].filter(Boolean);
+  const contextMessage = contextParts.join('\n\n');
 
   // Persist the exact Director user message so later CLI agents can reuse the
   // provider-cached prefix even after runtime-only prompt state is discarded.
@@ -824,13 +831,30 @@ ${outputAnalysis}`;
     : outputLedger.replace('${ledgerTemplate}', ledgerText);
 
   Logger.log('Director', 'Assembler', 'Director prompt assembled.', 'end');
-  return {
+  const promptObj = {
     sharedMessages: promptData.sharedMessages,
     sharedPrefixHash: promptData.sharedPrefixHash,
+    sharedPrepared: null,
+    taskText,
+    contextBody: privateData,
+    constraintsText,
+    inventoryIntentText,
+    currentActionText,
     contextMessage,
     analysisInstructions,
     ledgerInstructions
   };
+  // Authoritative composer: the shared prefix IS the prepared result;
+  // analysis composes from it directly. Diagnostics record the manifest.
+  // The Prompt needs the live TurnContext for trusted include() resolution.
+  promptObj.turnContext = turnContext;
+  promptObj.sharedPrepared = await promptBuilder.getSharedPrefixPrepared(turnContext);
+  const preparedDiagnostics = buildDirectorPreparedPrompts(promptObj);
+  turnContext.processed.director = turnContext.processed.director || {};
+  turnContext.processed.director.analysisPromptManifest = preparedDiagnostics?.analysis?.manifest || null;
+  turnContext.processed.director.analysisPromptPrepared = preparedDiagnostics || null;
+  turnContext.processed.director.analysisPromptPreparedHash = preparedDiagnostics?.analysis?.hash || null;
+  return promptObj;
 }
 
 // ============================================================================
@@ -954,23 +978,105 @@ async function waitForPendingLedgerUpdate(projectName) {
   }
 }
 
-function buildDirectorAnalysisMessages(promptObj) {
-  return [
-    ...promptObj.sharedMessages.map(message => ({ ...message })),
-    { role: 'user', content: promptObj.contextMessage },
-    { role: 'user', content: promptObj.analysisInstructions }
-  ];
+// DELETED (cutover): buildDirectorAnalysisMessages / buildDirectorLedgerMessages
+// — the composer IS the Director request now. Tests assert on prepared
+// messages directly. Kept as throwing stubs so missed callers fail loudly.
+function buildDirectorAnalysisMessages() {
+  throw new Error('buildDirectorAnalysisMessages was removed in the prompt-model cutover; use buildDirectorPreparedPrompts().');
 }
 
-function buildDirectorLedgerMessages(promptObj, analysisResponse) {
-  return [
-    ...buildDirectorAnalysisMessages(promptObj),
-    { role: 'assistant', content: analysisResponse || '' },
-    { role: 'user', content: promptObj.ledgerInstructions }
-  ];
+function buildDirectorLedgerMessages() {
+  throw new Error('buildDirectorLedgerMessages was removed in the prompt-model cutover; use buildDirectorPreparedPrompts().');
+}
+
+/**
+ * Prepared Director prompts: composes the exact analysis / ledger /
+ * plugin-feedback requests through the annotated Prompt composer, reusing the
+ * factored shared prefix byte-for-byte via usePrefix(). The analysis
+ * response is model-generated content re-injected as context, attributed to
+ * core.director.analysis_response with an origin link to the Analysis call.
+ * Returns { analysis, ledger, feedback } prepared results, or null members
+ * when the shared prefix parity gate failed (callers fall back to legacy
+ * arrays and never claim unobserved provenance).
+ */
+function buildDirectorPreparedPrompts(promptObj, { analysisResponse = null, pluginInstructions = null } = {}) {
+  // The shared prefix crosses the module boundary as plain JSON (stored on
+  // processed state / passed in promptObj). Rehydrate it into a real
+  // PreparedPrompt so usePrefix()/append() provenance stays trustworthy; a
+  // stale or tampered copy throws here instead of logging false lineage.
+  let sharedPrepared = null;
+  try {
+    const raw = promptObj.sharedPrepared || null;
+    if (!raw || !raw.messages || !raw.manifest) return null;
+    sharedPrepared = raw instanceof PreparedPrompt ? raw : PreparedPrompt.rehydrate(raw);
+  } catch {
+    return null;
+  }
+
+  const composeAnalysis = () => {
+    const prompt = new Prompt({ id: 'core.director.analysis', turnContext: promptObj.turnContext || null });
+    prompt.usePrefix(sharedPrepared);
+    // Cache shape: the legacy contextMessage is ONE user message, so the
+    // composer emits one user message whose container owns the '\n\n' joins
+    // and each piece keeps its own catalogue identity inside it. Providers
+    // that key prefix cache on message boundaries see the legacy shape.
+    prompt.user(message => {
+      message.add('core.director.context_message', container => {
+        container.add('core.director.task', `# AGENT TASK: DIRECTOR\n${promptObj.taskText}`);
+        container.add('core.director.context', promptObj.contextBody);
+        container.add('core.director.constraints', promptObj.constraintsText);
+        if (promptObj.inventoryIntentText) {
+          container.add('core.director.inventory_intent', promptObj.inventoryIntentText);
+        }
+        container.add('core.director.current_action', promptObj.currentActionText);
+      }, { separator: '\n\n' });
+    });
+    prompt.user(message => {
+      message.add('core.director.analysis_instructions', promptObj.analysisInstructions);
+    });
+    return prompt.prepare();
+  };
+
+  const composeFollowup = (responseText, instructionsId, instructionsText) => {
+    const analysis = composeAnalysis();
+    const prompt = new Prompt({ id: 'core.director.followup', turnContext: promptObj.turnContext || null });
+    prompt.append(analysis);
+    prompt.assistant(message => {
+      message.add('core.director.analysis_response', responseText);
+    });
+    prompt.user(message => {
+      message.add(instructionsId, instructionsText);
+    });
+    return prompt.prepare();
+  };
+
+  const prepared = { analysis: null, ledger: null, feedback: null };
+  prepared.analysis = composeAnalysis();
+  if (analysisResponse != null) {
+    prepared.ledger = composeFollowup(analysisResponse, 'core.director.ledger_instructions', promptObj.ledgerInstructions);
+  }
+  if (analysisResponse != null && pluginInstructions != null) {
+    prepared.feedback = composeFollowup(analysisResponse, 'core.director.plugin_feedback_instructions', pluginInstructions);
+  }
+  return prepared;
+}
+
+/**
+ * Shadow validation: the composer emits the legacy message layout
+ * byte-for-byte — [shared..., ONE contextMessage, analysisInstructions] —
+ * with per-piece provenance inside the single context message. Compares
+ * one-for-one like the Writer gate. Returns the prepared result for
+ * diagnostics, or null when it cannot be built.
+ */
+// DELETED (cutover): buildDirectorPreparedPromptShadow — the composer IS the
+// Director request now; fixtures pin the prepared bytes directly.
+function buildDirectorPreparedPromptShadow() {
+  throw new Error('buildDirectorPreparedPromptShadow was removed in the prompt-model cutover.');
 }
 
 function extractDirectablePluginIds(promptObj = {}) {
+  // Note: reads the joined contextMessage (behavioral string), not the
+  // decomposed pieces — identical bytes, so extraction is unaffected.
   const text = [
     ...(promptObj.sharedMessages || []).map(message => message?.content),
     promptObj.contextMessage,
@@ -986,13 +1092,16 @@ function extractDirectablePluginIds(promptObj = {}) {
   return [...ids];
 }
 
-function buildDirectorPluginFeedbackMessages(promptObj, analysisResponse, pluginIds) {
-  const pluginInstructions = outputPluginFeedback.replace('${directablePluginIds}', pluginIds.join(', '));
-  return [
-    ...buildDirectorAnalysisMessages(promptObj),
-    { role: 'assistant', content: analysisResponse || '' },
-    { role: 'user', content: pluginInstructions }
-  ];
+// DELETED (cutover): buildDirectorPluginFeedbackMessages — feedback requests
+// compose through buildDirectorPreparedPrompts({analysisResponse,
+// pluginInstructions}).feedback. Callers needing the instruction text use
+// buildDirectorPluginFeedbackInstructions() below.
+function buildDirectorPluginFeedbackMessages() {
+  throw new Error('buildDirectorPluginFeedbackMessages was removed in the prompt-model cutover; use buildDirectorPreparedPrompts().');
+}
+
+function buildDirectorPluginFeedbackInstructions(pluginIds) {
+  return outputPluginFeedback.replace('${directablePluginIds}', pluginIds.join(', '));
 }
 
 function normalizeDirectorPluginFeedback(payload, pluginIds, turnNumber) {
@@ -1023,7 +1132,16 @@ function normalizeDirectorPluginFeedback(payload, pluginIds, turnNumber) {
 async function runDeferredPluginFeedback(promptObj, config, analysisResponse, turnContext, pluginIds) {
   try {
     Logger.log('Director', 'PluginFeedback', `Starting async plugin feedback for turn ${turnContext.turnNumber}...`, 'start');
-    const messages = buildDirectorPluginFeedbackMessages(promptObj, analysisResponse, pluginIds);
+    const pluginInstructions = buildDirectorPluginFeedbackInstructions(pluginIds);
+    // Prepared when the shared prefix gate passed: the feedback request
+    // extends the observed analysis shape with the real response text.
+    // expectJson stays orthogonal — it validates the response, not the input.
+    const preparedFeedback = typeof analysisResponse === 'string'
+      ? buildDirectorPreparedPrompts(promptObj, { analysisResponse, pluginInstructions })?.feedback || null
+      : null;
+    if (!preparedFeedback) {
+      throw new Error('Director prepared plugin-feedback prompt unavailable; refusing to send an unattributed request.');
+    }
     const { content, model, provider } = await runWithDiagnosticContext({
       executionLane: 'core_async',
       phase: 'Narrative',
@@ -1032,9 +1150,8 @@ async function runDeferredPluginFeedback(promptObj, config, analysisResponse, tu
       promptCachePrefixHash: promptObj.sharedPrefixHash,
       blocking: false
     }, async () => {
-      TurnLogger.logRequest('Director (Plugin Feedback Async)', messages, config.THINKING_MODEL, config.PROVIDER);
-      const result = await callLLM({
-        messages,
+      return callLLM({
+        prompt: preparedFeedback,
         model: config.THINKING_MODEL,
         provider: config.PROVIDER,
         retries: 0,
@@ -1044,8 +1161,6 @@ async function runDeferredPluginFeedback(promptObj, config, analysisResponse, tu
         callingModule: 'Background_Director_Plugin_Feedback_Async',
         turnLogTitle: 'Director (Plugin Feedback Async)'
       });
-      TurnLogger.logResponse('Director (Plugin Feedback Async)', JSON.stringify(result.content), result.model, result.provider);
-      return result;
     });
 
     const normalized = normalizeDirectorPluginFeedback(content, pluginIds, turnContext.turnNumber);
@@ -1062,7 +1177,7 @@ async function runDeferredPluginFeedback(promptObj, config, analysisResponse, tu
 }
 
 async function runDeferredLedgerUpdate(promptObj, config, analysisResponse, turnContext) {
-  const { sharedMessages, sharedPrefixHash, contextMessage, analysisInstructions, ledgerInstructions } = promptObj;
+  const { sharedPrefixHash } = promptObj;
 
   try {
     Logger.log(
@@ -1072,7 +1187,11 @@ async function runDeferredLedgerUpdate(promptObj, config, analysisResponse, turn
       'start'
     );
 
-    const messagesCall2 = buildDirectorLedgerMessages({ sharedMessages, contextMessage, analysisInstructions, ledgerInstructions }, analysisResponse);
+    // Prepared: extends the observed analysis shape with the real response
+    // text as analysis_response.
+    const preparedLedgerAsync = typeof analysisResponse === 'string'
+      ? buildDirectorPreparedPrompts(promptObj, { analysisResponse })?.ledger || null
+      : null;
 
     Logger.log('Director', 'Generation', `Sending async Ledger Update Request to ${config.THINKING_MODEL}...`);
     const { content: ledgerContent, model: resolvedModel2, provider: resolvedProvider2 } = await runWithDiagnosticContext({
@@ -1083,9 +1202,11 @@ async function runDeferredLedgerUpdate(promptObj, config, analysisResponse, turn
       promptCachePrefixHash: sharedPrefixHash,
       blocking: false
     }, async () => {
-      TurnLogger.logRequest('Director (Ledger Async)', messagesCall2, config.THINKING_MODEL, config.PROVIDER);
-      const result = await callLLM({
-        messages: messagesCall2,
+      if (!preparedLedgerAsync) {
+        throw new Error('Director prepared async-ledger prompt unavailable; refusing to send an unattributed request.');
+      }
+      return callLLM({
+        prompt: preparedLedgerAsync,
         model: config.THINKING_MODEL,
         provider: config.PROVIDER,
         // Keep call-2 completely background: no retry status noise in UI.
@@ -1096,8 +1217,6 @@ async function runDeferredLedgerUpdate(promptObj, config, analysisResponse, turn
         callingModule: 'Background_Ledger_Async',
         turnLogTitle: 'Director (Ledger Async)'
       });
-      TurnLogger.logResponse('Director (Ledger Async)', result.content, result.model, result.provider);
-      return result;
     });
 
     const responseCall2 = typeof ledgerContent === 'string' ? ledgerContent.trim() : '';
@@ -1163,7 +1282,13 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
   const skipLedgerCall = options.skipLedgerCall === true;
 
   // --- CALL 1: Core Analysis ---
-  const messagesCall1 = buildDirectorAnalysisMessages({ sharedMessages, contextMessage, analysisInstructions, ledgerInstructions });
+  // Authoritative composer: prepared IS the request. No legacy array twin,
+  // no manual logging (callLLM logs centrally with the manifest + callId).
+  const preparedPrompts = buildDirectorPreparedPrompts(promptObj);
+  const preparedAnalysis = preparedPrompts?.analysis || null;
+  if (!preparedAnalysis) {
+    throw new Error('Director prepared analysis prompt unavailable; refusing to send an unattributed request.');
+  }
 
   Logger.log('Director', 'Generation', `Sending Analysis Request to ${config.THINKING_MODEL}...`, 'start');
   const { content: responseCall1 } = await runWithDiagnosticContext({
@@ -1174,9 +1299,8 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
     promptCachePrefixHash: sharedPrefixHash,
     blocking: true
   }, async () => {
-    TurnLogger.logRequest('Director (Analysis)', messagesCall1, config.THINKING_MODEL, config.PROVIDER);
-    const result = await callLLM({
-      messages: messagesCall1,
+    return callLLM({
+      prompt: preparedAnalysis,
       model: config.THINKING_MODEL,
       provider: config.PROVIDER,
       retries: config.RETRIES,
@@ -1186,8 +1310,6 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
       callingModule: 'Director_Analysis',
       turnLogTitle: 'Director (Analysis)'
     });
-    TurnLogger.logResponse('Director (Analysis)', result.content, result.model, result.provider);
-    return result;
   });
 
   let responseCall2 = '';
@@ -1195,7 +1317,14 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
     Logger.log('Director', 'Generation', 'Received analysis feedback. Preparing Ledger request...');
 
     // --- CALL 2: Ledger Updates ---
-    const messagesCall2 = buildDirectorLedgerMessages({ sharedMessages, contextMessage, analysisInstructions, ledgerInstructions }, responseCall1);
+    // Authoritative composer: extends the observed analysis shape with the
+    // real response as core.director.analysis_response. No legacy twin.
+    const preparedLedger = typeof responseCall1 === 'string'
+      ? buildDirectorPreparedPrompts({ ...promptObj, sharedPrepared: promptObj.sharedPrepared }, { analysisResponse: responseCall1 })?.ledger || null
+      : null;
+    if (!preparedLedger) {
+      throw new Error('Director prepared ledger prompt unavailable; refusing to send an unattributed request.');
+    }
 
     Logger.log('Director', 'Generation', `Sending Ledger Update Request to ${config.THINKING_MODEL}...`);
     const { content: ledgerContent } = await runWithDiagnosticContext({
@@ -1206,9 +1335,8 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
       promptCachePrefixHash: sharedPrefixHash,
       blocking: true
     }, async () => {
-      TurnLogger.logRequest('Director (Ledger)', messagesCall2, config.THINKING_MODEL, config.PROVIDER);
-      const result = await callLLM({
-        messages: messagesCall2,
+      return callLLM({
+        prompt: preparedLedger,
         model: config.THINKING_MODEL,
         provider: config.PROVIDER,
         retries: config.RETRIES,
@@ -1218,8 +1346,6 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
         callingModule: 'Director_Ledger',
         turnLogTitle: 'Director (Ledger)'
       });
-      TurnLogger.logResponse('Director (Ledger)', result.content, result.model, result.provider);
-      return result;
     });
 
     responseCall2 = ledgerContent;
@@ -1346,6 +1472,8 @@ const exportedApi = {
   runPeriodic,
   runDirectorPrePromptHooks,
   getConfig,
+  buildDirectorPreparedPrompts,
+  buildDirectorPreparedPromptShadow,
   _test: {
     parseCoTSteps,
     assembleCotSteps,
@@ -1354,6 +1482,7 @@ const exportedApi = {
     buildDirectorAnalysisMessages,
     buildDirectorLedgerMessages,
     buildDirectorPluginFeedbackMessages,
+    buildDirectorPreparedPrompts,
     formatDirectorPrivateSection,
     extractDirectablePluginIds,
     normalizeDirectorPluginFeedback

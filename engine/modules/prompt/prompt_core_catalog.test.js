@@ -5,7 +5,8 @@ const {
   getCoreComponent,
   getSlotGroup,
   getChildren,
-  validateCatalog
+  validateCatalog,
+  validatePromptPieces
 } = require('./prompt_core_catalog.js');
 
 const PILLARS = ['root', 'writer', 'director'];
@@ -53,6 +54,44 @@ test('every entry carries exactly parent, label, description and owner', () => {
     assert.equal(entry.owner, 'core', `${id} owner must be core`);
   }
   assert.equal(Object.isFrozen(CORE_COMPONENTS), true);
+});
+
+test('plugin prompt piece trees validate at registration', () => {
+  validatePromptPieces('world_state_tracker', {
+    world_state_context: {
+      target: 'root', slot: 'simulation',
+      label: 'World state context', description: 'Continuity updates.',
+      children: [{ key: 'current_state', label: 'Current state', description: 'Live state.' }]
+    }
+  });
+  assert.throws(() => validatePromptPieces('p', { BadKey: { target: 'root', slot: 'simulation' } }), /snake_case/);
+  assert.throws(() => validatePromptPieces('p', { a: { target: 'root', slot: 'bogus' } }), /Unknown prompt target\/slot/);
+  assert.throws(() => validatePromptPieces('p', {
+    dup: { target: 'root', slot: 'simulation', label: 'Dup', description: 'Dup.', children: [{ key: 'dup', label: 'x', description: 'y' }] }
+  }), /Duplicate/);
+  assert.throws(() => validatePromptPieces('p', {
+    nolabel: { target: 'root', slot: 'simulation', label: '', description: 'Has desc.' }
+  }), /label must be a non-empty string/);
+  assert.throws(() => validatePromptPieces('p', {
+    nodesc: { target: 'root', slot: 'simulation', label: 'No desc', description: '' }
+  }), /description must be a non-empty string/);
+  assert.throws(() => validatePromptPieces('p', 'nope'), /must be an object/);
+  assert.throws(() => validatePromptPieces('p', {}), /at least one piece/);
+  // buildPluginCatalogueEntries: plugin ids namespace to toolkit-stamped
+  // parents — never caller-supplied hierarchy.
+  const { buildPluginCatalogueEntries } = require('./prompt_core_catalog.js');
+  const entries = buildPluginCatalogueEntries(new Map(Object.entries({
+    world_state_tracker: {
+      world_state_context: {
+        target: 'root', slot: 'simulation',
+        label: 'World state context', description: 'Continuity updates.',
+        children: [{ key: 'current_state', label: 'Current state', description: 'Live state.' }]
+      }
+    }
+  })));
+  assert.equal(entries['world_state_tracker.world_state_context'].parent, 'root.simulation');
+  assert.equal(entries['world_state_tracker.world_state_context'].owner, 'world_state_tracker');
+  assert.equal(entries['world_state_tracker.world_state_context.current_state'].parent, 'world_state_tracker.world_state_context');
 });
 
 test('invalid hierarchy or missing identity fields are rejected', () => {

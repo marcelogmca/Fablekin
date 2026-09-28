@@ -171,12 +171,14 @@ module.exports = {
                 ]);
                 if (!brief && !immediateBrief) return;
 
+                const contentByKey = {};
                 if (brief) {
-                    tools.prompt.inject('directives', tools.prompt.wrap('quest_outcome_consequences', brief), 'director');
+                    contentByKey.consequences = tools.prompt.wrap('quest_outcome_consequences', brief);
                 }
                 if (immediateBrief) {
-                    tools.prompt.inject('directives', tools.prompt.wrap('quest_outcome_immediate_reminder', immediateBrief), 'director');
+                    contentByKey.immediate_reminder = tools.prompt.wrap('quest_outcome_immediate_reminder', immediateBrief);
                 }
+                tools.prompt.contribute('quest_director_outcomes', contentByKey);
                 tools.director?.cot?.add?.({
                     id: 'quest_tracker.outcome_consequences',
                     step: '13.4Q',
@@ -217,12 +219,14 @@ module.exports = {
                 ]);
                 if (!brief && !immediateBrief) return;
 
+                const contentByKey = {};
                 if (brief) {
-                    tools.prompt.inject('directives', tools.prompt.wrap('quest_outcome_consequences', brief), 'writer');
+                    contentByKey.consequences = tools.prompt.wrap('quest_outcome_consequences', brief);
                 }
                 if (immediateBrief) {
-                    tools.prompt.inject('directives', tools.prompt.wrap('quest_outcome_immediate_reminder', immediateBrief), 'writer');
+                    contentByKey.immediate_reminder = tools.prompt.wrap('quest_outcome_immediate_reminder', immediateBrief);
                 }
+                tools.prompt.contribute('quest_writer_outcomes', contentByKey);
             }
         },
         'HOOK_VN_BACKGROUND_TASKS': {

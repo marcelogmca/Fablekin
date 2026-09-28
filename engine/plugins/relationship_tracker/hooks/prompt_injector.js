@@ -47,8 +47,12 @@ const promptInjectorHook = {
             );
 
             if (relationshipSummary && relationshipSummary.length > 0 && relationshipSummary !== 'No notable relationship states found for the current context.') {
-                const wrappedSnapshot = tools.prompt.wrap('active_relationships', relationshipSummary);
-                tools.prompt.inject('simulation', wrappedSnapshot, 'root');
+                tools.prompt.contribute({
+                    id: 'relationship_context', to: 'root.simulation',
+                    label: 'Relationship context',
+                    description: 'Active relationship dynamics for characters in the current scene.',
+                    children: { active_relationships: relationshipSummary }
+                });
                 tools.logger.log('Synthesis', 'Injected relationship snapshot into simulation slot.');
                 tools.logger.runtime(`Injected active dynamics into prompt.`);
             } else {

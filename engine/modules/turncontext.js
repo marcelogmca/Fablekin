@@ -1,5 +1,112 @@
 // #region MODULE IMPORTS
 const { Logger, readSettings } = require('./utils.js');
+
+// Stable component source ids: assigned once at insertion, persisted in
+// snapshots as enumerable plain strings. crypto.randomUUID() (with a
+// deterministic test override below) so ids survive serialize()/fromSnapshot
+// and stay unique across processes — never the raw object identity.
+function allocatePromptComponentSourceId() {
+    if (typeof globalThis.__promptSourceIdForTests === 'function') {
+        return globalThis.__promptSourceIdForTests();
+    }
+    const { randomUUID } = require('node:crypto');
+    return `pcs-${randomUUID()}`;
+}
+
+function isPlainObject(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+// Assigns a stable sourceId to a node and every descendant that lacks one.
+// Existing ids are never overwritten: backfill only touches legacy/test
+// occurrences pushed without them. Throws on duplicates within the subtree.
+function ensurePromptComponentSourceIds(node, seen = new Set()) {
+    if (!node || typeof node !== 'object') return node;
+    if (typeof node.sourceId !== 'string' || !node.sourceId) {
+        node.sourceId = allocatePromptComponentSourceId();
+    }
+    if (seen.has(node.sourceId)) {
+        throw new Error(`Duplicate prompt source '${node.sourceId}'.`);
+    }
+    seen.add(node.sourceId);
+    if (Array.isArray(node.children)) {
+        for (const child of node.children) ensurePromptComponentSourceIds(child, seen);
+    }
+    return node;
+}
+
+function collectPromptComponentSourceIds(node, into = []) {
+    if (!node || typeof node !== 'object') return into;
+    if (typeof node.sourceId === 'string' && node.sourceId) into.push(node.sourceId);
+    if (Array.isArray(node.children)) {
+        for (const child of node.children) collectPromptComponentSourceIds(child, into);
+    }
+    return into;
+}
+
+function validatePromptOccurrenceShape(node, where) {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) {
+        throw new TypeError(`Prompt occurrence in ${where} must be an object.`);
+    }
+    if (node.kind !== 'component') {
+        throw new TypeError(`Prompt occurrence in ${where} must have kind 'component'.`);
+    }
+    if (typeof node.componentId !== 'string' || !node.componentId) {
+        throw new TypeError(`Prompt occurrence in ${where} requires a componentId.`);
+    }
+    if (typeof node.text !== 'string') {
+        throw new TypeError(`Prompt occurrence ${node.componentId} in ${where} requires string text.`);
+    }
+    if (!Array.isArray(node.children)) {
+        throw new TypeError(`Prompt occurrence ${node.componentId} in ${where} requires a children array.`);
+    }
+    if (typeof node.owner !== 'string' || !node.owner) {
+        throw new TypeError(`Prompt occurrence ${node.componentId} in ${where} requires an owner.`);
+    }
+    for (const child of node.children) validatePromptOccurrenceShape(child, where);
+}
+
+// Deep-freeze one occurrence subtree (children + arrays). Called when the
+// shared root prefix freezes: the same sourceId must never point at
+// different text later in the turn.
+function deepFreezePromptOccurrence(node) {
+    if (!node || typeof node !== 'object') return node;
+    if (Array.isArray(node.children)) {
+        for (const child of node.children) deepFreezePromptOccurrence(child);
+        Object.freeze(node.children);
+    }
+    Object.freeze(node);
+    return node;
+}
+
+// Snapshot restore: structured occurrences keep their persisted sourceIds
+// exactly (no re-stamping). Validates shape + uniqueness across all slots
+// and descendants; old snapshots lacking ids are rejected at this boundary.
+function validateRestoredPromptComponents(promptComponents) {
+    if (!promptComponents || typeof promptComponents !== 'object') return;
+    const seen = new Set();
+    const check = (node, where) => {
+        validatePromptOccurrenceShape(node, where);
+        if (typeof node.sourceId !== 'string' || !node.sourceId) {
+            throw new Error(
+                `Stored prompt snapshot in ${where} lacks a stable sourceId for ${node.componentId}; ` +
+                'old string-era snapshots are not loadable into the prompt-model cutover.'
+            );
+        }
+        if (seen.has(node.sourceId)) {
+            throw new Error(`Duplicate prompt source '${node.sourceId}' in stored snapshot.`);
+        }
+        seen.add(node.sourceId);
+        for (const child of node.children) check(child, where);
+    };
+    for (const [target, pillar] of Object.entries(promptComponents)) {
+        if (!pillar || typeof pillar !== 'object') continue;
+        for (const [slot, items] of Object.entries(pillar)) {
+            if (!Array.isArray(items)) continue;
+            for (const item of items) check(item, `${target}.${slot}`);
+        }
+    }
+}
 // #endregion
 
 // #region CLASS DEFINITION
@@ -46,11 +153,16 @@ class TurnContext {
 
     // #region PROCESSED STATE
     /**
-     * The Prompt Component Registry (Slots).
-     * These slots are used to assemble the final LLM prompts.
-     * All slots are arrays, allowing multiple plugins/modules to contribute.
+     * The Prompt Component Registry: ordered structured occurrences per
+     * target.slot. Each occurrence names a component registered in the prompt
+     * catalogue (core entry or contribution-time plugin definition, namespaced by owner),
+     * optionally an instanceKey, its own text, and child pieces. Text lives
+     * here exactly once — there is no parallel string-slot projection.
+     * Readers that need flat text must render through an explicit accessor.
+     *
+     * Root slots freeze once the shared prefix is prepared; scoped slots are
+     * private agent suffixes.
      */
-    // Root slots form the frozen Director/Writer cache prefix. Scoped slots are private agent suffixes.
     promptComponents = {
         root: {
             protocol: [],
@@ -77,6 +189,11 @@ class TurnContext {
             directives: []
         }
     };
+    // Definitions registered at contribution time are stored with the turn.
+    // Interludes can restore these pieces even when their producing hook does
+    // not run. Prompt validates this saved catalogue independently of the
+    // occurrence text; occurrence metadata alone is never a registration.
+    promptDefinitions = {};
 
     processed = {
         directorEnabled: true, // Plugin-agnostic flag to enable/disable the director
@@ -340,6 +457,79 @@ class TurnContext {
      * @param {string} [fieldKey='creative_style'] - The field key within the directive.
      * @returns {string} The directive text, or an empty string if not found.
      */
+    // Renders ordered structured occurrences in one pillar.slot to flat text.
+    // The ONLY supported reader for promptComponents content: joins each
+    // occurrence's own text plus descendant texts depth-first with '\n\n',
+    // applying the toolkit-owned directable wrapper around opted-in entries.
+    // Built for brutish cutovers — callers that used .join() on string slots
+    // switch to this and keep working while provenance is being wired.
+    renderPromptSlot(target, slot) {
+        const items = this.promptComponents?.[target]?.[slot];
+        if (!Array.isArray(items)) {
+            throw new Error(`Unknown prompt target/slot: ${target}.${slot}`);
+        }
+        // Single-source rule: flat text is the slot_renderer fragment
+        // sequence joined to a string (same rule the composer compiles into
+        // manifest spans — see prompt/slot_renderer.js).
+        const { renderSlotText } = require('./prompt/slot_renderer.js');
+        return renderSlotText(items);
+    }
+
+    // Trusted source resolver for typed inclusion: returns the LIVE stored
+    // occurrence for a sourceId, or throws. Callers resolve identity through
+    // this (validated registration), never through an occurrence's embedded
+    // declaration or a caller-supplied component id. Backfills stable ids on
+    // legacy/test occurrences pushed without them — insertion paths stamp
+    // ids, but direct array pushes in tests must also resolve.
+    // Single insertion point for prompt occurrences: validates shape, stamps
+    // stable sourceIds recursively (never overwrites), rejects duplicates,
+    // and appends atomically. All producers (core pushes, plugin
+    // contributions, writer-private) must funnel through here.
+    addPromptOccurrence(target, slot, occurrence) {
+        const pillar = this.promptComponents?.[target];
+        if (!pillar || !Array.isArray(pillar[slot])) {
+            throw new Error(`Unknown prompt target/slot: ${target}.${slot}`);
+        }
+        validatePromptOccurrenceShape(occurrence, `${target}.${slot}`);
+        ensurePromptComponentSourceIds(occurrence);
+        const existing = new Set();
+        for (const item of pillar[slot]) {
+            for (const id of collectPromptComponentSourceIds(item)) existing.add(id);
+        }
+        for (const id of collectPromptComponentSourceIds(occurrence)) {
+            if (existing.has(id)) {
+                throw new Error(`Duplicate prompt source '${id}' in ${target}.${slot}.`);
+            }
+            existing.add(id);
+        }
+        pillar[slot].push(occurrence);
+        return occurrence;
+    }
+
+    // Read-only trusted lookup: returns the LIVE stored occurrence for a
+    // sourceId, or throws. Never backfills, never invents: insertion and
+    // snapshot restore are the only places ids are stamped.
+    getPromptSource(target, slot, sourceId) {
+        const items = this.promptComponents?.[target]?.[slot];
+        if (!Array.isArray(items)) {
+            throw new Error(`Unknown prompt target/slot: ${target}.${slot}`);
+        }
+        const found = [];
+        const walk = (node) => {
+            if (!node || typeof node !== 'object') return;
+            if (node.sourceId === sourceId) found.push(node);
+            for (const child of node.children || []) walk(child);
+        };
+        for (const item of items) walk(item);
+        if (found.length === 0) {
+            throw new Error(`Unknown prompt source '${sourceId}' in ${target}.${slot}.`);
+        }
+        if (found.length > 1) {
+            throw new Error(`Duplicate prompt source '${sourceId}' in ${target}.${slot}.`);
+        }
+        return found[0];
+    }
+
     getDirective(id, fieldKey = 'creative_style') {
         const directives = this.input?.directives || {};
         const entityDirectives = directives[id] || {};
@@ -533,7 +723,7 @@ class TurnContext {
     static MAX_SNAPSHOT_SIZE = 5 * 1024 * 1024; // 5 MB
 
     serialize() {
-        const serializableKeys = ['input', 'processed', 'output', 'postContent', 'rootDirectory', 'promptComponents'];
+        const serializableKeys = ['input', 'processed', 'output', 'postContent', 'rootDirectory', 'promptComponents', 'promptDefinitions'];
 
         const settings = readSettings();
         if (settings && settings.infrastructure?.enable_runtime_persistence) {
@@ -604,6 +794,10 @@ class TurnContext {
             // blobs the same way messages did.
             if (snapshot.processed?.promptBuilder?.writerPromptManifest) delete snapshot.processed.promptBuilder.writerPromptManifest;
             if (snapshot.processed?.promptBuilder?.writerPromptPrepared) delete snapshot.processed.promptBuilder.writerPromptPrepared;
+            if (snapshot.processed?.promptBuilder?.sharedPrefixManifest) delete snapshot.processed.promptBuilder.sharedPrefixManifest;
+            if (snapshot.processed?.promptBuilder?.sharedPrefixPrepared) delete snapshot.processed.promptBuilder.sharedPrefixPrepared;
+            if (snapshot.processed?.director?.analysisPromptManifest) delete snapshot.processed.director.analysisPromptManifest;
+            if (snapshot.processed?.director?.analysisPromptPrepared) delete snapshot.processed.director.analysisPromptPrepared;
             if (snapshot.processed?.chapterHistory) delete snapshot.processed.chapterHistory;
             if (snapshot.processed?.historyData) delete snapshot.processed.historyData;
 
@@ -660,6 +854,17 @@ class TurnContext {
                     } else if (characterGenders && typeof characterGenders === 'object') {
                         turn[key].characterGenders = new Map(Object.entries(characterGenders));
                     }
+                }
+                else if (key === 'promptComponents') {
+                    validateRestoredPromptComponents(snapshotData[key]);
+                    Object.assign(turn[key], snapshotData[key]);
+                }
+                else if (key === 'promptDefinitions') {
+                    const { validatePromptPieces } = require('./prompt/prompt_core_catalog.js');
+                    for (const [pluginId, pieces] of Object.entries(snapshotData[key] || {})) {
+                        validatePromptPieces(pluginId, pieces);
+                    }
+                    Object.assign(turn[key], snapshotData[key]);
                 }
                 else {
                     Object.assign(turn[key], snapshotData[key]);
@@ -828,4 +1033,10 @@ class TurnContext {
 
 // #region EXPORTS
 module.exports = TurnContext;
+module.exports.ensurePromptComponentSourceIds = ensurePromptComponentSourceIds;
+module.exports.allocatePromptComponentSourceId = allocatePromptComponentSourceId;
+module.exports.collectPromptComponentSourceIds = collectPromptComponentSourceIds;
+module.exports.validatePromptOccurrenceShape = validatePromptOccurrenceShape;
+module.exports.deepFreezePromptOccurrence = deepFreezePromptOccurrence;
+module.exports.validateRestoredPromptComponents = validateRestoredPromptComponents;
 // #endregion

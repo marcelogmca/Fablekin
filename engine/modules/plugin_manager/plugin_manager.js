@@ -44,6 +44,8 @@ class PluginManager {
         this.currentTurnContext = null; // Snapshot of the latest turn context
         this.securityDecisionResolver = null; // Resolver for a pending security decision
         this.pluginsDir = null; // Store the root plugins directory
+        this.promptRegistry = new Map(); // Contribution-time prompt definitions, keyed by plugin id
+        this.promptCatalogueSnapshot = null; // Frozen core + plugin catalogue for prompt composers
         this.repoRoot = null; // High-level repository root (parent of engine/workspace)
         this.isProcessingStoryScripts = false; // Flag to prevent concurrent story script handling
         this.sessionDeclinedHashes = new Set(); // Remember hashes declined via "Safe Mode" this session
@@ -833,6 +835,9 @@ class PluginManager {
 
     registerPlugin(plugin) {
         Logger.log('PluginManager', `Registering plugin: '${plugin.id}'`);
+        if (plugin.promptPieces !== undefined) {
+            throw new Error(`Plugin '${plugin.id}' uses removed static promptPieces. Define pieces when calling tools.prompt.contribute({id, to, ...}).`);
+        }
         this.plugins.set(plugin.id, plugin);
         const pluginInterludeMode = String(plugin?.interludeMode || '').trim().toLowerCase();
         const pluginAllowInterludeDefault = pluginInterludeMode === 'all'
@@ -868,6 +873,9 @@ class PluginManager {
         if (plugin.exports && typeof plugin.exports === 'object') {
             this.exportedFunctions.set(plugin.id, plugin.exports);
         }
+
+        // Prompt definitions are registered on first contribution, not at
+        // plugin load. The catalogue is rebuilt by the contribution toolkit.
 
         // Register Views
         if (plugin.views && Array.isArray(plugin.views)) {
@@ -970,8 +978,27 @@ class PluginManager {
      * Internal helper to unload a plugin and cleanup its hooks, listeners, and views.
      * @param {string} pluginId 
      */
+    // Immutable catalogue snapshot: core definitions plus contribution-time
+    // plugin definitions. Composers never trust a stored occurrence's own
+    // description as proof of identity.
+    rebuildPromptCatalogueSnapshot() {
+        const { CORE_COMPONENTS, buildPluginCatalogueEntries } = require('../prompt/prompt_core_catalog.js');
+        const entries = buildPluginCatalogueEntries(this.promptRegistry);
+        const snapshot = Object.assign(Object.create(null), CORE_COMPONENTS);
+        for (const [id, entry] of Object.entries(entries)) snapshot[id] = entry;
+        this.promptCatalogueSnapshot = Object.freeze(snapshot);
+        return this.promptCatalogueSnapshot;
+    }
+
+    getPromptCatalogueSnapshot() {
+        if (!this.promptCatalogueSnapshot) this.rebuildPromptCatalogueSnapshot();
+        return this.promptCatalogueSnapshot;
+    }
+
     _unloadPlugin(pluginId) {
         Logger.log('PluginManager', `Unloading plugin: '${pluginId}'`);
+        this.promptRegistry.delete(pluginId);
+        this.rebuildPromptCatalogueSnapshot();
 
         // 1. Remove Hooks
         for (const [hookName, listeners] of this.hooks.entries()) {

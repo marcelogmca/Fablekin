@@ -211,7 +211,12 @@ module.exports = {
                 });
                 if (!recallContext) return;
 
-                tools.prompt.inject('dynamic_knowledge', recallContext, 'root');
+                tools.prompt.contribute({
+                    id: 'recalled_memories', to: 'root.dynamic_knowledge',
+                    label: 'Recalled memories',
+                    description: 'Continuity memories recalled for the current turn.',
+                    children: { memories: recallContext }
+                });
                 tools.logger.runtime('Injected dynamic memory recall context into prompt.');
             }
         }

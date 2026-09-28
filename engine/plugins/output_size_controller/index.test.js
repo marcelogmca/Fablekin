@@ -31,9 +31,8 @@ test('sets the Writer minimum to 50 percent of the configured target', async () 
     assert.doesNotMatch(turnContext.processed.writerCoTInsertions[1].content, /Step 16/);
     assert.match(turnContext.processed.writerCoTInsertions[1].content, /2500-word target/);
     assert.match(turnContext.processed.writerCoTInsertions[1].content, /1250-word hard minimum/);
-    assert.match(turnContext.processed.writerCoTInsertions[1].content, /2000 words ~= 150 VN-rendered lines/);
-    assert.match(turnContext.processed.writerCoTInsertions[1].content, /roughly 188 total VN lines/);
-    assert.match(turnContext.processed.writerCoTInsertions[1].content, /at least 95 voiced dialogue lines/);
+    assert.match(turnContext.processed.writerCoTInsertions[1].content, /Conversation Depth/);
+    assert.match(turnContext.processed.writerCoTInsertions[1].content, /meet the word target through substantive scene development/);
     assert.doesNotMatch(turnContext.processed.writerCoTInsertions[1].content, /Planned Voice Lines/);
     assert.equal(turnContext.processed.writerCoTInsertions[1].insertAfterStep, undefined);
     assert.match(logs[0], /1250 words/);
