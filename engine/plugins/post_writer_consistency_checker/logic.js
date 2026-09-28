@@ -475,35 +475,43 @@ function formatSpeakerLabelAudit(lines) {
   return output.join('\n');
 }
 
+// The checker validates the drafted scene against the checker instructions;
+// it does not need the Writer's full conversation (shared contract, replayed
+// chapters, CoT suffix) — that clone made this the heaviest call of the turn
+// (~60k input tokens) for no validation benefit. Send instructions + the
+// self-contained review target (tagged draft, optional speaker audit) only.
 function buildCheckerMessages(turnContext, promptText = readPromptText(), settingsInput = {}) {
-  const runtimeWriterMessages = turnContext?.runtime?.narrativeEngine?.writerRequestMessages;
-  const writerMessages = Array.isArray(runtimeWriterMessages) && runtimeWriterMessages.length > 0
-    ? runtimeWriterMessages
-    : (Array.isArray(turnContext?.processed?.promptBuilder?.messages)
-      ? turnContext.processed.promptBuilder.messages
-      : []);
-  const clonedMessages = writerMessages
-    .filter(message => message && message.role && message.content !== undefined)
-    .map(message => ({
-      role: String(message.role),
-      content: message.content
-    }));
-
   const canonicalLines = getCanonicalLines(turnContext);
   const dialogueText = turnContext?.processed?.dialogueProcessor?.dialogue || buildScriptFromLines(canonicalLines);
   const settings = resolveSettings(settingsInput);
   const speakerLabelAudit = settings.speaker_label_audit ? formatSpeakerLabelAudit(canonicalLines) : '';
   const taggedDraft = formatTaggedReviewTarget(dialogueText);
-  const reviewPayload = speakerLabelAudit
-    ? `${promptText.trim()}\n\n${speakerLabelAudit}\n\n${taggedDraft}`
-    : `${promptText.trim()}\n\n${taggedDraft}`;
-  const writerOutput = String(turnContext?.processed?.narrativeEngine?.writerResponse || '');
+  const reviewTarget = speakerLabelAudit ? `${speakerLabelAudit}\n\n${taggedDraft}` : taggedDraft;
 
   return [
-    ...clonedMessages,
-    ...(writerOutput ? [{ role: 'assistant', content: writerOutput }] : []),
-    { role: 'user', content: reviewPayload }
+    { role: 'system', content: String(promptText || '').trim() },
+    { role: 'user', content: reviewTarget }
   ];
+}
+
+// Name each prompt message by what it carries rather than by position, so the
+// Token Map shows `check.instructions` / `check.review_target` instead of a
+// wall of anonymous `message_N` rows.
+function namePromptMessages(messages, prefix) {
+  return messages.map((message, index) => {
+    const role = String(message.role || 'user');
+    let piece;
+    if (messages.length === 1) {
+      piece = prefix;
+    } else if (role === 'system') {
+      piece = `${prefix}.instructions`;
+    } else if (index === messages.length - 1) {
+      piece = `${prefix}.review_target`;
+    } else {
+      piece = `${prefix}.${role}_${index + 1}`;
+    }
+    return { role, piece, text: String(message.content ?? '') };
+  });
 }
 
 function resolveCheckerModelAssignment(settings, tools) {
@@ -704,17 +712,18 @@ function formatFindingsForCorrector(findingsByAgent) {
 }
 
 function buildCorrectorMessages(turnContext, correctorPromptText, findingsByAgent, settingsInput = {}) {
-  const baseMessages = buildCheckerMessages(turnContext, '', settingsInput);
-  const reviewMessage = baseMessages[baseMessages.length - 1];
-  const baseContent = reviewMessage && reviewMessage.role === 'user' ? String(reviewMessage.content || '') : '';
-  const taggedDraft = baseContent.includes(REVIEW_TARGET_OPEN_TAG)
-    ? baseContent.slice(baseContent.indexOf(REVIEW_TARGET_OPEN_TAG))
-    : formatTaggedReviewTarget('');
+  // Same principle as the checker: instructions + self-contained review
+  // target. No Writer conversation replay.
+  const settings = resolveSettings(settingsInput);
+  const canonicalLines = getCanonicalLines(turnContext);
+  const dialogueText = turnContext?.processed?.dialogueProcessor?.dialogue || buildScriptFromLines(canonicalLines);
+  const speakerLabelAudit = settings.speaker_label_audit ? formatSpeakerLabelAudit(canonicalLines) : '';
+  const taggedDraft = formatTaggedReviewTarget(dialogueText);
+  const reviewTarget = speakerLabelAudit ? `${speakerLabelAudit}\n\n${taggedDraft}` : taggedDraft;
   const findingsPayload = formatFindingsForCorrector(findingsByAgent);
-  const reviewPayload = `${String(correctorPromptText || '').trim()}\n\n${formatTaggedFindings(findingsPayload)}\n\n${taggedDraft}`;
   return [
-    ...baseMessages.slice(0, -1),
-    { role: 'user', content: reviewPayload }
+    { role: 'system', content: String(correctorPromptText || '').trim() },
+    { role: 'user', content: `${formatTaggedFindings(findingsPayload)}\n\n${reviewTarget}` }
   ];
 }
 
@@ -750,11 +759,7 @@ async function runSingleFlagAgent({ key, label, messages, modelAssignment, setti
   const response = await tools.llm.runTask({
     msg: `Post Writer HQ Flag: ${label}`,
     requestId: `hq_flag_${String(key || 'check').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48) || 'check'}`,
-    prompt: { messages: messages.map((message, index) => ({
-      role: message.role,
-      piece: `flag.message_${index + 1}`,
-      text: String(message.content ?? '')
-    })) },
+    prompt: { messages: namePromptMessages(messages, `flag.${key || 'check'}`) },
     model: modelAssignment.model,
     provider: modelAssignment.provider,
     params: {
@@ -824,11 +829,7 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
   const buildFlagTaskPayload = (flagTask) => ({
     msg: `Post Writer HQ Flag: ${flagTask.label}`,
     requestId: `hq_flag_${String(flagTask.key || 'check').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48) || 'check'}`,
-    prompt: { messages: flagTask.messages.map((message, index) => ({
-      role: message.role,
-      piece: `flag.message_${index + 1}`,
-      text: String(message.content ?? '')
-    })) },
+    prompt: { messages: namePromptMessages(flagTask.messages, `flag.${flagTask.key || 'check'}`) },
     model: flagTask.modelAssignment.model,
     provider: flagTask.modelAssignment.provider,
     params: {
@@ -933,11 +934,7 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
   const correctorResponse = await tools.llm.runTask({
     msg: 'Post Writer HQ Corrector',
     requestId: 'hq_corrector',
-    prompt: { messages: correctorMessages.map((message, index) => ({
-      role: message.role,
-      piece: `corrector.message_${index + 1}`,
-      text: String(message.content ?? '')
-    })) },
+    prompt: { messages: namePromptMessages(correctorMessages, 'corrector') },
     model: correctorAssignment.model,
     provider: correctorAssignment.provider,
     params: {
@@ -1072,11 +1069,7 @@ async function runConsistencyCheck(turnContext, tools, settingsInput = null) {
   const response = await tools.llm.runTask({
     msg: 'Post Writer Consistency Checker',
     requestId: 'consistency_check',
-    prompt: { messages: messages.map((message, index) => ({
-      role: message.role,
-      piece: `check.message_${index + 1}`,
-      text: String(message.content ?? '')
-    })) },
+    prompt: { messages: namePromptMessages(messages, 'check') },
     model: modelAssignment.model,
     provider: modelAssignment.provider,
     params: {
@@ -1134,6 +1127,7 @@ module.exports = {
     formatCorrectionSummary,
     logCorrectionSummary,
     resolveCheckerModelAssignment,
+    namePromptMessages,
     syncDialogueProcessor,
     readPromptText,
     readHqPromptText,

@@ -57,13 +57,14 @@ test('checker messages include speaker label audit before the tagged draft', () 
   assert.match(content, /label="Candace, nervous"/);
 });
 
-test('checker messages preserve the Writer context then append output and review instructions', () => {
+test('checker sends instructions plus the review target, without cloning the Writer conversation', () => {
   const writerMessages = [
     { role: 'system', content: 'Writer system prompt.' },
     { role: 'user', content: 'Write the next scene.' }
   ];
   const lines = [dialogue('Aether', 'We should go.')];
   const turnContext = {
+    runtime: { narrativeEngine: { writerRequestMessages: writerMessages } },
     processed: {
       promptBuilder: { messages: writerMessages },
       narrativeEngine: { writerResponse: 'Aether studies the road.\nAether: We should go.' },
@@ -74,41 +75,23 @@ test('checker messages preserve the Writer context then append output and review
 
   const messages = logic.buildCheckerMessages(turnContext, 'Check this draft.', {});
 
-  assert.deepStrictEqual(messages.slice(0, 2), writerMessages);
-  assert.deepStrictEqual(messages[2], {
-    role: 'assistant',
-    content: 'Aether studies the road.\nAether: We should go.'
-  });
-  assert.equal(messages[3].role, 'user');
-  assert.match(messages[3].content, /^Check this draft\./);
-  assert.match(messages[3].content, /<draft_to_validate>/);
+  assert.deepStrictEqual(messages.map(m => m.role), ['system', 'user']);
+  assert.equal(messages[0].content, 'Check this draft.');
+  assert.match(messages[1].content, /<draft_to_validate>/);
+  // The Writer's conversation must never be replayed into the checker.
+  const joined = messages.map(m => m.content).join('\n');
+  assert.doesNotMatch(joined, /Writer system prompt\./);
+  assert.doesNotMatch(joined, /Write the next scene\./);
 });
 
-test('checker messages prefer the exact runtime Writer request snapshot', () => {
-  const exactWriterMessages = [
-    { role: 'system', content: 'Exact cached prefix.' },
-    { role: 'user', content: 'Exact Writer request.' }
-  ];
-  const lines = [dialogue('Aether', 'Forward.')];
-  const turnContext = {
-    runtime: {
-      narrativeEngine: { writerRequestMessages: exactWriterMessages }
-    },
-    processed: {
-      promptBuilder: {
-        messages: [{ role: 'user', content: 'Stale prompt builder state.' }]
-      },
-      narrativeEngine: { writerResponse: 'Aether: Forward.' },
-      vnManager: { processedLines: lines },
-      dialogueProcessor: { dialogue: logic.buildScriptFromLines(lines) }
-    }
-  };
-
-  const messages = logic.buildCheckerMessages(turnContext, 'Review.', {});
-
-  assert.deepStrictEqual(messages.slice(0, 2), exactWriterMessages);
-  assert.equal(messages[2].role, 'assistant');
-  assert.equal(messages[3].role, 'user');
+test('checker messages are named semantically, not by position', () => {
+  const named = logic._private.namePromptMessages([
+    { role: 'system', content: 'Instructions.' },
+    { role: 'user', content: 'Draft.' }
+  ], 'check');
+  assert.deepStrictEqual(named.map(m => m.piece), ['check.instructions', 'check.review_target']);
+  const single = logic._private.namePromptMessages([{ role: 'user', content: 'Only.' }], 'flag.consistency');
+  assert.deepStrictEqual(single.map(m => m.piece), ['flag.consistency']);
 });
 
 test('checker model assignment reuses the Writer by default', () => {
@@ -247,7 +230,7 @@ test('flag findings parse JSON arrays and cap per-agent counts', () => {
   assert.deepEqual(logic.parseFlagFindings('', 'cat1_banned_phrases', 4), []);
 });
 
-test('corrector messages carry findings and the tagged draft after the Writer context', () => {
+test('corrector sends instructions plus findings and the tagged draft, without the Writer conversation', () => {
   const writerMessages = [
     { role: 'system', content: 'Writer system prompt.' },
     { role: 'user', content: 'Write the next scene.' }
@@ -269,13 +252,14 @@ test('corrector messages carry findings and the tagged draft after the Writer co
 
   const messages = logic.buildCorrectorMessages(turnContext, 'Fix it.', findings, {});
 
-  assert.deepStrictEqual(messages.slice(0, 2), writerMessages);
-  assert.equal(messages[2].role, 'assistant');
-  const review = messages[3].content;
-  assert.match(review, /^Fix it\./);
+  assert.deepStrictEqual(messages.map(m => m.role), ['system', 'user']);
+  assert.equal(messages[0].content, 'Fix it.');
+  const review = messages[1].content;
   assert.match(review, /<flagged_findings>/);
   assert.match(review, /Wrong direction\./);
   assert.match(review, /<draft_to_validate>/);
+  const joined = messages.map(m => m.content).join('\n');
+  assert.doesNotMatch(joined, /Writer system prompt\./);
 });
 
 function makeHqTurnContext(lines) {
