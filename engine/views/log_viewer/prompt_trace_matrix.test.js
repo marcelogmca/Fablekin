@@ -41,7 +41,7 @@ test('exclusive spans sum to owned chars; separators land in overhead, never in 
     assert.ok(Math.abs(attr.overheadTokens - (7 / 107) * 1000) < 1e-9);
 });
 
-test('semantic rollup: leaf parent chain preserved, each byte counted once', () => {
+function threeLevelFixture() {
     const trace = makeTrace({
         components: {
             'root.simulation': { id: 'root.simulation', parent: 'root', label: 'Simulation', owner: 'core' },
@@ -61,15 +61,43 @@ test('semantic rollup: leaf parent chain preserved, each byte counted once', () 
         title: 'W', request: { payload: { promptTrace: trace } },
         response: { payload: { usage: { prompt_tokens: 500 } } }, error: null, trace
     };
-    const matrix = Matrix.buildMatrix([call]);
-    // Both leaves roll under one family row; chars sum without double count
-    const totalChars = matrix.columns[0].totalChars;
-    assert.equal(totalChars, 100);
-    let cellChars = 0;
-    for (const [, cell] of matrix.columns[0].cells) {
-        if (cell.pieces.length) cellChars += cell.chars;
+    return Matrix.buildMatrix([call]);
+}
+
+test('row tree nests to any depth and root cells sum to the provider total', () => {
+    const matrix = threeLevelFixture();
+    const byId = new Map(matrix.rows.map((row) => [row.id, row]));
+    assert.deepEqual(matrix.rows.map((row) => row.id), ['root.simulation', 'wst.ctx', 'wst.ctx.time']);
+    assert.equal(byId.get('root.simulation').depth, 0);
+    assert.equal(byId.get('wst.ctx').depth, 1);
+    assert.equal(byId.get('wst.ctx.time').depth, 2);
+    assert.equal(byId.get('root.simulation').hasChildren, true);
+    assert.equal(byId.get('wst.ctx').hasChildren, true);
+    assert.equal(byId.get('wst.ctx.time').hasChildren, false);
+    // Root-level cells sum to the whole column total; descendants are splits.
+    let rootChars = 0;
+    for (const row of matrix.rows) {
+        if (row.depth !== 0) continue;
+        rootChars += matrix.columns[0].cells.get(row.id).chars;
     }
-    assert.equal(cellChars, 100);
+    assert.equal(rootChars, 100);
+    assert.equal(matrix.columns[0].cells.get('wst.ctx.time').chars, 40);
+    assert.equal(matrix.columns[0].cells.get('root.simulation').chars, 100);
+});
+
+test('rollup attributes tokens so each subtree equals the sum of its leaves', () => {
+    const matrix = threeLevelFixture();
+    const root = matrix.columns[0].cells.get('root.simulation');
+    const mid = matrix.columns[0].cells.get('wst.ctx');
+    const leaf = matrix.columns[0].cells.get('wst.ctx.time');
+    // 500 provider tokens over 100 chars: leaf 40 chars -> 200, mid's own 60
+    // chars -> 300, so mid = 300 + 200 = 500 and root = 500.
+    assert.ok(Math.abs(leaf.tokens - 200) < 1e-6, `leaf=${leaf.tokens}`);
+    assert.ok(Math.abs(mid.tokens - 500) < 1e-6, `mid=${mid.tokens}`);
+    assert.ok(Math.abs(root.tokens - 500) < 1e-6, `root=${root.tokens}`);
+    assert.equal(root.chars, 100);
+    assert.equal(mid.chars, 100);
+    assert.equal(leaf.chars, 40);
 });
 
 test('same componentId across two calls links as shared', () => {

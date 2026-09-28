@@ -2581,27 +2581,24 @@ function renderTokenMapIntoContainer(container, turnLogData) {
     header.appendChild(title);
     const hint = document.createElement('span');
     hint.className = 'waterfall-timing-summary';
-    hint.textContent = 'Columns sorted by input cost, heaviest first. Input rows are ~attributed shares; Reasoning/Output rows are provider-reported whole-call totals.';
+    hint.textContent = 'Columns sorted by input cost, heaviest first. Click ▸ to split a row into its nested pieces. Input rows are ~attributed shares; Reasoning/Output rows are provider-reported whole-call totals.';
     header.appendChild(hint);
     container.appendChild(header);
 
-    // Row totals for default sort (largest input burden first)
-    const rowTotals = new Map();
-    for (const row of matrix.rows) {
-        let tokens = 0;
-        let chars = 0;
-        for (const col of matrix.columns) {
-            const cell = col.cells.get(row.id);
-            if (cell) { chars += cell.chars; tokens += cell.tokens || 0; }
+    // Parser already returns rows in DFS order (families by burden, children
+    // nested). Depth 0 rows are what users see until they expand a row.
+    const expandedRows = new Set();
+    const rowById = new Map(matrix.rows.map((row) => [row.id, row]));
+    const isRowVisible = (row) => {
+        let cursor = row;
+        const guard = new Set();
+        while (cursor && cursor.parentId && !guard.has(cursor.id)) {
+            guard.add(cursor.id);
+            if (!expandedRows.has(cursor.parentId)) return false;
+            cursor = rowById.get(cursor.parentId);
         }
-        rowTotals.set(row.id, { tokens, chars });
-    }
-    const sortedRows = [...matrix.rows].sort((a, b) => {
-        if (a.id === '__formatting__') return 1;
-        if (b.id === '__formatting__') return -1;
-        return (rowTotals.get(b.id).tokens - rowTotals.get(a.id).tokens)
-            || a.label.localeCompare(b.label);
-    });
+        return true;
+    };
 
     const maxCell = Math.max(1, ...matrix.columns.flatMap((col) =>
         [...col.cells.values()].map((cell) => cell.tokens || 0)));
@@ -2755,16 +2752,65 @@ function renderTokenMapIntoContainer(container, turnLogData) {
     };
     callMetricRows.forEach(appendMetricRow);
 
-    for (const row of sortedRows) {
+    const rowElements = [];
+    const applyRowVisibility = () => {
+        for (const entry of rowElements) {
+            entry.tr.hidden = !isRowVisible(entry.row);
+        }
+    };
+    const toggleRow = (row, tr) => {
+        if (!row.hasChildren) return;
+        if (expandedRows.has(row.id)) expandedRows.delete(row.id);
+        else expandedRows.add(row.id);
+        tr.classList.toggle('token-map-expanded', expandedRows.has(row.id));
+        const marker = tr.querySelector('.token-map-toggle-marker');
+        if (marker) marker.textContent = expandedRows.has(row.id) ? '▾' : '▸';
+        applyRowVisibility();
+    };
+
+    for (const row of matrix.rows) {
         const tr = document.createElement('tr');
+        tr.className = 'token-map-row';
+        tr.dataset.rowId = row.id;
+        tr.dataset.depth = String(row.depth);
+        if (row.parentId) tr.dataset.parentId = row.parentId;
+        if (row.depth > 0) tr.classList.add('token-map-row-child');
+        if (row.isFormatting) tr.classList.add('token-map-row-formatting');
+
         const th = document.createElement('th');
         th.className = 'token-map-rowh';
         th.scope = 'row';
-        th.textContent = row.label;
-        th.title = row.id === '__formatting__'
+        th.style.setProperty('--token-map-depth', String(row.depth));
+        th.title = row.isFormatting
             ? 'Message-owned separators (no component owner). Visible overhead, never hidden padding.'
-            : `${row.id}${row.owner ? ` · owner ${row.owner}` : ''}`;
+            : `${row.id}${row.owner ? ` · owner ${row.owner}` : ''}${row.hasChildren ? ' · has nested pieces' : ''}`;
+
+        const labelWrap = document.createElement('span');
+        labelWrap.className = 'token-map-rowlabel';
+        if (row.hasChildren) {
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'token-map-rowtoggle';
+            toggle.setAttribute('aria-label', `Expand ${row.label}`);
+            toggle.title = 'Expand nested pieces';
+            const marker = document.createElement('span');
+            marker.className = 'token-map-toggle-marker';
+            marker.textContent = '▸';
+            toggle.appendChild(marker);
+            toggle.addEventListener('click', () => toggleRow(row, tr));
+            labelWrap.appendChild(toggle);
+        } else {
+            const spacer = document.createElement('span');
+            spacer.className = 'token-map-togglespacer';
+            labelWrap.appendChild(spacer);
+        }
+        const labelText = document.createElement('span');
+        labelText.className = 'token-map-rowtext';
+        labelText.textContent = row.label;
+        labelWrap.appendChild(labelText);
+        th.appendChild(labelWrap);
         tr.appendChild(th);
+
         matrix.columns.forEach((col, columnIndex) => {
             const td = document.createElement('td');
             const cell = col.cells.get(row.id);
@@ -2773,21 +2819,24 @@ function renderTokenMapIntoContainer(container, turnLogData) {
             td.dataset.heat = String(heatFor(tokens));
             td.dataset.columnIndex = String(columnIndex);
             td.dataset.rowId = row.id;
-            if (!cell) {
+            if (!cell || !cell.chars) {
                 td.innerHTML = '<span class="token-map-empty">·</span>';
             } else {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'token-map-value';
-                button.textContent = tokenMapFormatTokens(cell.tokens);
-                button.title = `${col.title} × ${row.label}: ${cell.chars.toLocaleString()} chars, ${tokenMapFormatTokens(cell.tokens)} attributed input tokens (${tokenMapStatusBadge(col.status)})`;
+                button.textContent = tokenMapFormatTokens(cell.hasTokens ? cell.tokens : null);
+                button.title = `${col.title} × ${row.label}: ${cell.chars.toLocaleString()} chars, ${cell.hasTokens ? tokenMapFormatTokens(cell.tokens) : 'no provider total'} attributed input tokens (${tokenMapStatusBadge(col.status)})`;
                 button.addEventListener('click', () => showCellDetail(columnIndex, row.id));
                 td.appendChild(button);
             }
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
+        rowElements.push({ row, tr });
     }
+    applyRowVisibility();
+
     table.appendChild(tbody);
     wrap.appendChild(table);
     container.appendChild(wrap);

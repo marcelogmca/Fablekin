@@ -265,30 +265,28 @@
     }
 
     // ---- matrix assembly ---------------------------------------------------
-    // Rows keyed by semantic top-level family: the component's own id when its
-    // parent chain reaches a pillar root quickly, else its slot ancestor.
-    // Simpler rule: row = highest ancestor below the pillar root.
-    function pillarRootOf(componentId, components) {
-        let current = componentId;
-        const seen = new Set();
-        let topmost = componentId;
-        while (current && !seen.has(current)) {
-            seen.add(current);
-            topmost = current;
-            const parent = components[current] ? components[current].parent : null;
-            if (parent == null) break;
-            // Stop at pillar roots (root/writer/director) — the row is the
-            // child just beneath the pillar.
-            if (parent === 'root' || parent === 'writer' || parent === 'director') break;
-            current = parent;
+    // Rows form the semantic component forest from manifest.components parent
+    // links. Pillars (root/writer/director) are not rows; their children are
+    // the depth-0 families. Every node's cell is a subtree ROLLUP: own pieces
+    // plus descendants, so expanding a row splits the same bytes across its
+    // children without ever counting a byte twice at the same level.
+    const PILLARS = new Set(['root', 'writer', 'director']);
+    const FORMATTING_ID = '__formatting__';
+
+    function emptyCell() {
+        return { chars: 0, tokens: 0, hasTokens: false, pieces: [] };
+    }
+
+    function addPieceToCell(cell, piece) {
+        cell.chars += piece.chars;
+        if (piece.tokens != null) {
+            cell.tokens += piece.tokens;
+            cell.hasTokens = true;
         }
-        return topmost;
+        cell.pieces.push(piece);
     }
 
     function buildMatrix(calls, options = {}) {
-        const columns = [];
-        const rowIndex = new Map(); // rowId -> row
-        const rows = [];
         const sharedIndex = new Map(); // componentId -> Set(columnIndex)
 
         const attributed = calls.map((call) => ({ call, attribution: attributeCall(call) }));
@@ -305,47 +303,42 @@
             });
         }
 
+        const componentMeta = new Map(); // id -> { parent, label, owner }
+        const directByColumn = []; // columnIndex -> Map(componentId -> cell)
+        const columns = [];
+
         attributed.forEach(({ call, attribution }, columnIndex) => {
             const manifest = call.trace && call.trace.manifest;
             const components = manifest && isObject(manifest.components) ? manifest.components : {};
-            const cells = new Map(); // rowId -> { chars, tokens, pieces[] }
-            const addCell = (rowId, piece) => {
-                if (!rowIndex.has(rowId)) {
-                    const component = components[rowId] || {};
-                    rowIndex.set(rowId, rows.length);
-                    rows.push({
-                        id: rowId,
-                        label: component.label || rowId,
-                        owner: component.owner || null,
-                        parent: component.parent || null
-                    });
+            for (const [id, meta] of Object.entries(components)) {
+                if (!isObject(meta)) continue;
+                const existing = componentMeta.get(id);
+                if (!existing) {
+                    componentMeta.set(id, { parent: meta.parent ?? null, label: meta.label || id, owner: meta.owner ?? null });
+                    continue;
                 }
-                if (!cells.has(rowId)) cells.set(rowId, { chars: 0, tokens: 0, pieces: [] });
-                const cell = cells.get(rowId);
-                cell.chars += piece.chars;
-                if (piece.tokens != null) cell.tokens = (cell.tokens || 0) + piece.tokens;
-                cell.pieces.push(piece);
-            };
+                if (existing.parent == null && meta.parent != null) existing.parent = meta.parent;
+                if (!existing.label && meta.label) existing.label = meta.label;
+                if (existing.owner == null && meta.owner != null) existing.owner = meta.owner;
+            }
 
+            const direct = new Map();
             for (const piece of attribution.pieces) {
-                const rowId = pillarRootOf(piece.componentId, components);
-                addCell(rowId, piece);
+                if (!direct.has(piece.componentId)) direct.set(piece.componentId, emptyCell());
+                addPieceToCell(direct.get(piece.componentId), piece);
                 if (!sharedIndex.has(piece.componentId)) sharedIndex.set(piece.componentId, new Set());
                 sharedIndex.get(piece.componentId).add(columnIndex);
             }
             if (attribution.overheadChars > 0) {
-                const rowId = '__formatting__';
-                if (!rowIndex.has(rowId)) {
-                    rowIndex.set(rowId, rows.length);
-                    rows.push({ id: rowId, label: 'Message formatting', owner: null, parent: null });
-                }
-                if (!cells.has(rowId)) cells.set(rowId, { chars: 0, tokens: 0, pieces: [] });
-                const cell = cells.get(rowId);
+                if (!direct.has(FORMATTING_ID)) direct.set(FORMATTING_ID, emptyCell());
+                const cell = direct.get(FORMATTING_ID);
                 cell.chars += attribution.overheadChars;
                 if (attribution.overheadTokens != null) {
-                    cell.tokens = (cell.tokens || 0) + attribution.overheadTokens;
+                    cell.tokens += attribution.overheadTokens;
+                    cell.hasTokens = true;
                 }
             }
+            directByColumn.push(direct);
 
             const route = callRoute(call);
             columns.push({
@@ -363,9 +356,98 @@
                 provider: route.provider,
                 model: route.model,
                 totalChars: attribution.totalChars,
-                sourceCall: call,
-                cells
+                sourceCall: call
             });
+        });
+
+        // Build the component forest.
+        const nodes = new Map();
+        const ensureNode = (id) => {
+            if (!id || id === FORMATTING_ID || PILLARS.has(id)) return null;
+            if (nodes.has(id)) return nodes.get(id);
+            const meta = componentMeta.get(id) || { parent: null, label: id, owner: null };
+            const node = { id, label: meta.label || id, owner: meta.owner ?? null, parentId: null, children: [], isFormatting: false, cells: null, depth: 0, hasChildren: false };
+            nodes.set(id, node);
+            if (meta.parent && !PILLARS.has(meta.parent)) {
+                const parentNode = ensureNode(meta.parent);
+                if (parentNode) {
+                    node.parentId = meta.parent;
+                    parentNode.children.push(node);
+                }
+            }
+            return node;
+        };
+        for (const id of componentMeta.keys()) ensureNode(id);
+        for (const direct of directByColumn) {
+            for (const id of direct.keys()) if (id !== FORMATTING_ID) ensureNode(id);
+        }
+        if (directByColumn.some((direct) => direct.has(FORMATTING_ID))) {
+            nodes.set(FORMATTING_ID, { id: FORMATTING_ID, label: 'Message formatting', owner: null, parentId: null, children: [], isFormatting: true, cells: null, depth: 0, hasChildren: false });
+        }
+
+        // Roll child cells up into each parent (post-order).
+        const emptyByColumn = () => columns.map(() => emptyCell());
+        const rollup = (node) => {
+            const perColumn = emptyByColumn();
+            for (let ci = 0; ci < columns.length; ci += 1) {
+                const own = directByColumn[ci].get(node.id);
+                if (own) {
+                    perColumn[ci].chars += own.chars;
+                    perColumn[ci].tokens += own.tokens;
+                    perColumn[ci].hasTokens = perColumn[ci].hasTokens || own.hasTokens;
+                    if (own.pieces.length) perColumn[ci].pieces.push(...own.pieces);
+                }
+            }
+            for (const child of node.children) {
+                const childColumns = rollup(child);
+                for (let ci = 0; ci < columns.length; ci += 1) {
+                    const childCell = childColumns[ci];
+                    if (!childCell) continue;
+                    perColumn[ci].chars += childCell.chars;
+                    perColumn[ci].tokens += childCell.tokens;
+                    perColumn[ci].hasTokens = perColumn[ci].hasTokens || childCell.hasTokens;
+                    if (childCell.pieces.length) perColumn[ci].pieces.push(...childCell.pieces);
+                }
+            }
+            node.cells = perColumn;
+            node.totalTokens = 0;
+            node.totalChars = 0;
+            for (let ci = 0; ci < columns.length; ci += 1) {
+                const cell = perColumn[ci];
+                node.totalChars += cell.chars;
+                if (cell.hasTokens) node.totalTokens += cell.tokens;
+            }
+            return perColumn;
+        };
+
+        const roots = [];
+        for (const node of nodes.values()) if (!node.parentId) roots.push(node);
+        for (const root of roots) rollup(root);
+
+        const sortNodes = (a, b) => (b.totalTokens - a.totalTokens)
+            || (b.totalChars - a.totalChars)
+            || a.label.localeCompare(b.label);
+        roots.sort((a, b) => {
+            if (a.isFormatting) return 1;
+            if (b.isFormatting) return -1;
+            return sortNodes(a, b);
+        });
+
+        const rows = [];
+        const visit = (node, depth) => {
+            node.depth = depth;
+            node.hasChildren = node.children.length > 0;
+            rows.push(node);
+            node.children.sort(sortNodes);
+            node.children.forEach((child) => visit(child, depth + 1));
+        };
+        roots.forEach((root) => visit(root, 0));
+
+        // Attach rolled-up cells to each column (keyed by row id).
+        columns.forEach((column, ci) => {
+            const cells = new Map();
+            for (const node of rows) cells.set(node.id, node.cells[ci]);
+            column.cells = cells;
         });
 
         const shared = [];

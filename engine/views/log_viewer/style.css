@@ -1569,7 +1569,16 @@ th.token-map-corner { min-width: 190px; max-width: 280px; padding: 8px 10px; tex
 th.token-map-head { min-width: 118px; max-width: 170px; padding: 6px 8px; vertical-align: bottom; }
 .token-map-call { display: block; font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; color: var(--text-main); }
 .token-map-badge { display: inline-block; margin-top: 3px; font-size: 10px; padding: 1px 7px; border-radius: 12px; border: var(--border-thin); color: var(--text-main); opacity: .85; }
-th.token-map-rowh { min-width: 190px; max-width: 280px; padding: 6px 10px; text-align: left; position: sticky; left: 0; z-index: 1; background: #252e39; font-weight: 600; font-size: 12px; color: var(--text-main); }
+th.token-map-rowh { min-width: 190px; max-width: 280px; padding: 6px 10px 6px calc(6px + var(--token-map-depth, 0) * 15px); text-align: left; position: sticky; left: 0; z-index: 1; background: #252e39; font-weight: 600; font-size: 12px; color: var(--text-main); }
+.token-map-rowlabel { display: flex; align-items: center; gap: 5px; }
+.token-map-rowtoggle { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex: 0 0 16px; padding: 0; border: 0; border-radius: 4px; background: rgba(var(--color-white-rgb), 0.08); color: var(--text-main); cursor: pointer; font-size: 10px; line-height: 1; }
+.token-map-rowtoggle:hover, .token-map-rowtoggle:focus-visible { background: rgba(var(--color-primary-rgb), 0.35); color: #fff; outline: none; }
+.token-map-togglespacer { display: inline-block; width: 16px; flex: 0 0 16px; }
+.token-map-rowtext { overflow-wrap: anywhere; }
+.token-map-row-child th.token-map-rowh { font-weight: 500; }
+.token-map-row-child th.token-map-rowh .token-map-rowtext { color: #c4ccd6; }
+.token-map-row-formatting th.token-map-rowh { font-style: italic; opacity: .85; }
+tr.token-map-row[hidden] { display: none; }
 td.token-map-cell { height: 38px; min-width: 118px; background: #232b35; border-radius: 5px; text-align: center; padding: 0; }
 td.token-map-cell[data-heat="1"] { background: #2c4258; }
 td.token-map-cell[data-heat="2"] { background: #2f6483; }
