@@ -21,7 +21,6 @@ const CONFIG = {
     ? settings.narrative_agents.asset_selector.background_params
     : {
       max_tokens: 1500,
-      temperature: 0.3,
       retries: 1,
       timeout: 120000
     },
@@ -29,7 +28,6 @@ const CONFIG = {
     ? settings.narrative_agents.asset_selector.ost_params
     : {
       max_tokens: 1500,
-      temperature: 0.3,
       retries: 1,
       timeout: 120000
     }
@@ -504,10 +502,13 @@ async function selectBestBackground(turnContext) {
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
       provider: resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider,
-      retries: CONFIG.BACKGROUND_PARAMS.retries,
+      retries: CONFIG.BACKGROUND_PARAMS.retries ?? CONFIG.BACKGROUND_PARAMS.retryCount,
       timeout: CONFIG.BACKGROUND_PARAMS.timeout,
       prompt: prepared,
-      ...CONFIG.BACKGROUND_PARAMS,
+      extra: {
+        ...(CONFIG.BACKGROUND_PARAMS.max_tokens !== undefined ? { max_tokens: CONFIG.BACKGROUND_PARAMS.max_tokens } : {}),
+        ...(CONFIG.BACKGROUND_PARAMS.temperature !== undefined ? { temperature: CONFIG.BACKGROUND_PARAMS.temperature } : {})
+      },
       callingModule: 'AssetSelector',
       turnLogTitle: 'Select Best Background'
     });
@@ -609,8 +610,13 @@ async function selectMetadataDrivenBackground(turnContext, backgrounds, metadata
     const { content: llmFilterResponse, model: resolvedModelFilter } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
       provider: resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider,
+      retries: CONFIG.BACKGROUND_PARAMS.retries ?? CONFIG.BACKGROUND_PARAMS.retryCount,
+      timeout: CONFIG.BACKGROUND_PARAMS.timeout,
       prompt: filterPrepared,
-      ...CONFIG.BACKGROUND_PARAMS,
+      extra: {
+        ...(CONFIG.BACKGROUND_PARAMS.max_tokens !== undefined ? { max_tokens: CONFIG.BACKGROUND_PARAMS.max_tokens } : {}),
+        ...(CONFIG.BACKGROUND_PARAMS.temperature !== undefined ? { temperature: CONFIG.BACKGROUND_PARAMS.temperature } : {})
+      },
       expectJson: true,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart Background Filters'
@@ -673,8 +679,13 @@ async function selectMetadataDrivenBackground(turnContext, backgrounds, metadata
     const { content: llmSelection, model: resolvedModelSelect } = await callLLM({
       model: CONFIG.BACKGROUND_MODEL,
       provider: resolveModelAlias(CONFIG.BACKGROUND_MODEL).provider,
+      retries: CONFIG.BACKGROUND_PARAMS.retries ?? CONFIG.BACKGROUND_PARAMS.retryCount,
+      timeout: CONFIG.BACKGROUND_PARAMS.timeout,
       prompt: selectionPrepared,
-      ...CONFIG.BACKGROUND_PARAMS,
+      extra: {
+        ...(CONFIG.BACKGROUND_PARAMS.max_tokens !== undefined ? { max_tokens: CONFIG.BACKGROUND_PARAMS.max_tokens } : {}),
+        ...(CONFIG.BACKGROUND_PARAMS.temperature !== undefined ? { temperature: CONFIG.BACKGROUND_PARAMS.temperature } : {})
+      },
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart Background Select'
     });
@@ -1028,10 +1039,13 @@ async function buildNormalPathOstCategoryChoices(turnContext, sceneDescription, 
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
-      retries: CONFIG.OST_PARAMS.retries,
+      retries: CONFIG.OST_PARAMS.retries ?? CONFIG.OST_PARAMS.retryCount,
       timeout: CONFIG.OST_PARAMS.timeout,
       prompt: prepared,
-      ...CONFIG.OST_PARAMS,
+      extra: {
+        ...(CONFIG.OST_PARAMS.max_tokens !== undefined ? { max_tokens: CONFIG.OST_PARAMS.max_tokens } : {}),
+        ...(CONFIG.OST_PARAMS.temperature !== undefined ? { temperature: CONFIG.OST_PARAMS.temperature } : {})
+      },
       expectJson: true,
       callingModule: 'AssetSelector',
       turnLogTitle: 'OST Category Split (Basic)'
@@ -1191,10 +1205,13 @@ async function selectBestOST(turnContext) {
     const { content: responseContent, model: resolvedModel } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
-      retries: CONFIG.OST_PARAMS.retries,
+      retries: CONFIG.OST_PARAMS.retries ?? CONFIG.OST_PARAMS.retryCount,
       timeout: CONFIG.OST_PARAMS.timeout,
       prompt: prepared,
-      ...CONFIG.OST_PARAMS,
+      extra: {
+        ...(CONFIG.OST_PARAMS.max_tokens !== undefined ? { max_tokens: CONFIG.OST_PARAMS.max_tokens } : {}),
+        ...(CONFIG.OST_PARAMS.temperature !== undefined ? { temperature: CONFIG.OST_PARAMS.temperature } : {})
+      },
       callingModule: 'AssetSelector',
       turnLogTitle: 'Select Best Ost'
     });
@@ -1303,8 +1320,13 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
     const { content: llmFilterResponse, model: resolvedModelFilter } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
+      retries: CONFIG.OST_PARAMS.retries ?? CONFIG.OST_PARAMS.retryCount,
+      timeout: CONFIG.OST_PARAMS.timeout,
       prompt: filterPrepared,
-      ...CONFIG.OST_PARAMS,
+      extra: {
+        ...(CONFIG.OST_PARAMS.max_tokens !== undefined ? { max_tokens: CONFIG.OST_PARAMS.max_tokens } : {}),
+        ...(CONFIG.OST_PARAMS.temperature !== undefined ? { temperature: CONFIG.OST_PARAMS.temperature } : {})
+      },
       expectJson: true,
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart OST Filters'
@@ -1392,8 +1414,13 @@ async function selectMetadataDrivenOST(turnContext, ostList, metadataList, histo
     const { content: llmSelection, model: resolvedModelSelect } = await callLLM({
       model: CONFIG.OST_MODEL,
       provider: resolveModelAlias(CONFIG.OST_MODEL).provider,
+      retries: CONFIG.OST_PARAMS.retries ?? CONFIG.OST_PARAMS.retryCount,
+      timeout: CONFIG.OST_PARAMS.timeout,
       prompt: selectionPrepared,
-      ...CONFIG.OST_PARAMS,
+      extra: {
+        ...(CONFIG.OST_PARAMS.max_tokens !== undefined ? { max_tokens: CONFIG.OST_PARAMS.max_tokens } : {}),
+        ...(CONFIG.OST_PARAMS.temperature !== undefined ? { temperature: CONFIG.OST_PARAMS.temperature } : {})
+      },
       callingModule: 'AssetSelector',
       turnLogTitle: 'Smart OST Select'
     });

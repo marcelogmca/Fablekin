@@ -16,6 +16,10 @@ const SPATIAL_STAGE_OVER_SHOULDER_Y = Object.freeze({
 const OPAQUE_PIXEL_ALPHA_THRESHOLD = 16;
 const OPAQUE_BOUNDS_MAX_ANALYSIS_SIZE = 384;
 const OPAQUE_BOUNDS_SAMPLE_PADDING = 2;
+// Pixi-side negative cache: a sprite path the backend already failed stays
+// local-only for this long instead of re-emitting a socket request on every
+// texture reload (~1/sec per visible sprite while failing).
+const OPAQUE_BOUNDS_NEGATIVE_CACHE_MS = 5 * 60 * 1000;
 
 
 export const pixiSpriteManager = {
@@ -34,6 +38,7 @@ export const pixiSpriteManager = {
     textureOpaqueBounds: new WeakMap(),
     textureOpaqueBoundsPromises: new WeakMap(),
     opaqueBoundsRequestId: 0,
+    opaqueBoundsFailedPaths: new Map(),
     gpuPreparedSpriteTextures: new WeakSet(),
     gpuPrepareSpritePromises: new WeakMap(),
 
@@ -183,6 +188,17 @@ export const pixiSpriteManager = {
         const pending = this.textureOpaqueBoundsPromises.get(texture);
         if (pending) return pending;
 
+        // Negative cache: if the backend already failed this exact sprite
+        // path, skip the socket round-trip and reuse the local analysis
+        // instead of re-emitting a request every time the texture reloads.
+        const failedKey = String(spritePath || '');
+        const failedAt = this.opaqueBoundsFailedPaths?.get(failedKey) || 0;
+        if (failedAt && (Date.now() - failedAt) < OPAQUE_BOUNDS_NEGATIVE_CACHE_MS) {
+            const fallback = this._computeDownscaledTextureOpaqueBounds(texture);
+            this.textureOpaqueBounds.set(texture, fallback);
+            return fallback;
+        }
+
         const assetUrl = String(texture.__vnSpriteAssetUrl || '').trim();
         if (assetUrl) this._pinSpriteAssetUrl(assetUrl);
         const work = (async () => {
@@ -193,10 +209,15 @@ export const pixiSpriteManager = {
                     : null;
                 if (persisted) {
                     this.textureOpaqueBounds.set(texture, persisted);
+                    this.opaqueBoundsFailedPaths?.delete(failedKey);
                     return persisted;
                 }
+                // Backend answered but without usable bounds: remember the
+                // miss so we fall back locally without re-asking each time.
+                this.opaqueBoundsFailedPaths?.set(failedKey, Date.now());
             } catch (error) {
                 debugLog('[SpriteManager] Persistent sprite bounds unavailable; using local downscaled analysis.', error?.message || error);
+                this.opaqueBoundsFailedPaths?.set(failedKey, Date.now());
             }
 
             const fallback = this._computeDownscaledTextureOpaqueBounds(texture);

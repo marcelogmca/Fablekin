@@ -204,7 +204,7 @@ test('runtime applies per-book settings, injects placement, and persists activat
         settings: { getSelf: () => ({ max_tokens: 2000, max_recursive_depth: 2, default_scan_depth: 3 }) },
         prompt: {
             wrap: (tag, content) => `<${tag}>${content}</${tag}>`,
-            contribute: (pieceId, content) => injections.push({ pieceId, content })
+            contribute: (input) => injections.push({ id: input?.id, children: input?.children })
         }
     };
 
@@ -234,8 +234,8 @@ test('runtime applies per-book settings, injects placement, and persists activat
 
         await plugin.hooks.HOOK_POST_PROMPT_BUILDER.run(turnContext, tools);
         assert.equal(injections.length, 1);
-        assert.equal(injections[0].pieceId, 'lore_shared_dynamic');
-        assert.match(injections[0].content.entries, /Gojo is a teacher/);
+        assert.equal(injections[0].id, 'lore_shared_dynamic');
+        assert.match(injections[0].children.entries, /Gojo is a teacher/);
 
         await new Promise((resolve) => setTimeout(resolve, 25));
         const diagnosticRow = await rawDb.get(

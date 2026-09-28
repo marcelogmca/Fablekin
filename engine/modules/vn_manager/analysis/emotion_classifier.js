@@ -17,8 +17,7 @@ const CONFIG = {
   LLM_PARAMS: settings.narrative_agents?.emotion_classifier?.llm_params
     ? settings.narrative_agents.emotion_classifier.llm_params
     : {
-      max_tokens: 5000,
-      temperature: 0.3
+      max_tokens: 5000
     }
 };
 
@@ -526,7 +525,7 @@ async function _classifyEmotionChunk(turnContext, dialogues, classificationConte
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
       prompt: prepared,
-      ...CONFIG.LLM_PARAMS,
+      extra: { ...CONFIG.LLM_PARAMS },
       callingModule: 'EmotionClassifier',
       turnLogTitle: 'Emotion Classifier - Chunk'
     });

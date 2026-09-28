@@ -261,7 +261,13 @@ function pruneLanes() {
 }
 
 export function renderLlmRoad() {
-    if (!roadAvailable() || state.llmCalls.size === 0) return;
+    if (!roadAvailable()) return;
+    // With no lanes yet the grid must still fill the scroll box; otherwise the
+    // absolutely-positioned "waiting" placeholder gets clipped to ~1 line.
+    if (state.llmCalls.size === 0) {
+        if (elements.llmRoadGrid) elements.llmRoadGrid.style.width = '100%';
+        return;
+    }
 
     const now = nowMs();
     const runStart = state.llmRunStartTime || now;

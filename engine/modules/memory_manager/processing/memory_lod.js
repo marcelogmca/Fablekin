@@ -3,6 +3,7 @@ const { Logger, readSettings, generateHash, TurnLogger } = require('../../utils.
 const memorymanagement = require('../memory_manager.js');
 const chaptermanagement = require('../../chaptermanagement.js');
 const { callLLM, resolveModelAlias } = require('../../llm.js');
+const { Prompt } = require('../../prompt/prompt.js');
 const { runWithDiagnosticContext } = require('../../diagnostic_context.js');
 
 const DEFAULT_COMPRESSED_HISTORY_PRESETS = Object.freeze({
@@ -423,9 +424,9 @@ async function compressArcBucket(bucket, options = {}) {
 
     const compressionPromise = (async () => {
         const promptStr = createArcCompressionPrompt(combinedText, config.targetWords);
-        const messages = [
-            { role: 'user', content: promptStr }
-        ];
+        const prepared = new Prompt({ id: 'core.memory.arc_compression' })
+            .user(message => message.add('core.memory.arc_compression', promptStr))
+            .prepare();
         const { content: llmResult } = await runWithDiagnosticContext({
             executionLane: 'core',
             phase: 'Memory LOD',
@@ -434,22 +435,20 @@ async function compressArcBucket(bucket, options = {}) {
             blocking: options.blocking !== false
         }, async () => {
             const title = 'MemoryLOD Arc Compression';
-            TurnLogger.logRequest(title, messages, config.model, config.provider);
             try {
                 const result = await adapters.call({
-                    messages,
+                    prompt: prepared,
                     model: config.model,
                     provider: config.provider,
                     retries: config.retries,
                     timeout: config.timeout,
                     minCharacters: config.minCharacters,
                     extra: { reasoning: { effort: 'none' } },
-                    callingModule: 'ArcCompression'
+                    callingModule: 'ArcCompression',
+                    turnLogTitle: title
                 });
-                TurnLogger.logResponse(title, result?.content, result?.model || config.model, result?.provider || config.provider);
                 return result;
             } catch (error) {
-                TurnLogger.logError(title, error, config.model, config.provider);
                 throw error;
             }
         });

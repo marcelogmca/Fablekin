@@ -89,8 +89,8 @@ test('generates editable situations and saves full judgments without invoking cu
     assert.equal(calls[0][1].model, 'lowendmodel');
     assert.equal(calls[1][1].model, 'highendmodel');
     assert.equal(calls.length, 2, 'feedback storage does not invoke the analysis model while curation is disabled');
-    assert.match(calls[1][1].messages[0].content, /^Persona starts here\./, 'persona begins the actor input');
-    assert.match(calls[1][1].messages[1].content, /manually edited/);
+    assert.match(calls[1][1].prompt.messages[0].text, /^Persona starts here\./, 'persona begins the actor input');
+    assert.match(calls[1][1].prompt.messages[1].text, /manually edited/);
     const evidence = saved.examples.find(item => item.id === acted.id);
     assert.equal(evidence.scenario_text, 'A manually edited version of the generated probe.');
     assert.equal(evidence.actor_response, 'A measured response.');
@@ -102,9 +102,9 @@ test('generates editable situations and saves full judgments without invoking cu
 test('structured prompts state their exact JSON contracts and situation titles remain optional', async t => {
     const { tools } = await makeTools(t, {
         withSchema: async (task, schema) => {
-            assert.match(task.messages[0].content, /Use these exact top-level keys/);
-            assert.match(task.messages[0].content, /"situation"/);
-            assert.match(task.messages[0].content, /Do not wrap it in "content"/);
+            assert.match(task.prompt.messages[0].text, /Use these exact top-level keys/);
+            assert.match(task.prompt.messages[0].text, /"situation"/);
+            assert.match(task.prompt.messages[0].text, /Do not wrap it in "content"/);
             assert.ok(!schema.required.includes('title'));
             return {
                 content: {

@@ -24,8 +24,9 @@ const pendingLedgerUpdatesByProject = new Map();
 const DEFAULT_DIRECTOR_ANALYSIS_TIMEOUT = 120000;
 const DEFAULT_DIRECTOR_LEDGER_TIMEOUT = 60000;
 const DEFAULT_DIRECTOR_RETRIES = 0;
+// No application-wide sampling defaults (temperature/top_p/penalties): the
+// selected model runs its native settings unless director.llm_params overrides.
 const DEFAULT_DIRECTOR_LLM_PARAMS = {
-  temperature: 0.5,
   max_tokens: 32000
 };
 
@@ -1157,7 +1158,7 @@ async function runDeferredPluginFeedback(promptObj, config, analysisResponse, tu
         retries: 0,
         timeout: config.PLUGIN_FEEDBACK_TIMEOUT,
         expectJson: true,
-        ...config.LLM_PARAMS,
+        extra: { ...config.LLM_PARAMS },
         callingModule: 'Background_Director_Plugin_Feedback_Async',
         turnLogTitle: 'Director (Plugin Feedback Async)'
       });
@@ -1213,7 +1214,7 @@ async function runDeferredLedgerUpdate(promptObj, config, analysisResponse, turn
         retries: 0,
         timeout: config.LEDGER_TIMEOUT,
         validationRegex: null,
-        ...config.LLM_PARAMS,
+        extra: { ...config.LLM_PARAMS },
         callingModule: 'Background_Ledger_Async',
         turnLogTitle: 'Director (Ledger Async)'
       });
@@ -1306,7 +1307,7 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
       retries: config.RETRIES,
       timeout: config.ANALYSIS_TIMEOUT,
       validationRegex: config.VALIDATION_REGEX,
-      ...config.LLM_PARAMS,
+      extra: { ...config.LLM_PARAMS },
       callingModule: 'Director_Analysis',
       turnLogTitle: 'Director (Analysis)'
     });
@@ -1342,7 +1343,7 @@ async function _runDirectorLLM(promptObj, config, options = {}) {
         retries: config.RETRIES,
         timeout: config.LEDGER_TIMEOUT,
         validationRegex: null, // Depending on validation needs
-        ...config.LLM_PARAMS,
+        extra: { ...config.LLM_PARAMS },
         callingModule: 'Director_Ledger',
         turnLogTitle: 'Director (Ledger)'
       });

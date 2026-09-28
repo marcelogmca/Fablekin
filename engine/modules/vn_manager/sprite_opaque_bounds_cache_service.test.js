@@ -73,6 +73,37 @@ async function run() {
       /outside the project assets directory/
     );
 
+    // Loopback asset URLs for the active project resolve to the same cache
+    // key and bounds as relative paths; other origins/projects stay rejected.
+    const urlService = createSpriteOpaqueBoundsCacheService({
+      path,
+      fs,
+      sharp,
+      getRootDirectory: () => root,
+      getProjectName: () => 'DehyaCandace',
+      maxAnalysisSize: 64
+    });
+    const viaUrl = await urlService.getOrCreate('http://127.0.0.1:49449/projects/DehyaCandace/assets/sprites/hero_neutral.png');
+    assert.strictEqual(viaUrl.success, true);
+    assert.strictEqual(viaUrl.assetPath, 'sprites/hero_neutral.png');
+    // Same cache key as the relative path => URL reuses the persisted entry
+    // rather than re-analyzing (a changed file between the two assertions
+    // would make bounds comparison meaningless, so assert identity of entry).
+    const reread = JSON.parse(await fs.readFile(cachePath, 'utf8'));
+    assert.ok(reread.entries['sprites/hero_neutral.png'], 'URL resolves to the same cache key as the relative path');
+    await assert.rejects(
+      () => urlService.getOrCreate('http://127.0.0.1:49449/projects/OtherProject/assets/sprites/hero_neutral.png'),
+      /different project/
+    );
+    await assert.rejects(
+      () => urlService.getOrCreate('https://example.com/projects/DehyaCandace/assets/sprites/hero_neutral.png'),
+      /project-local/
+    );
+    await assert.rejects(
+      () => urlService.getOrCreate('http://127.0.0.1:49449/projects/DehyaCandace/sprites/hero_neutral.png'),
+      /project-local/
+    );
+
     const secondSpritePath = path.join(spritesDir, 'companion_neutral.png');
     await createTestSprite(secondSpritePath, { x: 60, y: 20, width: 25, height: 60 });
     await fs.unlink(cachePath);

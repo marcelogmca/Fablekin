@@ -760,7 +760,6 @@ async function runSingleFlagAgent({ key, label, messages, modelAssignment, setti
     params: {
       retries: settings.retries,
       timeout: settings.timeout,
-      temperature: 0.2,
       max_tokens: 1200,
       callingModule: `Plugin:${PLUGIN_ID}:HQ:${key}`
     }
@@ -835,7 +834,6 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
     params: {
       retries: settings.retries,
       timeout: settings.timeout,
-      temperature: 0.2,
       max_tokens: 1200,
       callingModule: `Plugin:${PLUGIN_ID}:HQ:${flagTask.key}`
     }
@@ -945,7 +943,6 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
     params: {
       retries: settings.retries,
       timeout: settings.timeout,
-      temperature: 0.1,
       max_tokens: settings.hq_corrector_max_tokens,
       callingModule: `Plugin:${PLUGIN_ID}:HQ:corrector`
     }
@@ -1085,7 +1082,6 @@ async function runConsistencyCheck(turnContext, tools, settingsInput = null) {
     params: {
       retries: settings.retries,
       timeout: settings.timeout,
-      temperature: 0.1,
       max_tokens: 900,
       callingModule: `Plugin:${PLUGIN_ID}`
     }

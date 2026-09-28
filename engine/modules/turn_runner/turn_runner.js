@@ -19,7 +19,6 @@ function createTurnRunner({
     setStaticDataManager,
     pluginManager,
     narrativeEngine,
-    addWorkItem,
     getProjectSprites,
     getProjectBackgrounds,
     getProjectOSTs,
@@ -145,15 +144,9 @@ function createTurnRunner({
     }
 
     async function runNarrativeAndTransform(turnContext, settings) {
-        const directorConfig = settings.narrative_agents?.director;
-        const shouldRunAutomatedDirector =
-            directorConfig?.enabled !== false
-            && turnContext.directorEnabled === true
-            && !turnContext.input?.directorPrompt;
-        if (shouldRunAutomatedDirector) {
-            addWorkItem('director', 'Director', 60000, 180000);
-        }
-        addWorkItem('writer', 'Writer', 120000, 300000);
+        // Coarse Director/Writer ETA rows removed: the live LLM road inside
+        // the generation popup now shows per-call progress with real elapsed
+        // times. The phase title (narrative_pipeline) still drives the popup.
 
         cancellation.throwIfCancelled('narrative LLM generation');
         await narrativeEngine.generateNextChapter(turnContext);

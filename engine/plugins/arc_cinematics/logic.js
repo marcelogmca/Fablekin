@@ -1507,8 +1507,7 @@ async function generatePoem(manifest, sourceTurns, tools, settings, turnContext 
             })) },
             model: modelDef.model || 'mediumendmodel',
             params: {
-                callingModule: `Plugin:${PLUGIN_ID}:poem`,
-                temperature: 0.85
+                callingModule: `Plugin:${PLUGIN_ID}:poem`
             }
         }, schema);
 

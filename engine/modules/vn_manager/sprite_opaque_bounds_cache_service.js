@@ -88,6 +88,7 @@ function createSpriteOpaqueBoundsCacheService({
   path: pathModule,
   fs,
   getRootDirectory,
+  getProjectName = null,
   sharp: sharpFactory = null,
   maxAnalysisSize = DEFAULT_MAX_ANALYSIS_SIZE,
   alphaThreshold = DEFAULT_ALPHA_THRESHOLD
@@ -105,7 +106,14 @@ function createSpriteOpaqueBoundsCacheService({
 
   function getSharp() {
     if (sharpFactory) return sharpFactory;
-    sharpFactory = require('sharp');
+    try {
+      sharpFactory = require('sharp');
+    } catch (error) {
+      // Sharp's native binding can be missing/broken in some installs even
+      // when the package resolves. Throwing here would be logged per sprite
+      // without the real cause. Include the load failure explicitly.
+      throw new Error(`sharp unavailable: ${error?.code || error?.message || error}`);
+    }
     return sharpFactory;
   }
 
@@ -128,6 +136,31 @@ function createSpriteOpaqueBoundsCacheService({
     const assetsRoot = getAssetsRoot();
     let candidate = stripUrlDecorators(rawSpritePath);
     if (!candidate) throw new Error('spritePath is required.');
+
+    // Accept the app's own loopback asset URLs
+    // (http://127.0.0.1:<port>/projects/<name>/assets/...). The frontend
+    // legitimately produces these via getAssetUrl(); the pathname maps
+    // directly onto the project assets directory. Cross-project and remote
+    // URLs keep failing closed below.
+    const loopbackMatch = candidate.match(/^https?:\/\/([^/?#]+)([/?#].*)?$/i);
+    if (loopbackMatch) {
+      const host = String(loopbackMatch[1] || '').toLowerCase();
+      const pathname = String(loopbackMatch[2] || '').split(/[?#]/)[0];
+      if (/^(?:127\.0\.0\.1|localhost)(?::\d+)?$/.test(host)) {
+        const projectName = typeof getProjectName === 'function' ? String(getProjectName() || '') : '';
+        const projectMatch = pathname.match(/^\/projects\/([^/]+)\/assets\/(.+)$/i);
+        if (!projectMatch) {
+          throw new Error('Only project-local sprite assets can be analyzed.');
+        }
+        if (projectName && projectMatch[1] !== projectName) {
+          throw new Error('Sprite URL belongs to a different project.');
+        }
+        candidate = `assets/${decodeURIComponent(projectMatch[2]).replace(/^\/+/, '')}`;
+      } else {
+        throw new Error('Only project-local sprite assets can be analyzed.');
+      }
+    }
+
     if (/^(?:https?:|data:|blob:)/i.test(candidate)) {
       throw new Error('Only project-local sprite assets can be analyzed.');
     }

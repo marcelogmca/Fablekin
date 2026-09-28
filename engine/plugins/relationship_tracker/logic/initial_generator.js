@@ -105,7 +105,7 @@ async function generateInitialRelationships(turnContext, tools, options = {}) {
 
             if (!characterSheets.trim()) return;
 
-            const loreContext = (turnContext.promptComponents.root.canon.join('\n') || '');
+            const loreContext = (turnContext.renderPromptSlot('root', 'canon') || '');
             const { generateHash } = require('../../../modules/utils.js');
             contentHash = generateHash(characterSheets + loreContext + scoringGuide);
 

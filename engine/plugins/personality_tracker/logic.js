@@ -174,7 +174,7 @@ async function extractAndStoreInitialPersonalityVectors(turnContext, tools, char
     const config = {
         MODEL: modelDef.model || 'meta-llama/llama-3-70b-instruct',
         PROVIDER: modelDef.provider,
-        LLM_PARAMS: modelDef.llm_params || { temperature: 0.2, max_tokens: 32000 },
+        LLM_PARAMS: modelDef.llm_params || { max_tokens: 32000 },
         RETRIES: settings.retries || 1,
         TIMEOUT: settings.timeout || 120000
     };
@@ -239,13 +239,13 @@ async function extractAndStoreBatchInitialPersonality(turnContext, tools, charac
     const config = {
         MODEL: modelDef.model || 'meta-llama/llama-3-70b-instruct',
         PROVIDER: modelDef.provider,
-        LLM_PARAMS: modelDef.llm_params || { temperature: 0.2, max_tokens: 32000 },
+        LLM_PARAMS: modelDef.llm_params || { max_tokens: 32000 },
         RETRIES: settings.retries || 1,
         TIMEOUT: settings.timeout || 120000
     };
 
     const projectName = turnContext.projectName;
-    const canon = turnContext.promptComponents.root.canon.join('\n') || '';
+    const canon = turnContext.renderPromptSlot('root', 'canon') || '';
 
     // Filter out characters who already have initial vectors
     const toProcess = [];
@@ -348,7 +348,7 @@ async function extractAndStoreBatchPersonalityChanges(turnContext, tools, target
     const config = {
         MODEL: resolvedModelDef.model || 'meta-llama/llama-3-70b-instruct',
         PROVIDER: resolvedModelDef.provider,
-        LLM_PARAMS: modelDef.llm_params || { temperature: 0.4, max_tokens: 32000 },
+        LLM_PARAMS: modelDef.llm_params || { max_tokens: 32000 },
         RETRIES: settings.retries || 1,
         TIMEOUT: settings.timeout || 120000
     };

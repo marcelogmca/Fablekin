@@ -13,7 +13,6 @@ const CONFIG = {
   REQUIRE_DIRECTOR_HANDOFF_WINDOW: settings.narrative_agents?.scene_phase_classifier?.require_director_handoff_window !== false,
   PROMPT_PATH: 'engine/prompts/scene_phase_classifier_prompt.txt',
   LLM_PARAMS: settings.narrative_agents?.scene_phase_classifier?.llm_params || {
-    temperature: 0.1,
     max_tokens: 500
   }
 };
@@ -727,7 +726,7 @@ async function classifyScenePhaseHandoff(turnContext) {
       timeout: CONFIG.TIMEOUT,
       validationRegex: /"capability"\s*:/i,
       prompt: prepared,
-      ...normalizeEvaluatorLlmParams(CONFIG.LLM_PARAMS),
+      extra: { ...normalizeEvaluatorLlmParams(CONFIG.LLM_PARAMS) },
       callingModule: 'ScenePhaseClassifier',
       turnLogTitle: 'Scene Phase Classifier'
     });

@@ -1015,7 +1015,6 @@ async function callStoryWriterOnce(messages, tools, settings, title, requestId =
         prompt: { messages: toStructuredMessages(messages, requestId) },
         model: modelDef.model,
         params: {
-            temperature: 0.82,
             timeout: 90000,
             callingModule: `Plugin:${PLUGIN_ID}:${title}`
         }

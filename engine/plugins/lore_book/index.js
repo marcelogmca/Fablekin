@@ -869,21 +869,19 @@ module.exports = {
                     if (!anyNew) break;
                 }
 
-                const placementTargets = {
-                    shared_dynamic: ['dynamic_knowledge', 'root'],
-                    shared_canon: ['canon', 'root'],
-                    writer_dynamic: ['dynamic_knowledge', 'writer'],
-                    director_dynamic: ['dynamic_knowledge', 'director']
-                };
-                const placementPieces = {
-                    shared_dynamic: 'lore_shared_dynamic',
-                    shared_canon: 'lore_shared_canon',
-                    writer_dynamic: 'lore_writer_dynamic',
-                    director_dynamic: 'lore_director_dynamic'
+                const placementDefs = {
+                    shared_dynamic: { id: 'lore_shared_dynamic', to: 'root.dynamic_knowledge', label: 'Lore entries', description: 'Matched lore book entries for the current turn.' },
+                    shared_canon: { id: 'lore_shared_canon', to: 'root.canon', label: 'Lore canon', description: 'Canon lore book entries for the current turn.' },
+                    writer_dynamic: { id: 'lore_writer_dynamic', to: 'writer.dynamic_knowledge', label: 'Writer lore', description: 'Writer-private lore book entries.' },
+                    director_dynamic: { id: 'lore_director_dynamic', to: 'director.dynamic_knowledge', label: 'Director lore', description: 'Director-private lore book entries.' }
                 };
                 for (const [placement, entries] of placementGroups) {
                     const loreBlock = buildPromptBlock(tools, entries);
-                    if (loreBlock) tools.prompt.contribute(placementPieces[placement] || 'lore_shared_dynamic', { entries: loreBlock });
+                    const def = placementDefs[placement] || placementDefs.shared_dynamic;
+                    if (loreBlock) tools.prompt.contribute({
+                        id: def.id, to: def.to, label: def.label, description: def.description,
+                        children: { entries: loreBlock }
+                    });
                 }
 
                 const totalInjected = triggeredEntries.length;

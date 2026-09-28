@@ -6,20 +6,13 @@ const { callLLM } = require('./llm.js');
 const promptBuilder = require('./prompt_builder.js');
 const director = require('./director.js');
 const pluginManager = require('./plugin_manager/plugin_manager.js');
-const { workQueue } = require('./plugin_manager/runtime/hook_executor.js');
 const cancellation = require('./pipeline_cancellation.js');
 const { runWithDiagnosticContext } = require('./diagnostic_context.js');
 const { logSharedPrefixUsage } = require('./shared_narrative_prompt.js');
+const { hasRunawayWordList } = require('./writer_output_guard.js');
 // #endregion
 
 // #region CONFIGURATION
-const DEFAULT_WRITER_LLM_PARAMS = {
-  frequency_penalty: 1.2,
-  presence_penalty: 0.5,
-  temperature: 1.0,
-  top_p: 0.9
-};
-
 function buildWriterConfig() {
   const settings = readSettings() || {};
   const writer = settings.narrative_agents?.writer || {};
@@ -28,7 +21,9 @@ function buildWriterConfig() {
     provider: writer.provider,
     retries: writer.retries,
     timeout: writer.timeout,
-    llmParams: writer.llm_params ? writer.llm_params : DEFAULT_WRITER_LLM_PARAMS
+    // No application-wide sampling defaults: every model runs its own native
+    // settings unless the project explicitly configures writer.llm_params.
+    llmParams: writer.llm_params || {}
   };
 }
 // #endregion
@@ -124,10 +119,8 @@ async function generateNextChapter(turnContext) {
       priority: 100,
       icon: '🎭'
     });
-    workQueue.updateStatus('director', 'running');
     await director.runPeriodic(turnContext);
     cancellation.throwIfCancelled('director generation');
-    workQueue.remove('director');
   } else {
     Logger.log('NarrativeEngine', 'Orchestration', 'Director is DISABLED for this turn.');
     await director.runDirectorPrePromptHooks(turnContext);
@@ -209,7 +202,6 @@ async function generateNextChapter(turnContext) {
     );
   }
 
-  workQueue.updateStatus('writer', 'running');
   const writerResult = await runWithDiagnosticContext({
     executionLane: 'core',
     phase: 'Narrative',
@@ -226,7 +218,7 @@ async function generateNextChapter(turnContext) {
       provider: config.provider,
       retries: config.retries,
       timeout: config.timeout,
-      ...writerLlmParams,
+      extra: { ...writerLlmParams },
       minWords: turnContext.writerMinimumWordCount,
       callingModule: 'NarrativeEngine',
       turnLogTitle: 'Writer'
@@ -237,8 +229,10 @@ async function generateNextChapter(turnContext) {
     return result;
   });
   cancellation.throwIfCancelled('writer generation');
-  workQueue.remove('writer');
   const outputContent = writerResult.content;
+  if (hasRunawayWordList(outputContent)) {
+    throw new Error('Writer produced a runaway word list instead of a scene. The response was rejected before VN processing; try a different Writer model or adjust its sampling settings.');
+  }
 
   Logger.log('NarrativeEngine', 'Generation', 'Writer LLM response received.', 'end');
 

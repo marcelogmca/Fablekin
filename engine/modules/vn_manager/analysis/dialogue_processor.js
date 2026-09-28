@@ -17,8 +17,7 @@ const getConfig = () => {
     LLM_PARAMS: settings.narrative_agents?.dialogue_processor?.llm_params
       ? settings.narrative_agents.dialogue_processor.llm_params
       : {
-        max_tokens: 10000,
-        temperature: 0.3
+        max_tokens: 10000
       },
     ENABLED: settings.narrative_agents?.dialogue_processor?.enabled !== false, // default true
     // Logic Thresholds
@@ -443,14 +442,14 @@ async function processDialogueLines(turnContext) {
               model: config.MODEL, provider: config.PROVIDER, retries: config.RETRIES, timeout: config.TIMEOUT,
               prompt: prepared1,
               validationRegex: validationFormatRegex, validateFn: validateDialogueProcessing,
-              ...config.LLM_PARAMS, callingModule: 'DialogueProcessor',
+              extra: { ...config.LLM_PARAMS }, callingModule: 'DialogueProcessor',
               turnLogTitle: 'DialogueProcessor (Parallel 1)'
             }),
             callLLM({
               model: config.MODEL, provider: config.PROVIDER, retries: config.RETRIES, timeout: config.TIMEOUT,
               prompt: prepared2,
               validationRegex: validationFormatRegex, validateFn: validateDialogueProcessing,
-              ...config.LLM_PARAMS, callingModule: 'DialogueProcessor',
+              extra: { ...config.LLM_PARAMS }, callingModule: 'DialogueProcessor',
               turnLogTitle: 'DialogueProcessor (Parallel 2)'
             })
           ]);
@@ -469,7 +468,7 @@ async function processDialogueLines(turnContext) {
           model: config.MODEL, provider: config.PROVIDER, retries: config.RETRIES, timeout: config.TIMEOUT,
           prompt: prepared,
           validationRegex: validationFormatRegex, validateFn: validateDialogueProcessing,
-          ...config.LLM_PARAMS, callingModule: 'DialogueProcessor',
+          extra: { ...config.LLM_PARAMS }, callingModule: 'DialogueProcessor',
           turnLogTitle: 'DialogueProcessor'
         });
         responseContent = singleResponse;

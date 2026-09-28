@@ -1117,7 +1117,8 @@ async function callLLM({ prompt, model, provider = null, retries = 1, timeout = 
             Logger.log(safeModule, resolvedModel, `Validation regex passed on attempt ${attempt}.`);
           } else {
             // If the regex doesn't match, throw an error to trigger a retry
-            throw new Error(`Validation regex failed to match. Regex: /${validationRegex.source}/. Content: "${content}"`);
+            const preview = typeof content === 'string' ? content.slice(0, 240) : String(content).slice(0, 240);
+            throw new Error(`Validation regex failed to match. Regex: /${validationRegex.source}/. Response length: ${content.length}. Preview: "${preview}${content.length > 240 ? '…' : ''}"`);
           }
         }
 

@@ -1066,15 +1066,27 @@ async function handlePromptInjectionHook(turnContext, tools) {
     tools.logger.runtime(`handlePromptInjectionHook: Injecting final context blocks, total length=${contextBlocks.length}`);
     const cleanedBlocks = contextBlocks.replace(/^#+\s*/gm, '');
     if (cleanedBlocks.trim()) {
-        tools.prompt.contribute('character_canon', {
-            sheets: tools.prompt.wrap('character_sheets', cleanedBlocks.trim())
+        tools.prompt.contribute({
+            id: 'character_canon',
+            to: 'root.canon',
+            label: 'Character canon',
+            description: 'Character sheets and capsules injected for the current turn.',
+            children: {
+                sheets: tools.prompt.wrap('character_sheets', cleanedBlocks.trim())
+            }
         });
     }
 
     const hardDirective = buildHardPriorityDirective(hardPriorityEntries);
     if (hardDirective) {
-        tools.prompt.contribute('character_priority', {
-            directive: tools.prompt.wrap('character_sheet_hard_priority', hardDirective)
+        tools.prompt.contribute({
+            id: 'character_priority',
+            to: 'writer.directives',
+            label: 'Character priority',
+            description: 'Hard-priority character continuity directives for the Writer.',
+            children: {
+                directive: tools.prompt.wrap('character_sheet_hard_priority', hardDirective)
+            }
         });
     }
 
@@ -1090,7 +1102,7 @@ async function handleProactiveDiscovery(turnContext, tools) {
 
     const castFiles = turnContext.input.selectedFiles.filter(f => f.mode === 'cast_list');
     const coreSheets = tools.pluginState.forPlugin('character_sheets').turn().sheets || [];
-    const canon = (turnContext.promptComponents.root.canon || []).join('\n').trim();
+    const canon = turnContext.renderPromptSlot('root', 'canon').trim();
 
     tools.logger.runtime(`logic: handleProactiveDiscovery, castFiles=${castFiles.length}, coreSheets=${coreSheets.length}`);
 

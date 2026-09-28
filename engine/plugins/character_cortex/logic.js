@@ -241,6 +241,7 @@ async function generateSituation(input, tools) {
         if (!detail.profile.persona_text.trim()) throw new Error('Add and save a character persona before generating situations.');
         const route = requireAlias(tools, detail.profile.situation_model, 'Situation');
         const built = situationMessages(detail, input);
+        const messages = built;
         let structured;
         try {
             const response = await tools.llm.withSchema({
@@ -251,7 +252,7 @@ async function generateSituation(input, tools) {
                     { role: 'user', piece: 'situation_request', text: built[1].content }
                 ] },
                 msg: `Character Cortex: Generate situation for ${detail.profile.name}`,
-                params: { temperature: 0.9, retries: 1, timeout: 90000, callingModule: 'Plugin:character_cortex:Situation' }
+                params: { retries: 1, timeout: 90000, callingModule: 'Plugin:character_cortex:Situation' }
             }, SITUATION_SCHEMA);
             structured = responseContent(response);
             if (!structured || typeof structured !== 'object') throw new Error('Situation model returned invalid structured output.');
@@ -298,7 +299,7 @@ async function generateActor(input, tools) {
                     { role: 'user', piece: 'actor_situation', text: built[1].content }
                 ] },
                 msg: `Character Cortex: Portray ${profile.name}`,
-                params: { temperature: 0.8, retries: 1, timeout: 120000, callingModule: 'Plugin:character_cortex:Actor' }
+                params: { retries: 1, timeout: 120000, callingModule: 'Plugin:character_cortex:Actor' }
             });
             const text = String(response?.content || '').trim();
             if (!text) throw new Error('Actor model returned an empty response.');
@@ -353,7 +354,7 @@ async function submitFeedback(input, tools) {
                     { role: 'user', piece: 'analysis_case', text: built[1].content }
                 ] },
                 msg: `Character Cortex: Distill feedback for ${detail.profile.name}`,
-                params: { temperature: 0.2, retries: 1, timeout: 120000, callingModule: 'Plugin:character_cortex:Analysis' }
+                params: { retries: 1, timeout: 120000, callingModule: 'Plugin:character_cortex:Analysis' }
             }, ANALYSIS_SCHEMA);
             const result = responseContent(response);
             if (!result || typeof result !== 'object') throw new Error('Analysis model returned invalid structured output.');

@@ -1344,10 +1344,7 @@ module.exports = {
                             if (movementConstraint) {
                                 const wrappedConstraint = tools.prompt.wrap('manual_movement_only', movementConstraint);
                                 currentStateParts.push(wrappedConstraint);
-                                tools.prompt.contribute('movement_constraint', {
-                                    constraint: wrappedConstraint
-                                }, { directable: true });
-                                tools.logger.runtime('Injected Manual Movement Only constraint for Director/Writer continuity.');
+                                tools.logger.runtime('Manual Movement Only constraint folded into location_context (no separate slot contribution).');
                             }
 
                             const navigationText = await logic.buildNavigationAssistancePrompt(turnContext);
@@ -1357,14 +1354,21 @@ module.exports = {
                             }
 
                             const directorPluginFeedbackEnabled = tools.settings.get('narrative_agents.director.direct_plugins_enabled') !== false;
-                            const contentByKey = {};
+                            const children = {};
                             if (directorPluginFeedbackEnabled) {
                                 const previousTurnUpdate = await logic.buildPreviousTurnUpdatePrompt(turnContext);
-                                contentByKey.previous_turn_update = tools.prompt.wrap('previous_turn_update', previousTurnUpdate || 'No previous turn update is available.');
+                                children.previous_turn_update = tools.prompt.wrap('previous_turn_update', previousTurnUpdate || 'No previous turn update is available.');
                             }
-                            contentByKey.current_state = tools.prompt.wrap('current_state', currentStateParts.join('\n\n'));
+                            children.current_state = tools.prompt.wrap('current_state', currentStateParts.join('\n\n'));
                             tools.logger.runtime('Injecting ordered location update and current state into [simulation] slot.');
-                            tools.prompt.contribute('location_context', contentByKey, { directable: true });
+                            tools.prompt.contribute({
+                                id: 'location_context',
+                                to: 'root.simulation',
+                                label: 'Location context',
+                                description: 'Current map location, movement constraints, and navigation state.',
+                                children,
+                                directable: true
+                            });
 
                             const pendingTimeskip = await logic.getPendingTimeskipDirective(turnContext);
                             if (pendingTimeskip?.text) {

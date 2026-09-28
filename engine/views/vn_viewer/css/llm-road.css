@@ -70,6 +70,9 @@
 .llm-road-grid {
     position: relative;
     min-width: 100%;
+    /* Before the first lane renders the grid would be 0px tall, clipping the
+       absolutely-positioned empty placeholder. Fill the scroll area instead. */
+    min-height: 100%;
 }
 
 .llm-road-now {
@@ -255,6 +258,9 @@
     color: var(--text-muted);
     font-size: var(--font-xs);
     letter-spacing: 0.5px;
+    /* Lane bars animate their width on every tick; long ellipsis text would be
+       clipped if it wrapped or overflowed the grid, so keep it on one line. */
+    white-space: nowrap;
     pointer-events: none;
     z-index: 4;
 }

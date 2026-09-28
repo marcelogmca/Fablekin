@@ -89,8 +89,10 @@ function createVnHandlers({
     const spriteOpaqueBoundsCache = createSpriteOpaqueBoundsCacheService({
         path,
         fs,
-        getRootDirectory
+        getRootDirectory,
+        getProjectName
     });
+    const spriteBoundsFailureLog = new Map();
 
     const spritePickerExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp']);
     const backgroundPickerExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.mp4', '.webm']);
@@ -698,7 +700,18 @@ function createVnHandlers({
                 const result = await spriteOpaqueBoundsCache.getOrCreate(data?.spritePath);
                 respond(result);
             } catch (error) {
-                Logger.error('Main', 'SpriteBounds', 'Failed to resolve sprite opaque bounds', error);
+                // Rate-limit this: every visible sprite triggers one request per
+                // texture, and a persistently failing sprite would otherwise
+                // spam the log once per second per texture (see pixi-side
+                // negative caching below). Log the full cause Path once, then
+                // stay quiet for a while so the log stays usable.
+                const now = Date.now();
+                const failureKey = String(data?.spritePath || '(unknown path)');
+                const last = spriteBoundsFailureLog.get(failureKey) || 0;
+                if (now - last > 60000) {
+                    spriteBoundsFailureLog.set(failureKey, now);
+                    Logger.error('Main', 'SpriteBounds', `Failed to resolve sprite opaque bounds for ${failureKey}`, error);
+                }
                 respond({
                     success: false,
                     error: error.message || 'Failed to resolve sprite opaque bounds.'

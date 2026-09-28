@@ -513,7 +513,6 @@ async function triageCharacter(tools, characterName, turnContext) {
             params: {
                 retries: settings.retries || 2,
                 timeout: settings.timeout || 20000,
-                temperature: 0.0,
                 max_tokens: 220,
                 callingModule: 'Plugin:character_classifier'
             }
@@ -579,7 +578,6 @@ async function classifyGenderOnly(tools, characterName, relevantText) {
             params: {
                 retries: 2,
                 timeout: 15000,
-                temperature: 0.0,
                 max_tokens: 10,
                 callingModule: 'Plugin:character_classifier'
             }
@@ -1226,7 +1224,6 @@ async function classifyCleanupCandidate(tools, candidate) {
         params: {
             retries: settings.retries || 2,
             timeout: settings.timeout || 20000,
-            temperature: 0.0,
             max_tokens: 180,
             callingModule: 'Plugin:character_classifier:cleanup'
         }

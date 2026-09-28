@@ -20,6 +20,10 @@ function isPlainObject(value) {
 // Assigns a stable sourceId to a node and every descendant that lacks one.
 // Existing ids are never overwritten: backfill only touches legacy/test
 // occurrences pushed without them. Throws on duplicates within the subtree.
+// Deterministic restore (skip-preallocation note): normalize assigns legacy
+// string slots stable pcs-legacy-<target>-<slot>-legacy-N ids so repeated
+// loads of the same historical turn agree; fresh string slots created live
+// still allocate UUIDs at insertion time via addPromptOccurrence().
 function ensurePromptComponentSourceIds(node, seen = new Set()) {
     if (!node || typeof node !== 'object') return node;
     if (typeof node.sourceId !== 'string' || !node.sourceId) {
@@ -80,8 +84,90 @@ function deepFreezePromptOccurrence(node) {
 }
 
 // Snapshot restore: structured occurrences keep their persisted sourceIds
-// exactly (no re-stamping). Validates shape + uniqueness across all slots
-// and descendants; old snapshots lacking ids are rejected at this boundary.
+// exactly (no re-stamping). Legacy string-era slots (pre-cutover snapshots
+// stored raw strings) are migrated to typed occurrences on load so historical
+// turns remain viewable. Object occurrences missing sourceIds get them
+// backfilled — strictness lives at compose time, not at the read boundary.
+function normalizeRestoredPromptComponents(promptComponents) {
+    if (!promptComponents || typeof promptComponents !== 'object') return promptComponents;
+    for (const [target, pillar] of Object.entries(promptComponents)) {
+        if (!pillar || typeof pillar !== 'object') continue;
+        for (const [slot, items] of Object.entries(pillar)) {
+            if (!Array.isArray(items)) continue;
+            let legacyIndex = 0;
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (typeof item === 'string') {
+                    const legacyKey = `legacy-${legacyIndex++}`;
+                    items[i] = {
+                        kind: 'component',
+                        componentId: `${target}.${slot}`,
+                        instanceKey: legacyKey,
+                        text: item,
+                        children: [],
+                        owner: 'core',
+                        // Deterministic across loads: the same historical turn
+                        // always restores the same sourceId, so logs/Atlas can
+                        // join on it. Distinct prefix avoids colliding with
+                        // live pcs-<uuid> insertion ids.
+                        sourceId: `pcs-legacy-${target}-${slot}-${legacyKey}`
+                    };
+                } else if (item && typeof item === 'object' && !Array.isArray(item)) {
+                    if (item.kind == null) item.kind = 'component';
+                    if (typeof item.componentId !== 'string' || !item.componentId) item.componentId = `${target}.${slot}`;
+                    if (typeof item.text !== 'string') item.text = String(item.text ?? '');
+                    if (!Array.isArray(item.children)) item.children = [];
+                    if (typeof item.owner !== 'string' || !item.owner) item.owner = 'core';
+                    // Recursively normalize children that may be raw strings.
+                    const normalizeChildren = (kids) => {
+                        for (let k = 0; k < kids.length; k++) {
+                            const child = kids[k];
+                            if (typeof child === 'string') {
+                                kids[k] = {
+                                    kind: 'component',
+                                    componentId: `${target}.${slot}`,
+                                    instanceKey: `legacy-child-${k}`,
+                                    text: child,
+                                    children: [],
+                                    owner: 'core'
+                                };
+                            } else if (child && typeof child === 'object' && !Array.isArray(child)) {
+                                if (child.kind == null) child.kind = 'component';
+                                if (typeof child.componentId !== 'string' || !child.componentId) child.componentId = `${target}.${slot}`;
+                                if (typeof child.text !== 'string') child.text = String(child.text ?? '');
+                                if (!Array.isArray(child.children)) child.children = [];
+                                if (typeof child.owner !== 'string' || !child.owner) child.owner = 'core';
+                                if (Array.isArray(child.children)) normalizeChildren(child.children);
+                            }
+                        }
+                    };
+                    normalizeChildren(item.children);
+                }
+                // Non-object non-string entries (numbers, null): coerce to text.
+                else if (item != null) {
+                    const legacyKey = `legacy-${legacyIndex++}`;
+                    items[i] = {
+                        kind: 'component',
+                        componentId: `${target}.${slot}`,
+                        instanceKey: legacyKey,
+                        text: String(item),
+                        children: [],
+                        owner: 'core',
+                        sourceId: `pcs-legacy-${target}-${slot}-${legacyKey}`
+                    };
+                }
+            }
+            // Backfill any missing sourceIds (legacy objects or fresh converts).
+            // skip() items carry no text and must not allocate identity: a
+            // frozen legacy-... id would be unstable across loads anyway.
+            for (const item of items) {
+                try { ensurePromptComponentSourceIds(item); } catch { /* duplicates handled below */ }
+            }
+        }
+    }
+    return promptComponents;
+}
+
 function validateRestoredPromptComponents(promptComponents) {
     if (!promptComponents || typeof promptComponents !== 'object') return;
     const seen = new Set();
@@ -856,8 +942,16 @@ class TurnContext {
                     }
                 }
                 else if (key === 'promptComponents') {
+                    // Historical turns: legacy string-era slots migrate to
+                    // typed occurrences so old chapters stay viewable. New
+                    // snapshots already carry sourceIds and validate cleanly.
+                    normalizeRestoredPromptComponents(snapshotData[key]);
                     validateRestoredPromptComponents(snapshotData[key]);
-                    Object.assign(turn[key], snapshotData[key]);
+                    try {
+                        Object.assign(turn[key], snapshotData[key]);
+                    } catch (error) {
+                        Logger.error('TurnContext', 'fromSnapshot', `promptComponents restore failed (${error.message}); continuing with empty slots so the turn stays viewable.`, error);
+                    }
                 }
                 else if (key === 'promptDefinitions') {
                     const { validatePromptPieces } = require('./prompt/prompt_core_catalog.js');
@@ -1039,4 +1133,5 @@ module.exports.collectPromptComponentSourceIds = collectPromptComponentSourceIds
 module.exports.validatePromptOccurrenceShape = validatePromptOccurrenceShape;
 module.exports.deepFreezePromptOccurrence = deepFreezePromptOccurrence;
 module.exports.validateRestoredPromptComponents = validateRestoredPromptComponents;
+module.exports.normalizeRestoredPromptComponents = normalizeRestoredPromptComponents;
 // #endregion

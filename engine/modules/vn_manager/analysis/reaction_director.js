@@ -14,8 +14,7 @@ const CONFIG = {
   RETRIES: settings.narrative_agents?.reaction_director?.retries || 3,
   TIMEOUT: settings.narrative_agents?.reaction_director?.timeout || 120000,
   LLM_PARAMS: settings.narrative_agents?.reaction_director?.llm_params || {
-    max_tokens: 3000,
-    temperature: 0.1
+    max_tokens: 3000
   }
 };
 
@@ -191,7 +190,7 @@ async function directReactions(turnContext, spriteCatalog) {
       prompt: prepared,
       retries: CONFIG.RETRIES,
       timeout: CONFIG.TIMEOUT,
-      ...CONFIG.LLM_PARAMS,
+      extra: { ...CONFIG.LLM_PARAMS },
       callingModule: 'ReactionDirector',
       turnLogTitle: 'Reaction Director'
     });

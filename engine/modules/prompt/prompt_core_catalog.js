@@ -96,7 +96,8 @@ const CORE_COMPONENTS = Object.freeze({
   'core.memory.summary_system': { parent: 'core.memory', label: 'Summary system', description: 'Role contract for summary generation.', owner: 'core' },
   'core.memory.summary_content': { parent: 'core.memory', label: 'Summary content', description: 'Source text to summarize.', owner: 'core' },
   'core.memory.synopsis_system': { parent: 'core.memory', label: 'Synopsis system', description: 'Role contract for synopsis generation.', owner: 'core' },
-  'core.memory.synopsis_content': { parent: 'core.memory', label: 'Synopsis content', description: 'Source text to turn into a titled synopsis.', owner: 'core' }
+  'core.memory.synopsis_content': { parent: 'core.memory', label: 'Synopsis content', description: 'Source text to turn into a titled synopsis.', owner: 'core' },
+  'core.memory.arc_compression': { parent: 'core.memory', label: 'Arc compression', description: 'Ultra-compression instruction plus old-synopsis content for an arc bucket.', owner: 'core' }
 });
 
 function getCoreComponent(id) {

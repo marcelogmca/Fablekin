@@ -102,7 +102,8 @@ function makeArcCompressionHarness(options = {}) {
             },
             callLLM: async request => {
                 requests.push(request);
-                const prompt = request.messages?.[0]?.content || '';
+                const prompt = request.prompt?.messages?.[0]?.content
+                    ?? request.messages?.[0]?.content ?? '';
                 const chapters = Array.from(prompt.matchAll(/Chapter (\d+):/g)).map(match => Number(match[1]));
                 const first = chapters[0];
                 const last = chapters.at(-1);

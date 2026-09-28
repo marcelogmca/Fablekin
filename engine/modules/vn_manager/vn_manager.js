@@ -17,7 +17,7 @@ const {
 const { directReactions } = require('./analysis/reaction_director.js');
 const { orchestrateSpriteVariants } = require('./analysis/sprite_variant_orchestrator.js');
 const { classifyScenePhaseHandoff } = require('./analysis/scene_phase_classifier.js');
-const { workQueue } = require('../plugin_manager/runtime/hook_executor.js');
+
 const { loadSpriteMetadataRegistry } = require('./rendering/sprite_metadata.js');
 const { handleNewCharacterExtraction } = require('./analysis/character_bootstrapper.js');
 const { PLACEHOLDERS, applyTextFormatting } = require('./helpers/text_formatting.js');
@@ -543,7 +543,6 @@ async function transformVNProject(turnContext) {
     // ###############################################################################
 
     Logger.log('VNManager', 'DialogueProcessing', 'Starting dialogue parsing...', 'start');
-    workQueue.add('dialogue_processor', 'Dialogue Processing', 10000, 30000, 'running');
     const { processedLines: processedDialogue } = await runWithDiagnosticContext({
       executionLane: 'core',
       phase: 'VN Transformation',
@@ -551,7 +550,6 @@ async function transformVNProject(turnContext) {
       taskKey: 'dialogueProcessing',
       blocking: true
     }, async () => processDialogueLines(turnContext));
-    workQueue.remove('dialogue_processor');
     cancellation.throwIfCancelled('dialogue processing');
     Logger.log('VNManager', 'DialogueProcessing', 'Dialogue parsing complete.', 'end');
 

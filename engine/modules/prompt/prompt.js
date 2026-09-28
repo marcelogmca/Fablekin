@@ -475,13 +475,11 @@ function verifyManifestStructure(manifest) {
     byId.set(occurrence.occurrenceId, occurrence);
   }
   for (const span of spans) {
-    if (!span || typeof span.occurrenceId !== 'string') {
-      // Declared message-format spans carry occurrenceId null.
-      if (span?.occurrenceId !== null) {
-        throw new TypeError('Prompt manifest span requires an occurrenceId or explicit null.');
-      }
-      continue;
+    if (!span || (typeof span.occurrenceId !== 'string' && span.occurrenceId !== null)) {
+      throw new TypeError('Prompt manifest span requires an occurrenceId or explicit null.');
     }
+    // Declared message-format spans carry occurrenceId null.
+    if (span.occurrenceId === null) continue;
     if (!byId.has(span.occurrenceId)) {
       throw new Error(`Prompt manifest span references unknown occurrence '${span.occurrenceId}'.`);
     }
@@ -1197,7 +1195,10 @@ class Prompt {
         }
         for (const span of source.manifest.spans) {
           spans.push({
-            occurrenceId: idMap.get(span.occurrenceId),
+            // Separator spans carry occurrenceId null (message-owned
+            // formatting); idMap.get(null) would yield undefined and fail
+            // verification, so preserve null explicitly.
+            occurrenceId: span.occurrenceId == null ? null : idMap.get(span.occurrenceId),
             messageIndex: messageStart + span.messageIndex,
             start: span.start,
             end: span.end

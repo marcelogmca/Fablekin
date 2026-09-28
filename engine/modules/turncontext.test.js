@@ -36,10 +36,27 @@ test('sourceIds persist through serialize/fromSnapshot and stay unique', () => {
   // Same source rendering twice resolves to the same stored node.
   assert.equal(restored.getPromptSource('root', 'simulation', parentId), again);
 
-  // Old string-era snapshots (no sourceIds) are rejected at the boundary.
+  // String-era snapshots (raw strings in slots) migrate to typed
+  // occurrences so historical turns stay viewable.
+  const legacyStrings = JSON.parse(JSON.stringify(snapshot));
+  legacyStrings.promptComponents.root.simulation = ['Harbor at dawn.'];
+  const migrated = TurnContext.fromSnapshot(legacyStrings, 'Snapshot Test', 1);
+  assert.equal(migrated.promptComponents.root.simulation[0].componentId, 'root.simulation');
+  assert.equal(migrated.promptComponents.root.simulation[0].text, 'Harbor at dawn.');
+  assert.ok(typeof migrated.promptComponents.root.simulation[0].sourceId === 'string');
+  // Deterministic across loads: same historical turn, same sourceIds.
+  const migratedAgain = TurnContext.fromSnapshot(JSON.parse(JSON.stringify(legacyStrings)), 'Snapshot Test', 1);
+  assert.equal(
+    migratedAgain.promptComponents.root.simulation[0].sourceId,
+    migrated.promptComponents.root.simulation[0].sourceId
+  );
+
+  // Object-era occurrences missing ids get backfilled at the read boundary;
+  // strictness lives at compose time.
   const legacy = JSON.parse(JSON.stringify(snapshot));
   delete legacy.promptComponents.root.simulation[0].sourceId;
-  assert.throws(() => TurnContext.fromSnapshot(legacy, 'Snapshot Test', 1), /lacks a stable sourceId/);
+  const backfilled = TurnContext.fromSnapshot(legacy, 'Snapshot Test', 1);
+  assert.ok(typeof backfilled.promptComponents.root.simulation[0].sourceId === 'string');
 
   // Forged plugin identity in a snapshot is a shape/registration error at
   // compose time, not a silent provenance grant (asserted in prompt.test.js).

@@ -196,8 +196,7 @@ async function compileDiffusionPositivePrompt({ tools, manifest, stanza, setting
             prompt: instruction,
             model: modelDef.model || 'mediumendmodel',
             params: {
-                callingModule: `Plugin:${pluginId}:cg_prompt_compiler`,
-                temperature: 0.35
+                callingModule: `Plugin:${pluginId}:cg_prompt_compiler`
             }
         }, schema);
         const compiled = stripCharacterNames(response?.content?.prompt || response?.prompt || '', characterNames);
