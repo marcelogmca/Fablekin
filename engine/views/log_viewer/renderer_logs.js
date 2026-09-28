@@ -829,6 +829,14 @@ function escapeTraceLabel(text) {
         .replace(/>/g, '&gt;');
 }
 
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 function getTraceTextPreview(text) {
     const normalized = String(text || '').replace(/\s+/g, ' ').trim();
     const maxLength = 140;
@@ -2188,6 +2196,11 @@ function renderWaterfallIntoContainer(container, data) {
     waterfallTab.className = 'console-log-tab active';
     waterfallTab.textContent = 'Waterfall';
 
+    const tokenMapTab = document.createElement('button');
+    tokenMapTab.type = 'button';
+    tokenMapTab.className = 'console-log-tab';
+    tokenMapTab.textContent = 'Token Map';
+
     const fullLogTab = document.createElement('button');
     fullLogTab.type = 'button';
     fullLogTab.className = 'console-log-tab';
@@ -2196,6 +2209,7 @@ function renderWaterfallIntoContainer(container, data) {
         : 'Full Logs';
 
     tabs.appendChild(waterfallTab);
+    tabs.appendChild(tokenMapTab);
     tabs.appendChild(fullLogTab);
     container.appendChild(tabs);
 
@@ -2251,18 +2265,33 @@ function renderWaterfallIntoContainer(container, data) {
         details.classList.add('has-selection');
     }
 
+    const tokenMapStage = document.createElement('div');
+    tokenMapStage.className = 'console-log-pane token-map-stage';
+    paneWrap.appendChild(tokenMapStage);
+    let tokenMapRendered = false;
+    const renderTokenMapOnce = () => {
+        if (tokenMapRendered) return;
+        tokenMapRendered = true;
+        renderTokenMapIntoContainer(tokenMapStage, data.turnLog?.data);
+    };
+
     const setActiveTab = (mode) => {
         const showWaterfall = mode === 'waterfall';
+        const showTokenMap = mode === 'tokenmap';
         waterfallTab.classList.toggle('active', showWaterfall);
-        fullLogTab.classList.toggle('active', !showWaterfall);
+        tokenMapTab.classList.toggle('active', showTokenMap);
+        fullLogTab.classList.toggle('active', !showWaterfall && !showTokenMap);
         waterfallStage.classList.toggle('active', showWaterfall);
-        rawConsoleView.classList.toggle('active', !showWaterfall);
-        if (!showWaterfall && typeof rawConsoleView.renderConsoleOutput === 'function') {
+        tokenMapStage.classList.toggle('active', showTokenMap);
+        rawConsoleView.classList.toggle('active', !showWaterfall && !showTokenMap);
+        if (showTokenMap) renderTokenMapOnce();
+        if (!showWaterfall && !showTokenMap && typeof rawConsoleView.renderConsoleOutput === 'function') {
             rawConsoleView.renderConsoleOutput();
         }
     };
 
     waterfallTab.addEventListener('click', () => setActiveTab('waterfall'));
+    tokenMapTab.addEventListener('click', () => setActiveTab('tokenmap'));
     fullLogTab.addEventListener('click', () => setActiveTab('full'));
 }
 
@@ -2494,6 +2523,171 @@ function renderWaterfallTurn(vizContainer, detailsContainer, timeline) {
     });
 
     vizContainer.appendChild(svg);
+}
+
+// ---- Token Map: measured prompt-piece attribution ---------------------------
+// One turn, measured: columns = logged LLM calls (callId-joined), rows =
+// semantic prompt families from manifest.components parent links, cells =
+// span-proportional shares of the provider's reported input tokens (~marks).
+function tokenMapStatusBadge(status) {
+    const labels = {
+        measured: 'measured',
+        'no-usage': 'no usage',
+        untraced: 'untraced',
+        'local-cache': 'local cache'
+    };
+    return labels[status] || status;
+}
+
+function tokenMapFormatTokens(value) {
+    if (value == null) return '~—';
+    return value >= 1000 ? `~${(value / 1000).toFixed(1)}k` : `~${Math.round(value)}`;
+}
+
+function renderTokenMapIntoContainer(container, turnLogData) {
+    container.innerHTML = '';
+    container.classList.add('token-map-stage');
+    if (!window.PromptTraceMatrix) {
+        container.innerHTML = '<p class="waterfall-empty-message">Token Map parser failed to load (prompt_trace_matrix.js).</p>';
+        return;
+    }
+    const calls = window.PromptTraceMatrix.extractCalls(turnLogData);
+    const traced = calls.filter((call) => call.trace);
+    if (calls.length === 0) {
+        container.innerHTML = '<p class="waterfall-empty-message">No LLM request/response pairs found for this turn.</p>';
+        return;
+    }
+    const matrix = window.PromptTraceMatrix.buildMatrix(calls);
+    const measured = matrix.columns.filter((col) => col.status === 'measured').length;
+    const untraced = matrix.columns.filter((col) => col.status === 'untraced').length;
+    const noUsage = matrix.columns.filter((col) => col.status === 'no-usage').length;
+    const localCache = matrix.columns.filter((col) => col.status === 'local-cache').length;
+
+    const header = document.createElement('div');
+    header.className = 'waterfall-controls';
+    const title = document.createElement('span');
+    title.className = 'waterfall-empty-label';
+    title.textContent = `${calls.length} calls · ${measured} measured · ${untraced} untraced · ${noUsage} no usage · ${localCache} local cache`;
+    title.title = 'Measured columns join request/response by promptTrace.callId and split the provider input total across logged spans. ~ values are span-proportional attributions, not provider measurements.';
+    header.appendChild(title);
+    const hint = document.createElement('span');
+    hint.className = 'waterfall-timing-summary';
+    hint.textContent = 'Cells show attributed input-token shares (~). Click a cell for piece detail.';
+    header.appendChild(hint);
+    container.appendChild(header);
+
+    // Row totals for default sort (largest input burden first)
+    const rowTotals = new Map();
+    for (const row of matrix.rows) {
+        let tokens = 0;
+        let chars = 0;
+        for (const col of matrix.columns) {
+            const cell = col.cells.get(row.id);
+            if (cell) { chars += cell.chars; tokens += cell.tokens || 0; }
+        }
+        rowTotals.set(row.id, { tokens, chars });
+    }
+    const sortedRows = [...matrix.rows].sort((a, b) => {
+        if (a.id === '__formatting__') return 1;
+        if (b.id === '__formatting__') return -1;
+        return (rowTotals.get(b.id).tokens - rowTotals.get(a.id).tokens)
+            || a.label.localeCompare(b.label);
+    });
+
+    const maxCell = Math.max(1, ...matrix.columns.flatMap((col) =>
+        [...col.cells.values()].map((cell) => cell.tokens || 0)));
+    const heatFor = (tokens) => {
+        if (!tokens) return 0;
+        const t = tokens / maxCell;
+        return t >= 0.6 ? 4 : t >= 0.3 ? 3 : t >= 0.12 ? 2 : 1;
+    };
+
+    const wrap = document.createElement('div');
+    wrap.className = 'token-map-wrap';
+    const table = document.createElement('table');
+    table.className = 'token-map-table';
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    const corner = document.createElement('th');
+    corner.className = 'token-map-corner';
+    corner.textContent = 'Payload';
+    headRow.appendChild(corner);
+    matrix.columns.forEach((col, index) => {
+        const th = document.createElement('th');
+        th.className = 'token-map-head';
+        th.scope = 'col';
+        const short = col.title.length > 26 ? `${col.title.slice(0, 25)}…` : col.title;
+        th.innerHTML = `<span class="token-map-call" title="${escapeHtml(col.title)}${col.promptId ? ` · ${escapeHtml(col.promptId)}` : ''}${col.hash ? ` · ${escapeHtml(col.hash.slice(0, 12))}` : ''}">${escapeHtml(short)}</span>`
+            + `<span class="token-map-badge">${tokenMapStatusBadge(col.status)}</span>`;
+        th.title = `${col.title} · ${tokenMapStatusBadge(col.status)}${col.providerInputTokens != null ? ` · ${col.providerInputTokens.toLocaleString()} input tokens` : ''}`;
+        th.dataset.columnIndex = String(index);
+        headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    const detail = document.createElement('div');
+    detail.className = 'token-map-detail';
+    detail.hidden = true;
+
+    const showCellDetail = (columnIndex, rowId) => {
+        const col = matrix.columns[columnIndex];
+        const row = matrix.rows.find((item) => item.id === rowId);
+        const cell = col.cells.get(rowId);
+        if (!col || !row || !cell) return;
+        tbody.querySelectorAll('td.token-map-selected').forEach((td) => td.classList.remove('token-map-selected'));
+        const selector = `td[data-column-index="${columnIndex}"][data-row-id="${CSS.escape(rowId)}"]`;
+        tbody.querySelector(selector)?.classList.add('token-map-selected');
+        const pieceLines = cell.pieces.slice(0, 12).map((piece) =>
+            `<div class="token-map-piece"><span>${escapeHtml(piece.label)} <span class="muted">· ${escapeHtml(piece.componentId)}${piece.source?.sourceId ? ` · src ${escapeHtml(String(piece.source.sourceId).slice(0, 13))}…` : ''}</span></span>`
+            + `<span class="muted">${piece.chars.toLocaleString()} chars · ${piece.tokens != null ? tokenMapFormatTokens(piece.tokens) : '~—'}</span></div>`
+        ).join('');
+        detail.hidden = false;
+        detail.innerHTML = `<div class="token-map-detail-heading"><h3>${escapeHtml(col.title)} <span class="muted">×</span> ${escapeHtml(row.label)}</h3>`
+            + `<span class="token-map-coverage">${cell.chars.toLocaleString()} chars · ${tokenMapFormatTokens(cell.tokens)} · ${tokenMapStatusBadge(col.status)}</span></div>`
+            + (row.owner ? `<p class="muted small">Family owner: ${escapeHtml(row.owner)}</p>` : '')
+            + pieceLines
+            + (cell.pieces.length > 12 ? `<p class="muted small">…and ${cell.pieces.length - 12} more pieces in this cell.</p>` : '');
+    };
+
+    for (const row of sortedRows) {
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.className = 'token-map-rowh';
+        th.scope = 'row';
+        th.textContent = row.label;
+        th.title = row.id === '__formatting__'
+            ? 'Message-owned separators (no component owner). Visible overhead, never hidden padding.'
+            : `${row.id}${row.owner ? ` · owner ${row.owner}` : ''}`;
+        tr.appendChild(th);
+        matrix.columns.forEach((col, columnIndex) => {
+            const td = document.createElement('td');
+            const cell = col.cells.get(row.id);
+            const tokens = cell ? cell.tokens || 0 : 0;
+            td.className = 'token-map-cell';
+            td.dataset.heat = String(heatFor(tokens));
+            td.dataset.columnIndex = String(columnIndex);
+            td.dataset.rowId = row.id;
+            if (!cell) {
+                td.innerHTML = '<span class="token-map-empty">·</span>';
+            } else {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'token-map-value';
+                button.textContent = tokenMapFormatTokens(cell.tokens);
+                button.title = `${col.title} × ${row.label}: ${cell.chars.toLocaleString()} chars, ${tokenMapFormatTokens(cell.tokens)} attributed input tokens (${tokenMapStatusBadge(col.status)})`;
+                button.addEventListener('click', () => showCellDetail(columnIndex, row.id));
+                td.appendChild(button);
+            }
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    container.appendChild(wrap);
+    container.appendChild(detail);
 }
 
 function showWaterfallDetails(container, bar) {

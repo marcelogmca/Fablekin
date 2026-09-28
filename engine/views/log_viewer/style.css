@@ -1553,3 +1553,30 @@ body {
 .prompt-analysis-content {
     padding: var(--space-md);
 }
+
+/* ---- Token Map: measured prompt-piece matrix (one turn) ---- */
+.token-map-stage { display: flex; flex-direction: column; gap: var(--space-md); min-height: 0; }
+.token-map-wrap { overflow: auto; max-height: min(62vh, 620px); border: var(--border-main); border-radius: var(--radius-md); background: var(--bg-base); }
+table.token-map-table { border-collapse: separate; border-spacing: 3px; width: max-content; min-width: 100%; }
+table.token-map-table thead th { position: sticky; top: 0; z-index: 2; background: #20262f; }
+th.token-map-corner { min-width: 190px; max-width: 280px; padding: 8px 10px; text-align: left; position: sticky; left: 0; z-index: 3; background: #252e39; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-main); }
+th.token-map-head { min-width: 118px; max-width: 170px; padding: 6px 8px; vertical-align: bottom; }
+.token-map-call { display: block; font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; color: var(--text-main); }
+.token-map-badge { display: inline-block; margin-top: 3px; font-size: 10px; padding: 1px 7px; border-radius: 12px; border: var(--border-thin); color: var(--text-main); opacity: .85; }
+th.token-map-rowh { min-width: 190px; max-width: 280px; padding: 6px 10px; text-align: left; position: sticky; left: 0; z-index: 1; background: #252e39; font-weight: 600; font-size: 12px; color: var(--text-main); }
+td.token-map-cell { height: 38px; min-width: 118px; background: #232b35; border-radius: 5px; text-align: center; padding: 0; }
+td.token-map-cell[data-heat="1"] { background: #2c4258; }
+td.token-map-cell[data-heat="2"] { background: #2f6483; }
+td.token-map-cell[data-heat="3"] { background: #2f87a8; }
+td.token-map-cell[data-heat="4"] { background: #35abc5; }
+td.token-map-cell[data-heat="4"] .token-map-value { color: #0d151c; }
+td.token-map-cell.token-map-selected { outline: 2px solid #faf4d4; outline-offset: 1px; }
+.token-map-value { display: block; width: 100%; height: 100%; border: 0; background: transparent; color: #fff; font: 600 12px var(--font-mono); cursor: pointer; }
+td.token-map-cell[data-heat="0"] .token-map-value { color: #687586; }
+.token-map-empty { color: #687586; }
+.token-map-detail { margin-top: 4px; padding: 12px 14px; background: var(--bg-base); border: var(--border-main); border-radius: var(--radius-md); max-height: min(40vh, 380px); overflow: auto; overflow-wrap: anywhere; }
+.token-map-detail[hidden] { display: none; }
+.token-map-detail-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px; }
+.token-map-detail-heading h3 { margin: 0; font-size: 14px; }
+.token-map-coverage { color: var(--color-primary); font-size: 12px; font-weight: 600; }
+.token-map-piece { display: flex; justify-content: space-between; gap: 16px; border-top: var(--border-thin); padding: 4px 0; font-size: 12px; }
