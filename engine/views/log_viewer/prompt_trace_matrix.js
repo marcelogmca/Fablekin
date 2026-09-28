@@ -98,6 +98,64 @@
         return usage.is_local_cache === true || usage.isLocalCache === true;
     }
 
+    function firstPositiveNumber(...values) {
+        for (const value of values) {
+            const number = Number(value);
+            if (Number.isFinite(number) && number > 0) return Math.round(number);
+        }
+        return null;
+    }
+
+    // Call-level token totals from provider usage. These belong to the whole
+    // call (output/reasoning are not attributable to input payload pieces).
+    function outputTokensFromUsage(usage) {
+        if (!isObject(usage)) return 0;
+        return firstPositiveNumber(
+            usage.completion_tokens, usage.completionTokens,
+            usage.output_tokens, usage.outputTokens,
+            usage.generation_tokens, usage.generationTokens
+        ) || 0;
+    }
+
+    function reasoningTokensFromUsage(usage) {
+        if (!isObject(usage)) return 0;
+        const details = isObject(usage.completion_tokens_details) ? usage.completion_tokens_details
+            : isObject(usage.output_token_details) ? usage.output_token_details : {};
+        return firstPositiveNumber(
+            usage.reasoning_tokens, usage.reasoningTokens,
+            usage.native_tokens_reasoning,
+            details.reasoning_tokens, details.reasoningTokens
+        ) || 0;
+    }
+
+    function cachedInputTokensFromUsage(usage) {
+        if (!isObject(usage)) return 0;
+        const details = isObject(usage.prompt_tokens_details) ? usage.prompt_tokens_details
+            : isObject(usage.input_token_details) ? usage.input_token_details : {};
+        return firstPositiveNumber(
+            usage.cachedTokens, usage.cached_tokens,
+            usage.cachedInputTokens, usage.cached_input_tokens,
+            usage.cacheReadTokens, usage.cache_read_tokens,
+            usage.cache_read_input_tokens,
+            details.cached_tokens, details.cache_read, details.cache_read_input_tokens
+        ) || 0;
+    }
+
+    function reportedCostFromUsage(usage) {
+        if (!isObject(usage)) return 0;
+        const value = Number(usage.total_cost ?? usage.cost);
+        return Number.isFinite(value) && value > 0 ? value : 0;
+    }
+
+    function callRoute(call) {
+        const responsePayload = call && call.response && isObject(call.response.payload) ? call.response.payload : {};
+        const requestPayload = call && call.request && isObject(call.request.payload) ? call.request.payload : {};
+        return {
+            provider: asNonEmptyString(responsePayload.provider) || asNonEmptyString(requestPayload.provider),
+            model: asNonEmptyString(responsePayload.model) || asNonEmptyString(requestPayload.model)
+        };
+    }
+
     // ---- per-call attribution --------------------------------------------
     // occurrenceId -> owned character count (exclusive spans only).
     function occurrenceCharCounts(trace) {
@@ -141,12 +199,23 @@
 
     function attributeCall(call) {
         const trace = call.trace;
-        if (!trace || !trace.manifest) {
-            return { status: 'untraced', pieces: [], overheadChars: 0, overheadTokens: 0, totalChars: 0 };
-        }
         const usage = call.response && call.response.payload ? call.response.payload.usage : null;
         const localCache = isLocalCacheHit(usage);
         const providerInputTokens = localCache ? 0 : usageInputTokens(usage);
+        const callLevel = {
+            inputTokens: providerInputTokens,
+            outputTokens: outputTokensFromUsage(usage),
+            reasoningTokens: reasoningTokensFromUsage(usage),
+            cachedInputTokens: cachedInputTokensFromUsage(usage),
+            reportedCost: reportedCostFromUsage(usage),
+            localCache
+        };
+        if (!trace || !trace.manifest) {
+            return {
+                status: 'untraced', pieces: [], overheadChars: 0, overheadTokens: 0,
+                totalChars: 0, providerInputTokens, ...callLevel
+            };
+        }
         const manifest = trace.manifest;
         const occurrences = Array.isArray(manifest.occurrences) ? manifest.occurrences : [];
         const components = isObject(manifest.components) ? manifest.components : {};
@@ -191,7 +260,7 @@
                 : null,
             totalChars,
             providerInputTokens,
-            localCache
+            ...callLevel
         };
     }
 
@@ -216,14 +285,27 @@
         return topmost;
     }
 
-    function buildMatrix(calls) {
+    function buildMatrix(calls, options = {}) {
         const columns = [];
         const rowIndex = new Map(); // rowId -> row
         const rows = [];
         const sharedIndex = new Map(); // componentId -> Set(columnIndex)
 
-        calls.forEach((call, columnIndex) => {
-            const attribution = attributeCall(call);
+        const attributed = calls.map((call) => ({ call, attribution: attributeCall(call) }));
+        if ((options.sortColumns || 'input') === 'input') {
+            // Most-consuming call first. Columns are ranked by provider input
+            // tokens; calls without a provider total fall back to rendered
+            // characters. Ties break on title for stability.
+            attributed.sort((a, b) => {
+                const aKey = a.attribution.providerInputTokens != null ? a.attribution.providerInputTokens : -1;
+                const bKey = b.attribution.providerInputTokens != null ? b.attribution.providerInputTokens : -1;
+                return (bKey - aKey)
+                    || (b.attribution.totalChars - a.attribution.totalChars)
+                    || String(a.call.title).localeCompare(String(b.call.title));
+            });
+        }
+
+        attributed.forEach(({ call, attribution }, columnIndex) => {
             const manifest = call.trace && call.trace.manifest;
             const components = manifest && isObject(manifest.components) ? manifest.components : {};
             const cells = new Map(); // rowId -> { chars, tokens, pieces[] }
@@ -265,6 +347,7 @@
                 }
             }
 
+            const route = callRoute(call);
             columns.push({
                 title: call.title,
                 callId: (call.trace && call.trace.callId) || null,
@@ -272,7 +355,15 @@
                 hash: (call.trace && call.trace.hash) || null,
                 status: attribution.status,
                 providerInputTokens: attribution.providerInputTokens ?? null,
+                outputTokens: attribution.outputTokens || 0,
+                reasoningTokens: attribution.reasoningTokens || 0,
+                cachedInputTokens: attribution.cachedInputTokens || 0,
+                reportedCost: attribution.reportedCost || 0,
+                localCache: attribution.localCache === true,
+                provider: route.provider,
+                model: route.model,
                 totalChars: attribution.totalChars,
+                sourceCall: call,
                 cells
             });
         });
@@ -294,6 +385,9 @@
         buildMatrix,
         occurrenceCharCounts,
         usageInputTokens,
-        isLocalCacheHit
+        isLocalCacheHit,
+        outputTokensFromUsage,
+        reasoningTokensFromUsage,
+        cachedInputTokensFromUsage
     };
 });

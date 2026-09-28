@@ -2544,6 +2544,13 @@ function tokenMapFormatTokens(value) {
     return value >= 1000 ? `~${(value / 1000).toFixed(1)}k` : `~${Math.round(value)}`;
 }
 
+function tokenMapMoney(value) {
+    const number = Number(value) || 0;
+    if (number <= 0) return '$0';
+    if (number < 0.0001) return `$${number.toExponential(1)}`;
+    return `$${number.toFixed(4)}`;
+}
+
 function renderTokenMapIntoContainer(container, turnLogData) {
     container.innerHTML = '';
     container.classList.add('token-map-stage');
@@ -2572,7 +2579,7 @@ function renderTokenMapIntoContainer(container, turnLogData) {
     header.appendChild(title);
     const hint = document.createElement('span');
     hint.className = 'waterfall-timing-summary';
-    hint.textContent = 'Cells show attributed input-token shares (~). Click a cell for piece detail.';
+    hint.textContent = 'Columns sorted by input cost, heaviest first. Input rows are ~attributed shares; Reasoning/Output rows are provider-reported whole-call totals.';
     header.appendChild(hint);
     container.appendChild(header);
 
@@ -2600,6 +2607,34 @@ function renderTokenMapIntoContainer(container, turnLogData) {
         if (!tokens) return 0;
         const t = tokens / maxCell;
         return t >= 0.6 ? 4 : t >= 0.3 ? 3 : t >= 0.12 ? 2 : 1;
+    };
+    // Call-level metric rows (reasoning/output) get their own scales; price has
+    // no heat. These are whole-call provider numbers, never piece attributions.
+    const reasoningMax = Math.max(1, ...matrix.columns.map((col) => col.reasoningTokens || 0));
+    const outputMax = Math.max(1, ...matrix.columns.map((col) => col.outputTokens || 0));
+    const metricHeat = (value, max) => {
+        if (!value) return 0;
+        const t = value / max;
+        return t >= 0.6 ? 4 : t >= 0.3 ? 3 : t >= 0.12 ? 2 : 1;
+    };
+    const priceCache = new Map();
+    const priceForColumn = (col) => {
+        if (priceCache.has(col)) return priceCache.get(col);
+        let breakdown = null;
+        try {
+            breakdown = calculateCostBreakdown({
+                inputTokens: col.providerInputTokens || 0,
+                outputTokens: col.outputTokens || 0,
+                cacheReadTokens: col.cachedInputTokens || 0,
+                cacheWriteTokens: 0,
+                pricing: modelPricing[col.provider]?.[col.model] || null,
+                reportedCost: col.reportedCost || 0
+            });
+        } catch (error) {
+            breakdown = null;
+        }
+        priceCache.set(col, breakdown);
+        return breakdown;
     };
 
     const wrap = document.createElement('div');
@@ -2650,6 +2685,73 @@ function renderTokenMapIntoContainer(container, turnLogData) {
             + pieceLines
             + (cell.pieces.length > 12 ? `<p class="muted small">…and ${cell.pieces.length - 12} more pieces in this cell.</p>` : '');
     };
+
+    const callMetricRows = [
+        {
+            id: '__reasoning__',
+            label: 'Reasoning tokens',
+            kind: 'reasoning',
+            title: 'Hidden reasoning tokens the provider reported for each call. Whole-call metric, not attributable to input payload pieces.',
+            value: (col) => col.reasoningTokens || 0,
+            heat: (col) => metricHeat(col.reasoningTokens || 0, reasoningMax)
+        },
+        {
+            id: '__output__',
+            label: 'Output tokens',
+            kind: 'output',
+            title: 'Generated tokens the provider reported for each call (visible plus reasoning). Whole-call metric.',
+            value: (col) => col.outputTokens || 0,
+            heat: (col) => metricHeat(col.outputTokens || 0, outputMax)
+        },
+        {
+            id: '__price__',
+            label: 'Price · in | out | cache',
+            kind: 'price',
+            title: 'Estimated cost per call from local model pricing: input | output | cache discount. n/a when pricing is unknown.'
+        }
+    ];
+    const appendMetricRow = (metric, position) => {
+        const tr = document.createElement('tr');
+        tr.className = `token-map-metric-row token-map-metric-row--${metric.kind}`;
+        const th = document.createElement('th');
+        th.className = 'token-map-rowh token-map-rowh-metric';
+        th.scope = 'row';
+        th.textContent = metric.label;
+        th.title = metric.title;
+        tr.appendChild(th);
+        matrix.columns.forEach((col, columnIndex) => {
+            const td = document.createElement('td');
+            td.className = `token-map-cell token-map-cell--${metric.kind}`;
+            td.dataset.columnIndex = String(columnIndex);
+            td.dataset.rowId = metric.id;
+            if (metric.kind === 'price') {
+                td.dataset.heat = '0';
+                const price = priceForColumn(col);
+                if (!price || !price.hasPricing) {
+                    td.innerHTML = '<span class="token-map-price token-map-price--none">n/a</span>';
+                    td.title = `${col.title}: no local pricing for ${col.provider || '?'} / ${col.model || '?'}.`;
+                } else {
+                    const input = Number(price.inputCost || 0);
+                    const output = Number(price.outputCost || 0);
+                    const discount = Number(price.cacheSavings || 0);
+                    td.innerHTML = '<span class="token-map-price">'
+                        + `<span class="token-map-price-part">in ${tokenMapMoney(input)}</span>`
+                        + `<span class="token-map-price-part">out ${tokenMapMoney(output)}</span>`
+                        + `<span class="token-map-price-part">cache ${discount > 0 ? `-${tokenMapMoney(discount)}` : tokenMapMoney(0)}</span>`
+                        + '</span>';
+                    td.title = `${col.title}: total ${tokenMapMoney(price.totalCost)} (input ${tokenMapMoney(input)} + output ${tokenMapMoney(output)}${discount > 0 ? `, cache savings ${tokenMapMoney(discount)}` : ''}).`;
+                }
+            } else {
+                const value = metric.value(col);
+                td.dataset.heat = String(metric.heat(col));
+                td.innerHTML = `<span class="token-map-value token-map-value--metric">${value > 0 ? value.toLocaleString() : '·'}</span>`;
+                td.title = `${col.title}: ${value.toLocaleString()} ${metric.kind} tokens.`;
+            }
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    };
+    callMetricRows.forEach(appendMetricRow);
 
     for (const row of sortedRows) {
         const tr = document.createElement('tr');

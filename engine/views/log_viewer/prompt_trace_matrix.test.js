@@ -122,6 +122,49 @@ test('dev-cache hit shows spans with zero provider tokens', () => {
     assert.equal(attr.providerInputTokens, 0);
 });
 
+test('columns are ordered by provider input tokens, most consuming first', () => {
+    const comps = { 'root.canon': { id: 'root.canon', parent: 'root', label: 'Canon', owner: 'core' } };
+    const occ = [{ occurrenceId: 'occ-1', componentId: 'root.canon', instanceKey: null, containerOccurrenceId: null }];
+    const mk = (title, chars, inputTokens) => {
+        const trace = makeTrace({ occurrences: occ, spans: [{ occurrenceId: 'occ-1', messageIndex: 0, start: 0, end: chars }], components: comps });
+        return {
+            title, request: { payload: { promptTrace: trace }, timestamp: title },
+            response: { payload: { usage: { prompt_tokens: inputTokens } } }, error: null, trace
+        };
+    };
+    const matrix = Matrix.buildMatrix([mk('small', 10, 100), mk('huge', 10, 900), mk('mid', 10, 400)]);
+    assert.deepEqual(matrix.columns.map((c) => c.title), ['huge', 'mid', 'small']);
+});
+
+test('call-level output/reasoning/cached tokens are extracted from usage', () => {
+    const trace = makeTrace({ occurrences: [], spans: [], components: {} });
+    const call = {
+        title: 'W', request: { payload: { promptTrace: trace } },
+        response: { payload: { usage: {
+            prompt_tokens: 1000,
+            completion_tokens: 800,
+            cachedTokens: 250,
+            completion_tokens_details: { reasoning_tokens: 600 }
+        } } }, error: null, trace
+    };
+    const attr = Matrix.attributeCall(call);
+    assert.equal(attr.outputTokens, 800);
+    assert.equal(attr.reasoningTokens, 600);
+    assert.equal(attr.cachedInputTokens, 250);
+    assert.equal(attr.inputTokens, 1000);
+});
+
+test('untraced calls still expose call-level usage for the metric rows', () => {
+    const call = {
+        title: 'Legacy', request: { payload: {} },
+        response: { payload: { usage: { prompt_tokens: 500, completion_tokens: 120, reasoning_tokens: 90 } } }, error: null, trace: null
+    };
+    const attr = Matrix.attributeCall(call);
+    assert.equal(attr.status, 'untraced');
+    assert.equal(attr.outputTokens, 120);
+    assert.equal(attr.reasoningTokens, 90);
+});
+
 test('extractCalls joins request/response by callId', () => {
     const trace = makeTrace({ occurrences: [], spans: [], components: {} });
     trace.callId = 'xyz';

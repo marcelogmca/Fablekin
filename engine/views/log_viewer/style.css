@@ -1004,7 +1004,7 @@ body {
 
 .console-log-tabs {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
     gap: var(--space-xs);
 }
 
@@ -1555,8 +1555,14 @@ body {
 }
 
 /* ---- Token Map: measured prompt-piece matrix (one turn) ---- */
-.token-map-stage { display: flex; flex-direction: column; gap: var(--space-md); min-height: 0; }
-.token-map-wrap { overflow: auto; max-height: min(62vh, 620px); border: var(--border-main); border-radius: var(--radius-md); background: var(--bg-base); }
+/* Do NOT set display here: the stage also carries .console-log-pane, whose
+   .console-log-pane rule owns show/hide. A later display rule would force the
+   hidden pane visible. */
+.token-map-stage { flex-direction: column; gap: var(--space-md); min-height: 0; }
+.token-map-wrap { width: 100%; overflow: auto; max-height: min(62vh, 620px); border: var(--border-main); border-radius: var(--radius-md); background: var(--bg-base); }
+/* Console-only mode reclaims the left pane: let the map fill the extra room. */
+.log-turn-group[data-split-view="console"] .log-topics-container.waterfall-embedded { max-height: calc(100vh - 150px); }
+.log-turn-group[data-split-view="console"] .token-map-wrap { max-height: calc(100vh - 300px); }
 table.token-map-table { border-collapse: separate; border-spacing: 3px; width: max-content; min-width: 100%; }
 table.token-map-table thead th { position: sticky; top: 0; z-index: 2; background: #20262f; }
 th.token-map-corner { min-width: 190px; max-width: 280px; padding: 8px 10px; text-align: left; position: sticky; left: 0; z-index: 3; background: #252e39; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-main); }
@@ -1580,3 +1586,25 @@ td.token-map-cell[data-heat="0"] .token-map-value { color: #687586; }
 .token-map-detail-heading h3 { margin: 0; font-size: 14px; }
 .token-map-coverage { color: var(--color-primary); font-size: 12px; font-weight: 600; }
 .token-map-piece { display: flex; justify-content: space-between; gap: 16px; border-top: var(--border-thin); padding: 4px 0; font-size: 12px; }
+
+/* Call-level metric rows: whole-call provider numbers, visually distinct
+   from the blue span-proportional input attribution rows. */
+th.token-map-rowh-metric { font-style: italic; }
+.token-map-metric-row--reasoning th.token-map-rowh-metric { color: #c9a7f0; }
+.token-map-metric-row--output th.token-map-rowh-metric { color: #8ee0ac; }
+.token-map-metric-row--price th.token-map-rowh-metric { color: #f2cf8a; }
+td.token-map-cell--reasoning { background: #3b2d55; }
+td.token-map-cell--reasoning[data-heat="1"] { background: #402f5e; }
+td.token-map-cell--reasoning[data-heat="2"] { background: #553a80; }
+td.token-map-cell--reasoning[data-heat="3"] { background: #6c49a4; }
+td.token-map-cell--reasoning[data-heat="4"] { background: #8659c6; }
+td.token-map-cell--output { background: #234236; }
+td.token-map-cell--output[data-heat="1"] { background: #244639; }
+td.token-map-cell--output[data-heat="2"] { background: #276149; }
+td.token-map-cell--output[data-heat="3"] { background: #2c815b; }
+td.token-map-cell--output[data-heat="4"] { background: #34a271; }
+td.token-map-cell--price { background: #3a3420; }
+.token-map-price { display: flex; flex-direction: column; gap: 1px; align-items: center; line-height: 1.15; color: #f2cf8a; font-family: var(--font-mono); font-size: 10px; }
+.token-map-price--none { color: #7d7460; }
+.token-map-value--metric { font-weight: 700; }
+td.token-map-cell[data-heat="4"] .token-map-value--metric { color: #0d151c; }
