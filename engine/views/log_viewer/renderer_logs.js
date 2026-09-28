@@ -2547,8 +2547,10 @@ function tokenMapFormatTokens(value) {
 function tokenMapMoney(value) {
     const number = Number(value) || 0;
     if (number <= 0) return '$0';
-    if (number < 0.0001) return `$${number.toExponential(1)}`;
-    return `$${number.toFixed(4)}`;
+    if (number >= 0.01) return `$${number.toFixed(4)}`;
+    if (number >= 0.0001) return `$${number.toFixed(6)}`;
+    // Never scientific notation: keep fixed-point precision for micro-costs.
+    return `$${number.toFixed(8)}`;
 }
 
 function renderTokenMapIntoContainer(container, turnLogData) {

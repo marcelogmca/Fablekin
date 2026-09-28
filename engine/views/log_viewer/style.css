@@ -1606,5 +1606,5 @@ td.token-map-cell--output[data-heat="4"] { background: #34a271; }
 td.token-map-cell--price { background: #3a3420; }
 .token-map-price { display: flex; flex-direction: column; gap: 1px; align-items: center; line-height: 1.15; color: #f2cf8a; font-family: var(--font-mono); font-size: 10px; }
 .token-map-price--none { color: #7d7460; }
-.token-map-value--metric { font-weight: 700; }
+.token-map-value--metric { display: flex; align-items: center; justify-content: center; font-weight: 700; }
 td.token-map-cell[data-heat="4"] .token-map-value--metric { color: #0d151c; }
