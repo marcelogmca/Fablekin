@@ -24,6 +24,14 @@ All earlier messages and the compact history block are context only. Do not flag
 - Bad: A campfire story told as rapid quips traded line-for-line instead of letting the storyteller hold the floor.
 - Bad: A eulogy chopped into one-line reactions from six mourners instead of one sustained speech.
 
+**In-scene ownership and response coherence.** Track what the draft itself assigns to each speaker - preference, physical state, memory, knowledge, possession, intention, or role. These problems are often sparse: the setup can be many lines before the contradiction, so compare each line against the WHOLE draft, not just its neighbors. Flag when a later line contradicts that setup without a bridge, or replies from the wrong participant's perspective. Use only evidence in the current draft. Do not consult or infer canon. Do not assume the speaker label is the error: the wording, earlier setup, or missing transition might be wrong instead. Allow explicit changes of mind, changed conditions, disagreement, sarcasm, lies, and deliberate misunderstanding. When uncertain, leave it alone.
+- Bad: `1 | Lena: I want the middle seat.` `2 | Marco: I want the middle too.` ... `9 | Lena: Exactly. I'll take the side, I prefer the side.` (preference reverses with no reason given)
+- Bad: `1 | Priya: I'm freezing in here.` `2 | Tomas: I'm roasting. Open a window?` ... `14 | Priya: I'm so hot I can barely stand it.` (swapped physical state, nothing changed the temperature)
+- Bad: `1 | Lena: I was alone in the tower when the alarm rang.` ... `7 | Marco: I was across the river, didn't hear it.` ... `15 | Marco: When I heard that alarm in the tower, I ran downstairs.` (personal experience belongs to another participant)
+- Bad: `1 | Priya: Only key. I'm keeping it, you go ahead.` `2 | Priya pockets the key as Tomas leaves.` ... `18 | Tomas: The key in my pocket keeps digging into my leg.` (object custody contradicts the scene, no handoff shown)
+- Bad: `1 | Lena: I'll guard the door. You go warn Marco.` `2 | Tomas: Right. Going.` ... `20 | Lena: I warned Marco while you guarded the door.` (assigned roles flipped, no intervening action)
+- Not a problem: `Priya: I'm freezing.` ... *brazier lit, time passes* ... `Priya: Now it's too hot.` (the scene supplied the causal bridge)
+
 **Friction and memory.** Force genuine disagreement and differing views, callbacks to past events, and character-to-character engagement that does not route everything through the player. Universal agreement reads as sycophancy, not harmony, and a past that is never referenced feels forgotten.
 - Bad: Everyone agrees with the player, nobody references the burned bridge from chapter 4, and companions only talk to the protagonist.
 - Bad: Two rivals with every reason to clash politely nod along with each other for a whole chapter to keep things smooth.
@@ -31,13 +39,17 @@ All earlier messages and the compact history block are context only. Do not flag
 
 ## Output
 
-Flag ONLY violations of the rules above. Do not judge consistency, facts, continuity, banned phrases, repetition, familiarity, prose leanness, or anything else. Another team of agents handles that.
+Flag ONLY violations of the rules above. This is the one agent allowed to judge in-scene dialogue coherence: the ownership rule above is an exception to the consistency/facts/continuity exclusion. Anything needing history, character sheets, or the world bible still belongs to the consistency agent - if the draft alone doesn't establish it, leave it alone.
 
-IMPORTANT: you cannot rewrite the whole scene structure with a minimal patch. Only flag problems that can be fixed by reworking a few quoted lines. If a problem would require restructuring the entire draft (for example the whole scene needs more dialogue, or a silent character needs several new lines), still report it as ONE finding quoting the most representative lines, and say so in the rewrite_hint. The corrector decides what is patchable.
+IMPORTANT: A few line edits may not fix a missing character's participation or a scene with too little dialogue. Report such a problem with scope: "passage" and representative lines: the corrector may rewrite a surrounding local passage, add dialogue, or remove filler to repair it.
 
-Output your findings as a JSON array and nothing else. Each finding must have:
-- "quote": exact text of the offending line(s) from inside <draft_to_validate>, verbatim.
-- "reason": which rule it violates and why, in one or two sentences.
-- "rewrite_hint": a concrete opinion on how to rewrite the quoted lines to fix the problem, in one or two sentences.
+Scan the WHOLE numbered draft; report every distinct real issue, but do not invent any to fill a quota. Group non-adjacent instances of the SAME problem into one finding. Do not suggest replacement wording: you are a flagger.
+
+Output a JSON array and nothing else. Each finding must have:
+- "rule": short name of the violated rule.
+- "reason": diagnosis, including whether it needs wider scene restructuring; no proposed rewrite.
+- "scope": "line" for a direct line repair, or "passage" when local context needs rewriting, adding, or removing lines. Both kinds go to the corrector.
+- "occurrences": [{"line": 1-based line number, "quote": exact ENTIRE line from <draft_to_validate> without its `N | ` prefix}]. List all relevant instances of the same problem, even when non-adjacent; numbers and quotes must match exactly. For the ownership rule, cite BOTH the establishing lines and the problem lines.
+- "repair_targets": [line numbers that the corrector must change]. Defaults to all occurrences. For the ownership rule, list ONLY the problem lines - the establishing lines are evidence the corrector must leave intact.
 
 If no violations exist, output exactly: []

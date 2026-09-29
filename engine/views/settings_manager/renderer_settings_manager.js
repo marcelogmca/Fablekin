@@ -125,7 +125,8 @@ function initializeProviderSettings() {
         { id: 'ANTHROPIC_API_KEY', name: 'Anthropic', description: 'Official access for Claude 3.5 Sonnet / Opus.' },
         { id: 'GEMINI_API_KEY', name: 'Google Gemini', description: 'Official access for Gemini 1.5 Flash and Pro.' },
         { id: 'DEEPSEEK_API_KEY', name: 'DeepSeek', description: 'High-performance reasoning models.' },
-        { id: 'NANO_GPT_API_KEY', name: 'NanoGPT', description: 'OpenAI-compatible gateway for multi-provider model access.' }
+        { id: 'NANO_GPT_API_KEY', name: 'NanoGPT', description: 'OpenAI-compatible gateway for multi-provider model access.' },
+        { id: 'GENERIC_API_KEY', name: 'Generic (OpenAI-compatible)', description: 'Custom OpenAI-compatible endpoint. Set its Base URL under Models & Routing.' }
     ];
 
     // Request current status of keys
@@ -230,7 +231,17 @@ const REASONING_EFFORT_OPTIONS = [
     ['high', 'High'],
     ['xhigh', 'Extra high']
 ];
-const REASONING_EFFORT_PROVIDERS = new Set(['nano_gpt', 'openrouter', 'openai', 'deepseek']);
+const REASONING_EFFORT_PROVIDERS = new Set(['nano_gpt', 'openrouter', 'openai', 'deepseek', 'generic']);
+// Commander GOAT (generic) only accepts low/medium/high/xhigh/max. 'none' is
+// expressed by omitting the parameter; 'minimal' maps to 'low' (see
+// normalizeReasoningParamsForProvider in engine/modules/llm.js).
+const GENERIC_EFFORT_OPTIONS = [
+    ['', 'Automatic'],
+    ['low', 'Low'],
+    ['medium', 'Medium'],
+    ['high', 'High'],
+    ['xhigh', 'Extra high']
+];
 
 function getNormalizedProviderConfig(rawConfig) {
     if (!rawConfig) return null;
@@ -247,7 +258,7 @@ function getProviderRegistry(settings) {
 function getSelectableProviderKeys(settings) {
     return Array.from(new Set([
         ...Object.keys(getProviderRegistry(settings)),
-        'openrouter', 'openai', 'anthropic', 'deepseek', 'gemini', 'nano_gpt', 'ollama'
+        'openrouter', 'openai', 'anthropic', 'deepseek', 'gemini', 'nano_gpt', 'generic', 'ollama'
     ])).sort();
 }
 
@@ -359,11 +370,17 @@ function refreshProviderDependentUi() {
 
 function providerHasSecret(provider) {
     if (provider === 'ollama') return true;
+    if (provider === 'generic') return providerHasGenericEndpoint(currentSettingsCache);
     const map = {
         openrouter: 'OPENROUTER_API_KEY', openai: 'OPENAI_API_KEY', anthropic: 'ANTHROPIC_API_KEY',
-        deepseek: 'DEEPSEEK_API_KEY', gemini: 'GEMINI_API_KEY', nano_gpt: 'NANO_GPT_API_KEY'
+        deepseek: 'DEEPSEEK_API_KEY', gemini: 'GEMINI_API_KEY', nano_gpt: 'NANO_GPT_API_KEY',
+        generic: 'GENERIC_API_KEY'
     };
     return !!providerSecretStatuses[map[provider]];
+}
+
+function providerHasGenericEndpoint(settings) {
+    return !!String(settings?.infrastructure?.providers?.generic?.url || '').trim();
 }
 
 function renderModelAliasCards(settings) {
@@ -377,16 +394,17 @@ function renderModelAliasCards(settings) {
         const fallback = route.fallback || {};
         const supportsReasoningEffort = REASONING_EFFORT_PROVIDERS.has(route.provider);
         const fallbackSupportsReasoningEffort = REASONING_EFFORT_PROVIDERS.has(fallback.provider);
-        const reasoningOptions = REASONING_EFFORT_OPTIONS.map(([value, label]) =>
+        const effortOptionsFor = (provider) => provider === 'generic' ? GENERIC_EFFORT_OPTIONS : REASONING_EFFORT_OPTIONS;
+        const reasoningOptions = effortOptionsFor(route.provider).map(([value, label]) =>
             `<option value="${value}"${route.reasoning_effort === value ? ' selected' : ''}>${label}</option>`
         ).join('');
-        const fallbackReasoningOptions = REASONING_EFFORT_OPTIONS.map(([value, label]) =>
+        const fallbackReasoningOptions = effortOptionsFor(fallback.provider).map(([value, label]) =>
             `<option value="${value}"${fallback.reasoning_effort === value ? ' selected' : ''}>${label}</option>`
         ).join('');
         const status = !route.provider || !route.model
             ? { kind: 'missing', text: 'Incomplete route' }
             : !providerHasSecret(route.provider)
-                ? { kind: 'warn', text: 'Provider key missing' }
+                ? { kind: 'warn', text: route.provider === 'generic' ? 'Endpoint URL missing' : 'Provider key missing' }
                 : { kind: 'configured', text: 'Ready' };
         return `
             <article class="model-alias-card" data-alias-card="${item.alias}">

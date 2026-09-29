@@ -30,7 +30,7 @@
             const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
             return sorted.length ? sorted[Math.floor(sorted.length / 2)] : null;
         };
-        const reasoningEffortProviders = new Set(['nano_gpt', 'openrouter', 'openai', 'deepseek']);
+        const reasoningEffortProviders = new Set(['nano_gpt', 'openrouter', 'openai', 'deepseek', 'generic']);
         const getPluginId = source => source?.request?.payload?.diagnostics?.pluginId || source?.pluginId || '';
         const isReplayable = source => Array.isArray(source?.request?.payload?.content) || Array.isArray(source?.request?.payload?.content?.messages);
 

@@ -22,6 +22,7 @@ const keyMapping = {
   'DEEPSEEK_API_KEY': ['infrastructure', 'providers', 'deepseek', 'apiKey'],
   'GEMINI_API_KEY': ['infrastructure', 'providers', 'gemini', 'apiKey'],
   'NANO_GPT_API_KEY': ['infrastructure', 'providers', 'nano_gpt', 'apiKey'],
+  'GENERIC_API_KEY': ['infrastructure', 'providers', 'generic', 'apiKey'],
   'OLLAMA_API_KEY': ['infrastructure', 'providers', 'ollama', 'apiKey'],
   'OLLAMA_BASE_URL': ['infrastructure', 'providers', 'ollama', 'base_url']
 };

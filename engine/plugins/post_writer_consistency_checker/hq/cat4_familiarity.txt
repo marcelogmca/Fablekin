@@ -28,9 +28,12 @@ All earlier messages and the compact history block are context only. They exist 
 
 Flag ONLY violations of the rules above. Do not judge consistency, facts, continuity, banned phrases, repetition, dialogue balance, prose leanness, or anything else. Another team of agents handles that.
 
-Output your findings as a JSON array and nothing else. Each finding must have:
-- "quote": exact text of the offending line(s) from inside <draft_to_validate>, verbatim.
-- "reason": which rule it violates and why, in one or two sentences.
-- "rewrite_hint": a concrete opinion on how to rewrite the line to fix the problem, in one or two sentences.
+Scan the WHOLE numbered draft; report every distinct real issue, but do not invent any to fill a quota. Group separated instances of the SAME problem into one finding. Do not suggest replacement wording: you are a flagger.
+
+Output a JSON array and nothing else. Each finding must have:
+- "rule": short name of the violated rule.
+- "reason": what established familiarity is contradicted and why; no proposed rewrite.
+- "scope": "line" for a direct line repair, or "passage" when local context needs rewriting, adding, or removing lines. Both kinds go to the corrector.
+- "occurrences": [{"line": 1-based line number, "quote": exact ENTIRE line from <draft_to_validate> without its `N | ` prefix}]. List every relevant instance even when non-adjacent; numbers and quotes must match exactly.
 
 If no violations exist, output exactly: []

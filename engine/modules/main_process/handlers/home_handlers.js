@@ -51,8 +51,13 @@ function normalizeWizard(rawWizard = {}, fallback = {}) {
     };
 }
 
-function providerHasConfiguredKey(providerId, secureStorage, keyMapping) {
+function providerHasConfiguredKey(providerId, secureStorage, keyMapping, settings = {}) {
     const systemSecrets = secureStorage.getPluginSecrets('system') || {};
+    // Generic OpenAI-compatible endpoints authenticate optionally: readiness
+    // is a configured Base URL, not a stored key.
+    if (providerId === 'generic') {
+        return !!String(settings?.infrastructure?.providers?.generic?.url || '').trim();
+    }
     const secretKey = Object.keys(keyMapping || {}).find(key => {
         const pathParts = keyMapping[key] || [];
         return pathParts[0] === 'infrastructure'
@@ -206,7 +211,7 @@ function createHomeHandlers({
                 const providers = settings.infrastructure?.providers || {};
                 const providerStatus = Object.entries(providers).map(([id, config]) => ({
                     id,
-                    configured: providerHasConfiguredKey(id, secureStorage, keyMapping),
+                    configured: providerHasConfiguredKey(id, secureStorage, keyMapping, settings),
                     hasModels: getModelAliases(settings).some(alias => alias.provider === id && alias.valid),
                     base_url: id === 'ollama' ? (config.base_url || '') : undefined
                 })).sort((a, b) => a.id.localeCompare(b.id));

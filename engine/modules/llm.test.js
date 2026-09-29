@@ -3,8 +3,10 @@ const assert = require('node:assert/strict');
 const {
   applyRouteReasoningEffort,
   DEFAULT_LLM_TIMEOUT_MS,
+  getProviderInstance,
   isFallbackEligibleError,
   invokeModelWithDeadline,
+  normalizeOpenAICompatibleBaseUrl,
   normalizeOpenRouterReasoningModel,
   normalizeReasoningParamsForProvider,
   resolveCallProviderKey
@@ -84,6 +86,48 @@ test('normalizes reasoning payloads for router and direct providers', () => {
     normalizeReasoningParamsForProvider('anthropic', { reasoning: { effort: 'high' } }),
     {}
   );
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'minimal' } }),
+    { reasoning_effort: 'low' }
+  );
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'none' } }),
+    {}
+  );
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning_effort: 'none' }),
+    {}
+  );
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning_effort: 'minimal' }),
+    { reasoning_effort: 'low' }
+  );
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'medium' } }),
+    { reasoning_effort: 'medium' }
+  );
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'xhigh' } }),
+    { reasoning_effort: 'xhigh' }
+  );
+});
+
+test('unwinds an OpenAI-compatible URL that already points at the chat route', () => {
+  // The OpenAI SDK appends /chat/completions to baseURL, so a URL pasted from a
+  // curl example must not be requested twice over.
+  assert.equal(
+    normalizeOpenAICompatibleBaseUrl('https://api.commandcode.ai/provider/v1/chat/completions'),
+    'https://api.commandcode.ai/provider/v1'
+  );
+  assert.equal(
+    normalizeOpenAICompatibleBaseUrl('https://api.commandcode.ai/provider/v1/chat/completions/'),
+    'https://api.commandcode.ai/provider/v1'
+  );
+  assert.equal(normalizeOpenAICompatibleBaseUrl('https://api.deepseek.com/v1/chat/completions'), 'https://api.deepseek.com/v1');
+  assert.equal(normalizeOpenAICompatibleBaseUrl('https://openrouter.ai/api/v1'), 'https://openrouter.ai/api/v1');
+  assert.equal(normalizeOpenAICompatibleBaseUrl('http://127.0.0.1:1234/v1/'), 'http://127.0.0.1:1234/v1');
+  assert.equal(normalizeOpenAICompatibleBaseUrl(''), '');
+  assert.equal(normalizeOpenAICompatibleBaseUrl(undefined), '');
 });
 
 test('identifies only transient provider failures as fallback eligible', () => {
@@ -121,6 +165,34 @@ test('clears the deadline after a successful model response', async () => {
 
   const result = await invokeModelWithDeadline(model, [], { timeout: 1000 });
   assert.equal(result.content, 'ok');
+});
+
+test('generic provider instantiates from a URL with an optional key', () => {
+  const withUrlNoKey = getProviderInstance('generic', null, {
+    infrastructure: { providers: { generic: { url: 'http://127.0.0.1:1234/v1/' } } }
+  });
+  assert.ok(withUrlNoKey, 'URL alone should instantiate');
+  assert.equal(
+    withUrlNoKey.lc_kwargs?.configuration?.baseURL,
+    'http://127.0.0.1:1234/v1',
+    'trailing slashes are trimmed'
+  );
+
+  const withUrlAndKey = getProviderInstance('generic', null, {
+    infrastructure: { providers: { generic: { url: 'https://example.com/v1', apiKey: 'sk-test' } } }
+  });
+  assert.ok(withUrlAndKey, 'URL plus key should instantiate');
+
+  assert.equal(
+    getProviderInstance('generic', null, { infrastructure: { providers: { generic: {} } } }),
+    null,
+    'missing URL means the provider is unavailable'
+  );
+  assert.equal(
+    getProviderInstance('generic', null, { infrastructure: { providers: {} } }),
+    null,
+    'missing entry means the provider is unavailable'
+  );
 });
 
 test('prepared-only callLLM derives the provider payload and rejects raw messages', async () => {

@@ -33,11 +33,14 @@ All earlier messages and the compact history block are context only. Do not flag
 
 Flag ONLY violations of the rules above. Do not judge consistency, facts, continuity, banned phrases, repetition, dialogue balance, familiarity, or anything else. Another team of agents handles that.
 
-IMPORTANT: you cannot fix scene-level bloat with a minimal patch. Only flag problems that can be fixed by reworking a few quoted lines. If a problem spans the whole draft (for example the entire scene is filler, or every paragraph re-describes the room), still report it as ONE finding quoting the most representative lines, and say so in the rewrite_hint. The corrector decides what is patchable.
+IMPORTANT: You cannot fix scene-level bloat with a tiny line edit. If a problem spans a passage (for example several lines re-describe the room), report it with scope: "passage" and the relevant lines. The corrector may rewrite or remove a local passage.
 
-Output your findings as a JSON array and nothing else. Each finding must have:
-- "quote": exact text of the offending line(s) from inside <draft_to_validate>, verbatim.
-- "reason": which rule it violates and why, in one or two sentences.
-- "rewrite_hint": a concrete opinion on how to rewrite the quoted lines to fix the problem, in one or two sentences.
+Scan the WHOLE numbered draft; report every distinct real issue, but do not invent any to fill a quota. Group separated instances of the SAME problem into one finding. Do not suggest replacement wording: you are a flagger.
+
+Output a JSON array and nothing else. Each finding must have:
+- "rule": short name of the violated rule.
+- "reason": what fails and why; no proposed rewrite.
+- "scope": "line" for a direct line repair, or "passage" when local context needs rewriting, adding, or removing lines. Both kinds go to the corrector.
+- "occurrences": [{"line": 1-based line number, "quote": exact ENTIRE line from <draft_to_validate> without its `N | ` prefix}]. List relevant instances even when non-adjacent; numbers and quotes must match exactly.
 
 If no violations exist, output exactly: []

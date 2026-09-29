@@ -29,7 +29,7 @@
       "openai": {},
       "anthropic": {},
       "deepseek": {
-        "url": "https://api.deepseek.com/v1/chat/completions"
+        "url": "https://api.deepseek.com/v1"
       },
       "gemini": {
         "url": "https://generativelanguage.googleapis.com/v1beta/models"
@@ -41,6 +41,9 @@
       },
       "nano_gpt": {
         "url": "https://nano-gpt.com/api/v1"
+      },
+      "generic": {
+        "url": "https://api.commandcode.ai/provider/v1"
       }
     },
     "narrative_history": {
@@ -65,6 +68,22 @@
       "top_k": 5
     },
     "model_costs": {
+      "generic": {
+        "deepseek/deepseek-v4.1-flash": {
+          "input": 0.15,
+          "output": 0.6,
+          "cache_read": 0.003,
+          "unit": "USD per 1M tokens (off-peak)",
+          "context": 1000000
+        },
+        "deepseek/deepseek-v4.1-flash-fast": {
+          "input": 0.16,
+          "output": 0.6,
+          "cache_read": 0.016,
+          "unit": "USD per 1M tokens (off-peak)",
+          "context": 1000000
+        }
+      },
       "openrouter": {
         "deepseek/deepseek-chat-v3.1": {
           "input": 0.2,
@@ -619,14 +638,14 @@
       }
     },
     "socket_host": "127.0.0.1",
-    "socket_port": 50943,
-    "socket_url": "http://127.0.0.1:50943",
+    "socket_port": 64360,
+    "socket_url": "http://127.0.0.1:64360",
     "llm_routing": {
       "aliases": {
         "lowendmodel": {
-          "provider": "nano_gpt",
-          "model": "inclusionai/ling-3.0-flash:thinking",
-          "reasoning_effort": "high",
+          "provider": "generic",
+          "model": "deepseek/deepseek-v4.1-flash-fast",
+          "reasoning_effort": "low",
           "fallback": {
             "provider": "nano_gpt",
             "model": "inception/mercury-2.5",
@@ -634,18 +653,19 @@
           }
         },
         "mediumendmodel": {
-          "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-flash-0731"
+          "provider": "generic",
+          "model": "deepseek/deepseek-v4.1-flash-fast",
+          "reasoning_effort": "medium"
         },
         "highendmodel": {
-          "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-flash-0731:thinking",
-          "reasoning_effort": "high"
+          "provider": "generic",
+          "model": "meta/muse-spark-1.3-contributor",
+          "reasoning_effort": "xhigh"
         },
         "veryhighendmodel": {
-          "provider": "nano_gpt",
-          "model": "deepseek/deepseek-v4-pro-0813:thinking",
-          "reasoning_effort": "high"
+          "provider": "generic",
+          "model": "xiaomi/mimo-v2.6-pro",
+          "reasoning_effort": "xhigh"
         }
       }
     }
@@ -740,9 +760,9 @@
       "enabled": true,
       "direct_plugins_enabled": false,
       "enable_scene_boundary_strategy": true,
-      "retries": 0,
+      "retries": 4,
       "timeout": 120000,
-      "analysis_timeout": 120000,
+      "analysis_timeout": 360000,
       "ledger_timeout": 60000
     },
     "asset_selector": {
@@ -1198,6 +1218,30 @@
           "world_status": true,
           "inventory": true
         }
+      },
+      "plugins": {
+        "sprite_shading": {
+          "enable_blurred_edge": false,
+          "blurred_edge_blur": 5,
+          "blurred_edge_opacity": 1,
+          "enable_ambient_lighting": true,
+          "ambient_lighting_opacity": 0.2,
+          "ambient_lighting_saturation": 200,
+          "enable_shadow_shading": true,
+          "shadow_shading_opacity": 0.25,
+          "shadow_shading_contrast": 1000,
+          "shadow_offset_x": 30,
+          "shadow_offset_y": 30,
+          "enable_outline": false,
+          "outline_thickness": 1,
+          "outline_color": "#000000",
+          "outline_color_matching": true,
+          "enable_debug_pips": false,
+          "enable_breathing": true,
+          "breathing_intensity": 0.003,
+          "breathing_speed": 6,
+          "breathing_randomness": 40
+        }
       }
     }
   },
@@ -1641,8 +1685,9 @@
       "hq_quality_model_def": {
         "model": "highendmodel"
       },
-      "hq_corrector_max_tokens": 2000,
-      "hq_max_flags_per_agent": 4,
+      "hq_corrector_max_tokens": 8000,
+      "hq_flag_max_tokens": 3000,
+      "hq_context_lines": 5,
       "hq_history_count": 10,
       "hq_concurrency": 6,
       "reuse_writer_model": true,

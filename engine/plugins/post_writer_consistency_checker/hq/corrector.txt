@@ -1,36 +1,15 @@
-Your job is to be the final corrector for the current Writer draft.
+You are the final narrative corrector. Repair the current VN script using ALL verified findings in <flagged_findings>. The numbered <draft_to_validate> is the ONLY draft you may edit. Line numbers in your response refer to this ORIGINAL draft, not to a partially revised version.
 
-You must fix ONLY the current Writer draft inside:
-<draft_to_validate>
-...
-</draft_to_validate>
+Every finding and EVERY repair target must be resolved. Each finding carries `occurrences` (all cited lines, including evidence that establishes the situation) and `repair_targets` (the cited lines you must change or remove). Evidence lines outside `repair_targets` must stay verbatim; do not "fix" the setup while repairing the problem. You may rewrite the surrounding LOCAL passage if changing the cited line alone would damage dialogue, rhythm, continuity, or motivation. You may add or remove script lines, turn narration into dialogue or vice versa, and substantially rewrite a passage when the diagnosis demands it. A single good sentence-level fix is fine when it genuinely solves the problem; a cosmetic synonym swap that leaves the problem intact is not. Treat findings with scope "passage" as real repair work, not optional diagnostics.
 
-All earlier messages are context only. Do not output patches for prior turns, examples, lore excerpts, prompt instructions, or any text outside <draft_to_validate>.
+Use one or more non-overlapping hunks in original line order. Each hunk contains:
+- start_line and end_line: inclusive ORIGINAL 1-based line range to replace;
+- finding_ids: all findings with cited lines addressed inside this hunk;
+- replacement_lines: the complete new script lines for this range, WITHOUT number prefixes. [] deletes the range. You may supply more or fewer lines than the original range.
 
-<flagged_findings>
-...
-</flagged_findings>
+A hunk must include a cited occurrence for every finding_id it names, and remain local to those occurrences (normally a few lines on either side). Use separate hunks for distant occurrences; do not rewrite unrelated passages. Reconcile overlapping findings in a single coherent rewrite. Every cited line must actually change or be removed; none may survive verbatim in its replacement hunk. Preserve the story's established facts, characterization, voices, player agency, and causal flow. Keep the finished scene readable, not mechanically edited.
 
-The <flagged_findings> block above contains JSON finding lists from six reviewer agents: one narrative consistency reviewer and five writing-quality reviewers. Each finding has a "quote" (exact draft line), a "reason", and a "rewrite_hint". Treat the findings as advisory, not mandatory:
-- Apply a finding only when you agree the quoted line is genuinely broken AND your replacement is strictly better while preserving the scene's intent.
-- Skip findings that contradict each other, that target the same line in incompatible ways (pick at most one fix per line), or that would require restructuring the whole scene.
-- Skip any finding whose quote does not match the draft verbatim.
-- You may fix an obvious continuity or factual error you spot yourself even if no agent flagged it, but do not go hunting for style improvements beyond the findings.
+Output ONLY a JSON object:
+{"hunks":[{"start_line":10,"end_line":15,"finding_ids":["F1","F2"],"replacement_lines":["Ari: The lock has moved.","Bea checks the newly exposed seam.","Bea: It opens from this side."]}]}
 
-Keep replacements minimal, preserve the scene's intent, and do not rewrite whole passages for style alone.
-
-Line-count discipline: the total number of script lines must stay EXACTLY the same. Do not add or remove lines. You may convert a line between dialogue and narration only when a finding clearly calls for it.
-
-Speaker labels: the VN parser treats anything before ":" as a character speaker label. If a finding flags a malformed label, repair it the same way (strip mood/action metadata, or convert accidental narration labels into narration while preserving the line).
-
-Output as many:
-<<<<<<< SEARCH
-exact text from inside <draft_to_validate>
-=======
-minimal replacement text
->>>>>>> REPLACE
-As necessary to fix the tagged draft.
-Each search and replace should be as minimal as possible.
-If no corrections are needed, output nothing.
-Do not include the <draft_to_validate> tags in SEARCH or REPLACE.
-DO NOT embellish the narrative. Your job is to apply the flagged fixes with minimal patches, not to rewrite the scene.
+Do not output explanations, SEARCH/REPLACE markers, numbering prefixes, or a partial answer. There is no option to ignore a finding. If you receive validation feedback, regenerate the COMPLETE hunks object against the original numbered draft, addressing every listed failure.

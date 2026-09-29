@@ -27,7 +27,7 @@ module.exports = {
     },
     PLUGIN_TECHNICAL_OVERVIEW: {
       type: 'description',
-      content: 'Registers a blocking VN pipeline task before sprite resolution. It reuses the Writer prompt payload, appends the Writer output as an assistant message and the finalized dialogue script as a user review request, then applies only safe SEARCH/REPLACE patches.'
+      content: 'Single-pass mode registers a VN task before sprite resolution. HQ mode reviews numbered dialogue immediately after parsing, then validates a complete local-passage rewrite before any dependent VN tasks begin.'
     },
     PLUGIN_METRICS: {
       type: 'metrics',
@@ -42,7 +42,7 @@ module.exports = {
     },
     HQ_DESCRIPTION: {
       type: 'description',
-      content: 'When enabled, the single checker pass is replaced by 6 parallel flag agents (1 consistency-only + 1 per writing-quality category) followed by a final corrector that applies minimal SEARCH/REPLACE patches. Costs ~7 LLM calls per turn instead of 1.'
+      content: 'Six agents flag issues throughout the numbered draft. The corrector must resolve every cited line and may rewrite, add, or remove lines in surrounding local passages. Failed coverage gets one repair attempt; if still invalid, the original scene is kept. Up to 8 LLM calls per turn instead of 1.'
     },
     hq_multipass_enabled: {
       type: 'checkbox',
@@ -60,18 +60,26 @@ module.exports = {
     hq_corrector_max_tokens: {
       type: 'number',
       label: 'HQ Corrector Max Tokens',
-      description: 'Maximum output tokens for the final HQ corrector call.',
+      description: 'Output allowance for the full set of HQ passage rewrites (and a repair attempt if needed).',
       min: 256,
-      max: 8000,
-      default: 2000
+      max: 16000,
+      default: 8000
     },
-    hq_max_flags_per_agent: {
+    hq_context_lines: {
       type: 'number',
-      label: 'HQ Max Flags Per Agent',
-      description: 'Maximum findings accepted from each flag agent before truncation.',
+      label: 'HQ Local Passage Context Lines',
+      description: 'How far a corrected passage can extend around its cited lines. Distant findings require separate hunks.',
       min: 1,
-      max: 10,
-      default: 4
+      max: 30,
+      default: 5
+    },
+    hq_flag_max_tokens: {
+      type: 'number',
+      label: 'HQ Flag Agent Max Tokens',
+      description: 'Output token allowance per flag agent; raise it for long lists of non-adjacent occurrences.',
+      min: 512,
+      max: 16000,
+      default: 3000
     },
     hq_history_count: {
       type: 'number',
@@ -92,7 +100,7 @@ module.exports = {
     reuse_writer_model: {
       type: 'checkbox',
       label: 'Reuse the same model/provider as the Writer',
-      description: 'Allows provider-side prompt caching by running the checker on the Writer model, provider, and resolved subprovider route.',
+      description: 'Runs the checker and HQ corrector on the Writer model/provider when available. Their prompts are independent of the Writer prompt.',
       default: true
     },
     model_def: {
@@ -142,8 +150,8 @@ module.exports = {
     },
     max_patches: {
       type: 'number',
-      label: 'Max Patches',
-      description: 'Maximum number of SEARCH/REPLACE patches to consider from one checker response.',
+      label: 'Single-Pass Max Patches',
+      description: 'Maximum SEARCH/REPLACE patches accepted in single-pass mode. HQ edits are instead limited to verified finding lines.',
       min: 1,
       max: 32,
       default: 8
@@ -173,6 +181,18 @@ module.exports = {
   },
 
   hooks: {
+    HOOK_POST_DIALOGUE_PROCESSING: {
+      priority: 45,
+      mode: 'sequential',
+      allowInterlude: true,
+      run: async (turnContext, tools) => {
+        const settings = tools?.settings?.getSelf?.() || {};
+        const isInterlude = String(turnContext?.sceneMode || '').trim().toLowerCase() === 'interlude';
+        if (settings.hq_multipass_enabled !== true || (isInterlude && settings.enable_interludes === false)) return null;
+        // Structural rewrites must finish before scene/asset/character work starts.
+        return logic.runHqCheck(turnContext, tools);
+      }
+    },
     HOOK_VN_PIPELINE_TASKS: {
       priority: 45,
       mode: 'parallel',
@@ -180,7 +200,7 @@ module.exports = {
       run: async (turnContext, tools) => {
         const settings = tools?.settings?.getSelf?.() || {};
         const isInterlude = String(turnContext?.sceneMode || '').trim().toLowerCase() === 'interlude';
-        if (isInterlude && settings.enable_interludes === false) return null;
+        if (settings.hq_multipass_enabled === true || (isInterlude && settings.enable_interludes === false)) return null;
 
         return {
           key: 'postWriterConsistencyChecker',

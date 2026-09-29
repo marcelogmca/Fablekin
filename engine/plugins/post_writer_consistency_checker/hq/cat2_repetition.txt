@@ -35,9 +35,12 @@ Note on scene endings: you see only the current draft, not the full chapter hist
 
 Flag ONLY violations of the rules above. Do not judge consistency, facts, continuity, banned phrases, dialogue balance, familiarity, or anything else. Another team of agents handles that.
 
-Output your findings as a JSON array and nothing else. Each finding must have:
-- "quote": exact text of the offending line(s) from inside <draft_to_validate>, verbatim.
-- "reason": which rule it violates and why, in one or two sentences.
-- "rewrite_hint": a concrete opinion on how to rewrite the line to fix the problem, in one or two sentences.
+Scan the WHOLE numbered draft. Repetition is often spread across non-adjacent lines: cite ALL relevant instances in ONE finding (even if some instances should remain unchanged). Report separate problems separately; do not invent problems or suggest replacement wording.
+
+Output a JSON array and nothing else. Each finding must have:
+- "rule": short name of the violated rule.
+- "reason": explain the repeated pattern and why it is a problem; no proposed rewrite.
+- "scope": "line" for a direct line repair, or "passage" when local context needs rewriting, adding, or removing lines. Both kinds go to the corrector.
+- "occurrences": [{"line": 1-based line number, "quote": exact ENTIRE line from <draft_to_validate> without its `N | ` prefix}]. List each relevant instance, not just the first; line numbers and quotes must match exactly.
 
 If no violations exist, output exactly: []

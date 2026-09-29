@@ -9,7 +9,7 @@ const pluginManager = require('./plugin_manager/plugin_manager.js');
 const cancellation = require('./pipeline_cancellation.js');
 const { runWithDiagnosticContext } = require('./diagnostic_context.js');
 const { logSharedPrefixUsage } = require('./shared_narrative_prompt.js');
-const { hasRunawayWordList } = require('./writer_output_guard.js');
+const { hasRunawayWordList, stripThinkingBlocks } = require('./writer_output_guard.js');
 // #endregion
 
 // #region CONFIGURATION
@@ -229,7 +229,17 @@ async function generateNextChapter(turnContext) {
     return result;
   });
   cancellation.throwIfCancelled('writer generation');
-  const outputContent = writerResult.content;
+  // Reasoning models answer inside <thinking> tags (Writer EXECUTION PROTOCOL).
+  // Those blocks are working notes, so they are stripped before anything else
+  // inspects the prose — the raw response stays available in the turn logs.
+  const outputContent = stripThinkingBlocks(writerResult.content);
+  if (outputContent !== writerResult.content) {
+    Logger.log(
+      'NarrativeEngine',
+      'Generation',
+      `Stripped ${writerResult.content.length - outputContent.length} characters of <thinking> content from the Writer response.`
+    );
+  }
   if (hasRunawayWordList(outputContent)) {
     throw new Error('Writer produced a runaway word list instead of a scene. The response was rejected before VN processing; try a different Writer model or adjust its sampling settings.');
   }

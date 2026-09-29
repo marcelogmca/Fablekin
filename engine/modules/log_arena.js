@@ -18,7 +18,7 @@ const ARENA_REFUSAL_RETRIES = 1;
 const ARENA_REFUSAL_RETRY_DELAY_MS = 1500;
 const MAX_PROMPT_MODIFICATION_CHARS = 200000;
 const REASONING_EFFORTS = new Set(['none', 'minimal', 'low', 'medium', 'high', 'xhigh']);
-const REASONING_EFFORT_PROVIDERS = new Set(['nano_gpt', 'openrouter', 'openai', 'deepseek']);
+const REASONING_EFFORT_PROVIDERS = new Set(['nano_gpt', 'openrouter', 'openai', 'deepseek', 'generic']);
 
 function jsonParse(value, fallback = null) {
   if (value === null || value === undefined || value === '') return fallback;

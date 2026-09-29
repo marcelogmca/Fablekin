@@ -318,12 +318,26 @@ function getConfiguredProviderKeys(settings) {
 }
 
 /**
+ * Normalizes a configured provider URL into an OpenAI-compatible API root.
+ * The OpenAI SDK appends its own route to `configuration.baseURL`, so a URL that
+ * already points at `/chat/completions` (e.g. pasted from a curl example) would
+ * otherwise be requested as `.../chat/completions/chat/completions` and 404.
+ */
+function normalizeOpenAICompatibleBaseUrl(rawUrl) {
+  return String(rawUrl || '')
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/\/chat\/completions$/i, '')
+    .replace(/\/+$/, '');
+}
+
+/**
  * Ensures that a specific provider is instantiated with the latest settings.
  * @param {string} providerKey 
  * @returns {object|null}
  */
-function getProviderInstance(providerKey, fallbackModel = null) {
-  const settings = readSettings();
+function getProviderInstance(providerKey, fallbackModel = null, settingsOverride = null) {
+  const settings = settingsOverride || readSettings();
   const providerKeyLower = normalizeProviderKey(providerKey);
 
   // Return cached instance if it exists
@@ -348,7 +362,7 @@ function getProviderInstance(providerKey, fallbackModel = null) {
           return new ChatOpenAI({
             apiKey: config.apiKey,
             configuration: {
-              baseURL: config.url,
+              baseURL: normalizeOpenAICompatibleBaseUrl(config.url),
               defaultHeaders: {
                 'HTTP-Referer': 'http://localhost:14541',
                 'X-Title': 'Fablekin Engine',
@@ -386,7 +400,22 @@ function getProviderInstance(providerKey, fallbackModel = null) {
         if (config.apiKey && !config.apiKey.startsWith('YOUR_')) {
           return new ChatOpenAI({
             apiKey: config.apiKey,
-            configuration: { baseURL: config.url },
+            configuration: { baseURL: normalizeOpenAICompatibleBaseUrl(config.url) },
+          });
+        }
+        break;
+      }
+      case 'generic': {
+        const config = getProviderConfig(settings, 'generic');
+        const baseURL = normalizeOpenAICompatibleBaseUrl(config.url);
+        // Key is optional (local no-auth servers); URL is required.
+        if (baseURL) {
+          const apiKey = (config.apiKey && !config.apiKey.startsWith('YOUR_'))
+            ? config.apiKey
+            : 'not-needed';
+          return new ChatOpenAI({
+            apiKey,
+            configuration: { baseURL },
           });
         }
         break;
@@ -397,7 +426,7 @@ function getProviderInstance(providerKey, fallbackModel = null) {
           return new ChatOpenAI({
             apiKey: config.apiKey,
             configuration: {
-              baseURL: config.url || 'https://nano-gpt.com/api/v1',
+              baseURL: normalizeOpenAICompatibleBaseUrl(config.url || 'https://nano-gpt.com/api/v1'),
             },
           });
         }
@@ -473,9 +502,17 @@ function normalizeReasoningParamsForProvider(providerKey, extra = {}) {
   if (normalized.reasoning && typeof normalized.reasoning === 'object' && !Array.isArray(normalized.reasoning)) {
     normalized.reasoning = { ...normalized.reasoning };
   }
-  if (normalized.reasoning && (providerKey === 'openai' || providerKey === 'deepseek')) {
+  if (normalized.reasoning && (providerKey === 'openai' || providerKey === 'deepseek' || providerKey === 'generic')) {
     const effort = normalized.reasoning.effort;
-    if (effort && !normalized.reasoning_effort) {
+    if (providerKey === 'generic') {
+      // Commander GOAT (and OpenAI-compatible relays generally) only accept
+      // low/medium/high/xhigh/max. 'none' means "no reasoning" — send nothing.
+      // 'minimal' has no upstream equivalent; 'low' is the closest level.
+      const mapped = effort === 'minimal' ? 'low' : effort;
+      if (mapped && mapped !== 'none' && !normalized.reasoning_effort) {
+        normalized.reasoning_effort = mapped;
+      }
+    } else if (effort && !normalized.reasoning_effort) {
       normalized.reasoning_effort = providerKey === 'deepseek' && effort === 'minimal' ? 'low' : effort;
     }
     delete normalized.reasoning;
@@ -484,8 +521,14 @@ function normalizeReasoningParamsForProvider(providerKey, extra = {}) {
     // effort-level contract. Do not forward an incompatible router parameter.
     delete normalized.reasoning;
   }
-  if (!['openrouter', 'nano_gpt', 'openai', 'deepseek'].includes(providerKey)) {
+  if (!['openrouter', 'nano_gpt', 'openai', 'deepseek', 'generic'].includes(providerKey)) {
     delete normalized.reasoning_effort;
+  }
+  if (providerKey === 'generic' && (normalized.reasoning_effort === 'none' || normalized.reasoning_effort === 'minimal')) {
+    // Same Commander GOAT contract as above, for callers that set
+    // reasoning_effort directly instead of via reasoning.effort.
+    if (normalized.reasoning_effort === 'none') delete normalized.reasoning_effort;
+    else normalized.reasoning_effort = 'low';
   }
   return normalized;
 }
@@ -514,7 +557,10 @@ async function callLLMDirect({ messages, provider, model, timeout = DEFAULT_LLM_
   const baseModelInstance = getProviderInstance(providerKey, rawModel);
   if (!baseModelInstance) {
     const providerConfig = getProviderConfig(settings, providerKey);
-    if (providerKey !== 'ollama' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
+    if (providerKey === 'generic' && !String(providerConfig.url || '').trim()) {
+      throw new Error(`Provider 'generic' has no endpoint URL. Set it in Settings > Models & Routing > Provider Connections.`);
+    }
+    if (providerKey !== 'ollama' && providerKey !== 'generic' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
       throw new Error(`Provider '${providerKey}' has no configured API key.`);
     }
     throw new Error(`Provider '${providerKey}' is unavailable.`);
@@ -833,7 +879,10 @@ async function callLLM({ prompt, model, provider = null, retries = 1, timeout = 
     const baseModelInstance = getProviderInstance(providerKey);
     if (!baseModelInstance) {
       const providerConfig = getProviderConfig(settings, providerKey);
-      if (providerKey !== 'ollama' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
+      if (providerKey === 'generic' && !String(providerConfig.url || '').trim()) {
+        throw new Error(`Provider 'generic' has no endpoint URL. Set it in Settings > Models & Routing > Provider Connections.`);
+      }
+      if (providerKey !== 'ollama' && providerKey !== 'generic' && providerConfig && Object.keys(providerConfig).length > 0 && !providerConfig.apiKey) {
         throw new Error(`Provider '${providerKey}' is configured but has no API key. Set it in Settings > Secrets.`);
       }
       const available = getConfiguredProviderKeys(settings).join(', ');
@@ -1332,6 +1381,8 @@ module.exports = {
   callLLM,
   callLLMDirect,
   containsRefusalFuzzy,
+  getProviderInstance,
+  normalizeOpenAICompatibleBaseUrl,
   listConfiguredProviders,
   getLangChainModel,
   repairJson,
