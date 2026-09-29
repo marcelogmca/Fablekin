@@ -25,4 +25,18 @@ Decision rules:
 - If the pressure policy says an arc is overdue, actively look for the least awkward natural boundary.
 - If an intro would land during an awkward immediate action beat, set awkward_intro_risk to "high".
 - Titles should be evocative but concrete, 2-7 words, and should not reveal hidden twists.
-- Output only data matching the requested schema.
+- Output ONLY a JSON object matching this schema (no prose, no fences):
+  {
+    "decision": "continue | soft_shift | close_arc | queue_new_arc",
+    "confidence": 0.0,
+    "arc_title": "current arc title, 2-7 words",
+    "arc_id": "stable arc id or empty string",
+    "subtitle": "short subtitle or empty string",
+    "mood": "current mood or empty string",
+    "style_hint": "style hint or empty string",
+    "boundary_kind": "location | quest | relationship | mystery | time_skip | aftermath | escalation | respite | other",
+    "reason": "brief explanation",
+    "awkward_intro_risk": "low | medium | high"
+  }
+- "confidence" is a number between 0.0 and 1.0. "decision" is required and must
+  be one of the four allowed values.

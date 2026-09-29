@@ -120,8 +120,18 @@ test('Turn 1 extraction renders typed canon and sends a named prepared instructi
         llm.callLLM = originalCall;
     }
     assert.equal(request.prompt.id, 'world_state_tracker.extraction_request');
-    assert.match(request.prompt.messages[0].content, /Ari began with no compass/);
-    assert.doesNotMatch(request.prompt.messages[0].content, /\[object Object\]/);
-    assert.ok(request.prompt.manifest.occurrences.some(item => item.componentId === 'world_state_tracker.extraction_request'));
+    const allText = request.prompt.messages.map(message => message.content).join('\n');
+    assert.match(allText, /Ari began with no compass/);
+    assert.doesNotMatch(allText, /\[object Object\]/);
+    const pieces = request.prompt.manifest.occurrences.map(item => item.componentId);
+    for (const expected of [
+        'world_state_tracker.extraction_request.rules',
+        'world_state_tracker.extraction_request.input_data',
+        'world_state_tracker.extraction_request.task',
+        'world_state_tracker.extraction_request.indexed_scene',
+        'world_state_tracker.extraction_request.narrative_text'
+    ]) {
+        assert.ok(pieces.includes(expected), `missing ${expected} in ${pieces.join(', ')}`);
+    }
     assert.ok(facts.some(fact => fact.predicate === 'inventory' && fact.target === 'Compass'));
 });

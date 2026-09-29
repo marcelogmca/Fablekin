@@ -73,9 +73,9 @@ test('report shows price when pricing is known and n/a otherwise', () => {
         project: 'p', turnId: 't', calls, matrix,
         pricing: { nano_gpt: { m: { input: 1, output: 2, cache_read: 0.1 } } }
     });
-    assert.ok(!withPrice.includes('n/a (no local pricing for this route)'));
-    assert.match(withPrice, /- price: total \$/);
+    assert.ok(!withPrice.includes('n/a (no local pricing for this route'));
+    assert.match(withPrice, /- price: billed \$/);
 
     const noPrice = buildTokenMapReport({ project: 'p', turnId: 't', calls, matrix, pricing: {} });
-    assert.match(noPrice, /n\/a \(no local pricing for this route\)/);
+    assert.match(noPrice, /n\/a \(no local pricing for this route and no provider-reported cost\)/);
 });

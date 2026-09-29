@@ -142,9 +142,47 @@
     }
 
     function reportedCostFromUsage(usage) {
-        if (!isObject(usage)) return 0;
-        const value = Number(usage.total_cost ?? usage.cost);
-        return Number.isFinite(value) && value > 0 ? value : 0;
+        if (!isObject(usage)) return null;
+        const candidates = [
+            usage.total_cost, usage.totalCost,
+            usage.reportedCost, usage.reported_cost,
+            usage.cost
+        ];
+        for (const candidate of candidates) {
+            const value = Number(candidate);
+            if (Number.isFinite(value) && value > 0) return value;
+        }
+        return null;
+    }
+
+    // Reasoning provenance: 'reported' when the provider stated a count,
+    // 'none' when the provider stated zero, 'absent' when the usage object
+    // carries no reasoning field at all (do not manufacture tokens).
+    function reasoningProvenanceFromUsage(usage) {
+        if (!isObject(usage)) return 'absent';
+        const candidates = [
+            usage.reasoning_tokens, usage.reasoningTokens,
+            usage.native_tokens_reasoning, usage.nativeTokensReasoning
+        ];
+        for (const candidate of candidates) {
+            const value = Number(candidate);
+            if (Number.isFinite(value) && value >= 0) return value > 0 ? 'reported' : 'none';
+        }
+        const detailsCandidates = [
+            isObject(usage.completion_tokens_details) ? usage.completion_tokens_details : null,
+            isObject(usage.completionTokensDetails) ? usage.completionTokensDetails : null,
+            isObject(usage.output_token_details) ? usage.output_token_details : null,
+            isObject(usage.outputTokenDetails) ? usage.outputTokenDetails : null
+        ];
+        for (const details of detailsCandidates) {
+            if (!details) continue;
+            const nested = [details.reasoning_tokens, details.reasoningTokens, details.reasoning];
+            for (const candidate of nested) {
+                const value = Number(candidate);
+                if (Number.isFinite(value) && value >= 0) return value > 0 ? 'reported' : 'none';
+            }
+        }
+        return 'absent';
     }
 
     function callRoute(call) {
@@ -197,17 +235,30 @@
         return total;
     }
 
+    function attemptCountFromError(error) {
+        if (!error || !error.payload || !isObject(error.payload.content)) return 0;
+        const attempt = Number(error.payload.content.attemptNumber);
+        return Number.isFinite(attempt) && attempt > 0 ? Math.round(attempt) : 0;
+    }
+
     function attributeCall(call) {
         const trace = call.trace;
         const usage = call.response && call.response.payload ? call.response.payload.usage : null;
         const localCache = isLocalCacheHit(usage);
         const providerInputTokens = localCache ? 0 : usageInputTokens(usage);
+        const failedAttempts = call.response ? 0 : attemptCountFromError(call.error);
+        const hasFailedAttempts = failedAttempts > 0;
         const callLevel = {
             inputTokens: providerInputTokens,
             outputTokens: outputTokensFromUsage(usage),
             reasoningTokens: reasoningTokensFromUsage(usage),
+            reasoningProvenance: reasoningProvenanceFromUsage(usage),
             cachedInputTokens: cachedInputTokensFromUsage(usage),
             reportedCost: reportedCostFromUsage(usage),
+            failedAttempts,
+            // Billed cost of the failed attempts is unknown: the provider
+            // returned no usage. Never show a real dollar figure here.
+            costUnknown: !usage && hasFailedAttempts && !localCache,
             localCache
         };
         if (!trace || !trace.manifest) {
@@ -350,8 +401,11 @@
                 providerInputTokens: attribution.providerInputTokens ?? null,
                 outputTokens: attribution.outputTokens || 0,
                 reasoningTokens: attribution.reasoningTokens || 0,
+                reasoningProvenance: attribution.reasoningProvenance || 'absent',
                 cachedInputTokens: attribution.cachedInputTokens || 0,
-                reportedCost: attribution.reportedCost || 0,
+                reportedCost: attribution.reportedCost,
+                failedAttempts: attribution.failedAttempts || 0,
+                costUnknown: attribution.costUnknown === true,
                 localCache: attribution.localCache === true,
                 provider: route.provider,
                 model: route.model,
@@ -470,6 +524,8 @@
         isLocalCacheHit,
         outputTokensFromUsage,
         reasoningTokensFromUsage,
-        cachedInputTokensFromUsage
+        reasoningProvenanceFromUsage,
+        cachedInputTokensFromUsage,
+        reportedCostFromUsage
     };
 });

@@ -9,6 +9,28 @@ const discovery = require('./libs/discovery.js');
 const schemaAdapter = require('./libs/schema_adapter.js');
 const auditor = require('./libs/auditor.js');
 
+// Stable per-character keys for prompt attribution: sanitize the display
+// name into a contribution-safe key and parse the named wrappers back into
+// children. Rendered bytes are unchanged (same tag, same text).
+function stableSheetKey(name) {
+    const cleaned = String(name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    return cleaned || 'unknown';
+}
+
+function stableSheetPieces(cleanedBlocks) {
+    const pieces = [];
+    // Named wrappers only: ^<tag name="...">...</tag>$ per line.
+    const pattern = /^<([A-Za-z0-9_]+) name="([^"]+)">\n([\s\S]*?)\n<\/\1>$/gm;
+    let match;
+    while ((match = pattern.exec(cleanedBlocks)) !== null) {
+        const [, tag, name] = match;
+        const kind = tag.startsWith('sheet_') ? 'sheet' : tag.startsWith('capsule_') ? 'capsule' : 'sheet';
+        const label = `${name} (${kind})`;
+        pieces.push([stableSheetKey(name), { text: match[0], label, description: `${label} contributed by character_sheets.` }]);
+    }
+    return pieces;
+}
+
 function isLikelyGarbageEntityName(name) {
     if (!name || typeof name !== 'string') return true;
     const cleaned = name.trim().replace(/^["'`]+|["'`]+$/g, '').trim();
@@ -973,7 +995,7 @@ async function handlePromptInjectionHook(turnContext, tools) {
                 sections.join('\n\n')
             ].filter(Boolean).join('\n\n');
 
-            contextBlocks += tools.prompt.wrap('sheet', capsuleText.trim(), { name: playerChar, type: 'player', persistence: 'sticky' }) + '\n';
+            contextBlocks += tools.prompt.wrap(`sheet_${stableSheetKey(playerChar)}`, capsuleText.trim(), { name: playerChar, type: 'player', persistence: 'sticky' }) + '\n';
         }
     }
     handled.add(playerChar.toLowerCase());
@@ -1024,7 +1046,10 @@ async function handlePromptInjectionHook(turnContext, tools) {
 
             addHardPriorityEntries(hardPriorityEntries, item.name, char.capsule, hardFields);
 
-            contextBlocks += tools.prompt.wrap('sheet', displaySheet.trim(), { name: item.name }) + '\n';
+            // Named per-character child: the Token Map can attribute this
+            // sheet's bytes. The wrapper tag is derived from the name and
+            // re-parsed by stableSheetKeys, so bytes are unchanged.
+            contextBlocks += tools.prompt.wrap(`sheet_${stableSheetKey(item.name)}`, displaySheet.trim(), { name: item.name }) + '\n';
         }
     }
 
@@ -1056,7 +1081,7 @@ async function handlePromptInjectionHook(turnContext, tools) {
             ].filter(Boolean).join('\n\n');
 
             addHardPriorityEntries(hardPriorityEntries, canonicalName, capsule, hardFields);
-            contextBlocks += tools.prompt.wrap('light_capsule', light.trim(), { name: canonicalName }) + '\n';
+            contextBlocks += tools.prompt.wrap(`capsule_${stableSheetKey(canonicalName)}`, light.trim(), { name: canonicalName }) + '\n';
             handled.add(charKey);
         }
     }
@@ -1066,13 +1091,17 @@ async function handlePromptInjectionHook(turnContext, tools) {
     tools.logger.runtime(`handlePromptInjectionHook: Injecting final context blocks, total length=${contextBlocks.length}`);
     const cleanedBlocks = contextBlocks.replace(/^#+\s*/gm, '');
     if (cleanedBlocks.trim()) {
+        const sheetPieces = {};
+        for (const [key, text] of stableSheetPieces(cleanedBlocks)) {
+            sheetPieces[key] = text;
+        }
         tools.prompt.contribute({
             id: 'character_canon',
             to: 'root.canon',
             label: 'Character canon',
             description: 'Character sheets and capsules injected for the current turn.',
             children: {
-                sheets: tools.prompt.wrap('character_sheets', cleanedBlocks.trim())
+                sheets: sheetPieces
             }
         });
     }
@@ -1324,6 +1353,7 @@ async function handleCapsuleAuditHook(turnContext, tools) {
 }
 
 module.exports = {
+    stableSheetKey, stableSheetPieces,
     processCoreSheetsHook, handleNewCharactersHook, handleEvolutionHook, handlePromptInjectionHook,
     handleCapsuleAuditHook,
     getRelevantCharacters,

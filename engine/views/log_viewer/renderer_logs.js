@@ -2669,13 +2669,20 @@ function renderTokenMapIntoContainer(container, turnLogData, meta = {}) {
                 cacheReadTokens: col.cachedInputTokens || 0,
                 cacheWriteTokens: 0,
                 pricing: modelPricing[col.provider]?.[col.model] || null,
-                reportedCost: col.reportedCost || 0
+                reportedCost: col.reportedCost ?? 0
             });
         } catch (error) {
             breakdown = null;
         }
         priceCache.set(col, breakdown);
         return breakdown;
+    };
+    const priceCellText = (price, col) => {
+        // Failed calls with no usage: billed cost is unknown. A later
+        // successful retry does not imply these attempts were free.
+        if (col.costUnknown) return 'unknown';
+        if (!price || (!price.hasPricing && !price.hasReportedCost)) return 'n/a';
+        return null; // Caller renders the priced breakdown.
     };
 
     const wrap = document.createElement('div');
@@ -2746,9 +2753,9 @@ function renderTokenMapIntoContainer(container, turnLogData, meta = {}) {
         },
         {
             id: '__price__',
-            label: 'Price · in | out | cache',
+            label: 'Price · billed | in + cache + out',
             kind: 'price',
-            title: 'Estimated cost per call from local model pricing: input | output | cache discount. n/a when pricing is unknown.'
+            title: 'Billed total first (provider-reported when the response carried one, else the local estimate), then the local equation: uncached input + cache read + output. "unknown" = failed attempts with no provider usage. n/a = no pricing and no reported cost.'
         }
     ];
     const appendMetricRow = (metric, position) => {
@@ -2768,19 +2775,32 @@ function renderTokenMapIntoContainer(container, turnLogData, meta = {}) {
             if (metric.kind === 'price') {
                 td.dataset.heat = '0';
                 const price = priceForColumn(col);
-                if (!price || !price.hasPricing) {
-                    td.innerHTML = '<span class="token-map-price token-map-price--none">n/a</span>';
-                    td.title = `${col.title}: no local pricing for ${col.provider || '?'} / ${col.model || '?'}.`;
+                const fallbackText = priceCellText(price, col);
+                if (fallbackText) {
+                    td.innerHTML = `<span class="token-map-price token-map-price--none">${fallbackText}</span>`;
+                    td.title = col.costUnknown
+                        ? `${col.title}: ${col.failedAttempts} failed attempt(s), no provider usage returned. Billed cost unknown.`
+                        : `${col.title}: no local pricing for ${col.provider || '?'} / ${col.model || '?'} and no provider-reported cost.`;
                 } else {
                     const input = Number(price.inputCost || 0);
+                    const cacheRead = Number(price.cacheReadCost || 0);
                     const output = Number(price.outputCost || 0);
-                    const discount = Number(price.cacheSavings || 0);
+                    const billed = price.hasReportedCost ? 'reported' : 'estimated';
                     td.innerHTML = '<span class="token-map-price">'
-                        + `<span class="token-map-price-part">in ${tokenMapMoney(input)}</span>`
-                        + `<span class="token-map-price-part">out ${tokenMapMoney(output)}</span>`
-                        + `<span class="token-map-price-part">cache ${discount > 0 ? `-${tokenMapMoney(discount)}` : tokenMapMoney(0)}</span>`
+                        + `<span class="token-map-price-part">billed ${tokenMapMoney(price.totalCost)} (${billed})</span>`
+                        + `<span class="token-map-price-part">in ${tokenMapMoney(input)} + cache ${tokenMapMoney(cacheRead)} + out ${tokenMapMoney(output)}</span>`
                         + '</span>';
-                    td.title = `${col.title}: total ${tokenMapMoney(price.totalCost)} (input ${tokenMapMoney(input)} + output ${tokenMapMoney(output)}${discount > 0 ? `, cache savings ${tokenMapMoney(discount)}` : ''}).`;
+                    td.title = `${col.title}: billed ${tokenMapMoney(price.totalCost)} (${billed}${price.hasReportedCost ? `, provider reported ${tokenMapMoney(price.reportedCost)}` : ''}). Local equation: uncached input ${tokenMapMoney(input)} + cache read ${tokenMapMoney(cacheRead)} + output ${tokenMapMoney(output)}${Number(price.cacheSavings || 0) > 0 ? ` (vs full-price input, saves ${tokenMapMoney(price.cacheSavings)})` : ''}.`;
+                }
+            } else if (metric.kind === 'reasoning') {
+                const value = metric.value(col);
+                td.dataset.heat = String(metric.heat(col));
+                if (col.reasoningProvenance === 'absent' && !value) {
+                    td.innerHTML = '<span class="token-map-value token-map-value--metric token-map-value--unknown">n/r</span>';
+                    td.title = `${col.title}: provider usage carried no reasoning field. Reasoning tokens not reported, not zero.`;
+                } else {
+                    td.innerHTML = `<span class="token-map-value token-map-value--metric">${value > 0 ? value.toLocaleString() : '·'}</span>`;
+                    td.title = `${col.title}: ${value.toLocaleString()} reasoning tokens (provider-reported).`;
                 }
             } else {
                 const value = metric.value(col);

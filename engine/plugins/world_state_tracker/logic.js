@@ -858,6 +858,42 @@ Estimated Travel Time: ${stats.narrativeText} (${stats.days} days).
   const directorPluginFeedback = await tools.director.getFeedback();
   const previousChapterGrounding = await buildPreviousChapterGrounding(turnContext, tools, { skipLocation });
 
+  const renderedPreviousState = JSON.stringify({
+    location: prevState.location,
+    weather: prevState.weather,
+    climate: prevState.climate,
+    safety_level: prevState.safety_level,
+    crowd_density: prevState.crowd_density,
+    last_summary: prevState.cleanText,
+    inventory: prevState.inventory
+  });
+  // Named sections for prompt attribution. rulesText/inputText/taskText
+  // partition the template; indexed_scene/narrative_text are the scene
+  // copies. The full `prompt` string below is byte-identical to joining
+  // them in template order (single user message in production).
+  const rulesText = [
+    'You are the World Simulation Engine for a dynamic narrative. Your job is to maintain the continuity of the physical world based on the latest narrative text.',
+    '',
+    '### TEMPORAL AUDIT PROTOCOL (MANDATORY)',
+    'Before producing `world_state_events`, perform a concise temporal audit of the chapter.'
+  ].join('\n');
+  const inputText = [
+    `CURRENT_DATE: ${prevState.formattedDate}`,
+    `PREVIOUS_STATE: ${renderedPreviousState}`,
+    '',
+    previousChapterGrounding,
+    '',
+    '### BACKGROUND SELECTOR SIGNALS',
+    backgroundChanges,
+    '',
+    '### PREVIOUS-TURN DIRECTOR FEEDBACK (ADVISORY)',
+    directorPluginFeedback || 'No previous-turn Director feedback is available for this plugin.',
+    '',
+    `### LOCATION_TAGS (CLUES)\n${locationTags}`,
+    '',
+    tools.directives.getFormatted('world_logic', { header: '### TRACKING DIRECTIVES' })
+  ].join('\n');
+  const taskText = '### TASK\nAnalyze the "NARRATIVE TEXT" and indexed VN lines below and determine **World State Events** across the chapter.';
   const prompt = promptTemplate
     .replace('${currentWorldDate}', prevState.formattedDate)
     .replace('${locationRules}', locationRules)
@@ -869,15 +905,7 @@ Estimated Travel Time: ${stats.narrativeText} (${stats.days} days).
     .replace('${backgroundChanges}', backgroundChanges)
     .replace('${directorPluginFeedback}', directorPluginFeedback || 'No previous-turn Director feedback is available for this plugin.')
     .replace('${project_directives}', tools.directives.getFormatted('world_logic', { header: '### TRACKING DIRECTIVES' }))
-    .replace('${JSON.stringify(previousWorldState)}', JSON.stringify({
-      location: prevState.location,
-      weather: prevState.weather,
-      climate: prevState.climate,
-      safety_level: prevState.safety_level,
-      crowd_density: prevState.crowd_density,
-      last_summary: prevState.cleanText,
-      inventory: prevState.inventory
-    }))
+    .replace('${JSON.stringify(previousWorldState)}', renderedPreviousState)
     .replace('${sceneText}', sceneText);
 
   try {
@@ -895,7 +923,13 @@ Estimated Travel Time: ${stats.narrativeText} (${stats.days} days).
       llmResponse = await tools.llm.withSchema({
         msg: 'World State Extraction',
         requestId: 'extraction_request',
-        instruction: prompt,
+        prompt: { messages: [
+          { role: 'user', piece: 'rules', text: rulesText },
+          { role: 'user', piece: 'input_data', text: inputText },
+          { role: 'user', piece: 'task', text: taskText },
+          { role: 'user', piece: 'indexed_scene', text: numberedScript || '(empty)' },
+          { role: 'user', piece: 'narrative_text', text: sceneText || '(empty)' }
+        ] },
         model: modelDef.model || 'mediumendmodel',
         provider: modelDef.provider,
         params: {

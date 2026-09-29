@@ -635,6 +635,9 @@ async function runClassifier(turnContext, tools, settings, previousState, pressu
             ...(tools.llm?.resolveModelDefinition ? tools.llm.resolveModelDefinition(modelDef) : modelDef)
         }, isPlausibleClassification);
 
+    if (!response || response.content == null || (typeof response.content === 'string' && !response.content.trim())) {
+        tools?.logger?.warn?.('StoryArcTracker', `Arc classification returned empty content; tried template prompt (${template ? 'loaded' : 'missing'}). Falling back to continuity.`);
+    }
     return normalizeClassification(response?.content || {});
 }
 

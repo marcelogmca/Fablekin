@@ -124,6 +124,7 @@
                 cacheSavings: 0,
                 estimatedCost: 0,
                 reportedCost: normalizedReportedCost,
+                hasReportedCost: normalizedReportedCost > 0,
                 totalCost: normalizedReportedCost,
                 hasPricing: false,
                 hasCacheReadPricing: false
@@ -136,8 +137,14 @@
         const cacheReadCost = (normalizedCacheReadTokens / 1000000) * cacheReadRate;
         const cacheWriteCost = (normalizedCacheWriteTokens / 1000000) * cacheWriteRate;
         const outputCost = (normalizedOutputTokens / 1000000) * outputRate;
+        // "Cache savings" is a comparison against charging the cached tokens
+        // at the full input rate. It is NOT a bill component: the equation is
+        // total = uncached input + cache read + cache write + output.
         const cacheSavings = (normalizedCacheReadTokens / 1000000) * Math.max(0, inputRate - cacheReadRate);
         const estimatedCost = inputCost + cacheReadCost + cacheWriteCost + outputCost;
+        // When the provider reports its own cost, that is the billed figure
+        // and the local calculation is an estimate shown alongside.
+        const hasReportedCost = normalizedReportedCost > 0;
 
         return {
             inputTokens: normalizedInputTokens,
@@ -153,7 +160,8 @@
             cacheSavings,
             estimatedCost,
             reportedCost: normalizedReportedCost,
-            totalCost: estimatedCost,
+            hasReportedCost,
+            totalCost: hasReportedCost ? normalizedReportedCost : estimatedCost,
             hasPricing: true,
             hasCacheReadPricing: firstFiniteNumber(pricing.cache_read, pricing.cacheRead) !== null
         };

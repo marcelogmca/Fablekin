@@ -104,9 +104,13 @@
             acc.reasoning += col.reasoningTokens || 0;
             acc.cached += col.cachedInputTokens || 0;
             const price = priceFor(col, pricing);
-            if (price && price.hasPricing) acc.cost += price.totalCost;
+            if (price && (price.hasPricing || price.hasReportedCost)) {
+                acc.cost += price.totalCost;
+                if (price.hasReportedCost) acc.reported += 1;
+                else acc.estimated += 1;
+            }
             return acc;
-        }, { input: 0, output: 0, reasoning: 0, cached: 0, cost: 0 });
+        }, { input: 0, output: 0, reasoning: 0, cached: 0, cost: 0, reported: 0, estimated: 0 });
         const statusCounts = matrix.columns.reduce((acc, col) => {
             acc[col.status] = (acc[col.status] || 0) + 1;
             return acc;
@@ -121,25 +125,36 @@
         push(`- Generated: ${new Date().toISOString()}`);
         push(`- Calls: **${matrix.columns.length}** (${Object.entries(statusCounts).map(([k, v]) => `${k}: ${v}`).join(', ')})`);
         push(`- Provider-reported input tokens across calls: **${fmtInt(totals.input)}** (cached ${fmtInt(totals.cached)})`);
-        push(`- Provider-reported output tokens: **${fmtInt(totals.output)}** (reasoning ${fmtInt(totals.reasoning)})`);
-        push(`- Estimated cost (local pricing, where known): **${fmtMoney(totals.cost)}**`);
+        push(`- Provider-reported output tokens: **${fmtInt(totals.output)}** (reasoning ${fmtInt(totals.reasoning)}; "n/r" in the matrix = provider carried no reasoning field)`);
+        push(`- Cost: **${fmtMoney(totals.cost)}** (${totals.reported} call(s) provider-reported, ${totals.estimated} call(s) locally estimated; failed calls with no usage are cost unknown, never $0)`);
         push(`- Payload rows: **${matrix.rows.length}** nodes, **${leaves.length}** leaves.`);
         push();
         push(`> Reading guide: columns are LLM calls, rows are prompt components.`);
         push(`> \`~tokens\` in payload rows are span-proportional attributions of the call's`);
-        push(`> provider input total (each byte owned exactly once); \`input/output/reasoning\``);
-        push(`> figures are exact provider-reported whole-call totals. \`·\` = no bytes.`);
+        push(`> provider input total (each byte owned exactly once); \`input/output/cached\``);
+        push(`> figures are exact provider-reported whole-call totals. Reasoning \`n/r\` = the`);
+        push(`> provider carried no reasoning field (not zero, not estimated). \`·\` = no bytes.`);
         push();
 
         // 1. Call index
         push(`## 1. Call index (columns in matrix order = heaviest input first)`);
         push();
-        push(`| # | Call | requestId | model | provider | status | input | output | reasoning | cached | price in | price out | cache disc. | chars |`);
-        push(`|---|------|-----------|-------|----------|--------|-------|--------|-----------|--------|----------|-----------|-------------|-------|`);
+        push(`| # | Call | requestId | model | provider | status | input | output | reasoning | cached | billed | in + cache + out | chars |`);
+        push(`|---|------|-----------|-------|----------|--------|-------|--------|-----------|--------|--------|---------------|-------|`);
         matrix.columns.forEach((col, i) => {
             const price = priceFor(col, pricing);
-            const hasPrice = price && price.hasPricing;
-            push(`| ${i + 1} | ${esc(col.title)} | ${esc(col.promptId || '—')} | ${esc(col.model || '—')} | ${esc(col.provider || '—')} | ${col.status} | ${fmtInt(col.providerInputTokens)} | ${fmtInt(col.outputTokens)} | ${fmtInt(col.reasoningTokens)} | ${fmtInt(col.cachedInputTokens)} | ${hasPrice ? fmtMoney(price.inputCost) : 'n/a'} | ${hasPrice ? fmtMoney(price.outputCost) : 'n/a'} | ${hasPrice ? fmtMoney(price.cacheSavings) : 'n/a'} | ${fmtInt(col.totalChars)} |`);
+            const priceCell = col.costUnknown
+                ? 'unknown'
+                : (price && (price.hasPricing || price.hasReportedCost))
+                    ? `${fmtMoney(price.totalCost)}${price.hasReportedCost ? ' (reported)' : ' (est.)'}`
+                    : 'n/a';
+            const equationCell = col.costUnknown
+                ? `${col.failedAttempts} failed attempt(s), no usage`
+                : (price && (price.hasPricing || price.hasReportedCost))
+                    ? `${fmtMoney(price.inputCost)} + ${fmtMoney(price.cacheReadCost)} + ${fmtMoney(price.outputCost)}`
+                    : '—';
+            const reasoningCell = (col.reasoningProvenance === 'absent' && !col.reasoningTokens) ? 'n/r' : fmtInt(col.reasoningTokens);
+            push(`| ${i + 1} | ${esc(col.title)} | ${esc(col.promptId || '—')} | ${esc(col.model || '—')} | ${esc(col.provider || '—')} | ${col.status} | ${fmtInt(col.providerInputTokens)} | ${fmtInt(col.outputTokens)} | ${reasoningCell} | ${fmtInt(col.cachedInputTokens)} | ${priceCell} | ${equationCell} | ${fmtInt(col.totalChars)} |`);
         });
         push();
 
@@ -183,10 +198,12 @@
             push(`- model: \`${col.model || '—'}\` · provider: \`${col.provider || '—'}\``);
             push(`- provider input: ${fmtInt(col.providerInputTokens)} (cached ${fmtInt(col.cachedInputTokens)}) · output: ${fmtInt(col.outputTokens)} · reasoning: ${fmtInt(col.reasoningTokens)}`);
             const price = priceFor(col, pricing);
-            if (price && price.hasPricing) {
-                push(`- price: total ${fmtMoney(price.totalCost)} = input ${fmtMoney(price.inputCost)} + output ${fmtMoney(price.outputCost)}${Number(price.cacheSavings) > 0 ? ` (cache savings ${fmtMoney(price.cacheSavings)})` : ''}`);
+            if (col.costUnknown) {
+                push(`- price: unknown (${col.failedAttempts} failed attempt(s), no provider usage returned; a later retry's success does not make these free)`);
+            } else if (price && (price.hasPricing || price.hasReportedCost)) {
+                push(`- price: billed ${fmtMoney(price.totalCost)}${price.hasReportedCost ? ' (provider-reported)' : ' (locally estimated)'} = uncached input ${fmtMoney(price.inputCost)} + cache read ${fmtMoney(price.cacheReadCost)} + output ${fmtMoney(price.outputCost)}${Number(price.cacheSavings) > 0 ? ` (vs full-price input, saves ${fmtMoney(price.cacheSavings)})` : ''}`);
             } else {
-                push(`- price: n/a (no local pricing for this route)`);
+                push(`- price: n/a (no local pricing for this route and no provider-reported cost)`);
             }
             if (col.hash) push(`- prompt hash: \`${col.hash}\``);
             push();

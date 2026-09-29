@@ -193,6 +193,34 @@ test('untraced calls still expose call-level usage for the metric rows', () => {
     assert.equal(attr.reasoningTokens, 90);
 });
 
+test('provider-reported cost is present-or-absent, never fabricated as zero', () => {
+    assert.equal(Matrix.reportedCostFromUsage({ cost: 0.025426158080000004 }), 0.025426158080000004);
+    assert.equal(Matrix.reportedCostFromUsage({}), null);
+    assert.equal(Matrix.reportedCostFromUsage(null), null);
+});
+
+test('reasoning provenance distinguishes reported zero from absent', () => {
+    assert.equal(Matrix.reasoningProvenanceFromUsage({ reasoning_tokens: 0 }), 'none');
+    assert.equal(Matrix.reasoningProvenanceFromUsage({ reasoning_tokens: 600 }), 'reported');
+    assert.equal(Matrix.reasoningProvenanceFromUsage({ prompt_tokens: 100 }), 'absent');
+    assert.equal(Matrix.reasoningProvenanceFromUsage(null), 'absent');
+});
+
+test('failed attempts with no usage are cost-unknown, not zero-cost', () => {
+    const call = {
+        title: 'Arc', request: { payload: {} },
+        response: null,
+        error: { payload: { content: { attemptNumber: 2, message: 'nope' } } },
+        trace: null
+    };
+    const attr = Matrix.attributeCall(call);
+    assert.equal(attr.failedAttempts, 2);
+    assert.equal(attr.costUnknown, true);
+    assert.equal(attr.reportedCost, null);
+    const matrix = Matrix.buildMatrix([call]);
+    assert.equal(matrix.columns[0].costUnknown, true);
+});
+
 test('extractCalls joins request/response by callId', () => {
     const trace = makeTrace({ occurrences: [], spans: [], components: {} });
     trace.callId = 'xyz';

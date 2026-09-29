@@ -75,6 +75,20 @@ runTest('uses provider-reported cost only when local pricing is unavailable', ()
     assert.strictEqual(result.totalCost, 0.004);
     assert.strictEqual(result.reportedCost, 0.004);
     assert.strictEqual(result.hasPricing, false);
+    assert.strictEqual(result.hasReportedCost, true);
+});
+
+runTest('prefers the provider-reported total over the local estimate', () => {
+    const result = calculateCostBreakdown({
+        inputTokens: 56104,
+        outputTokens: 6511,
+        reportedCost: 0.025426158080000004,
+        pricing: { input: 1, output: 2 }
+    });
+
+    assert.ok(result.estimatedCost > result.reportedCost);
+    assert.strictEqual(result.totalCost, result.reportedCost);
+    assert.strictEqual(result.hasReportedCost, true);
 });
 
 runTest('preserves positive provider reasoning counts', () => {
