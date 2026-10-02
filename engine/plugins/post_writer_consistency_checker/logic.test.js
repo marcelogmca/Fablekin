@@ -58,6 +58,37 @@ test('checker messages include speaker label audit before the tagged draft', () 
   assert.match(content, /label="Candace, nervous"/);
 });
 
+test('flag payloads end with CoT procedure plus an entry message that starts the review', () => {
+  const named = logic._private.namePromptMessages(
+    [{ role: 'system', content: 'Rules.' }, { role: 'user', content: 'Draft.' }],
+    'flag.cat3_dialogue'
+  );
+  const payload = logic.withFlagEntryMessage(named, undefined, [logic.buildCat3DialogueCotMessage()]);
+  assert.deepStrictEqual(payload.map(m => m.role), ['system', 'user', 'assistant', 'assistant']);
+  const cot = payload[payload.length - 2];
+  assert.equal(cot.piece, 'flag.cat3_dialogue.review_procedure');
+  assert.match(cot.text, /Dialogue Review Procedure/);
+  const entry = payload[payload.length - 1];
+  assert.equal(entry.piece, 'flag.entry');
+  assert.match(entry.text, /review procedure pass by pass/);
+
+  // The structured payload must compile through the real request compiler with
+  // both assistant turns preserved in trailing position.
+  const { compilePluginRequest } = require('../../modules/prompt/request_compiler.js');
+  const prepared = compilePluginRequest('post_writer_consistency_checker', 'hq_flag_cat3_dialogue', { messages: payload }, {});
+  const roles = prepared.messages.map(m => m.role);
+  assert.deepStrictEqual(roles, ['system', 'user', 'assistant', 'assistant']);
+  assert.match(prepared.messages[2].content, /Dialogue Review Procedure/);
+  assert.match(prepared.messages[3].content, /Pass 1/);
+});
+
+test('withFlagEntryMessage leaves single-message payloads usable and never mutates', () => {
+  const named = [{ role: 'user', piece: 'flag.check.review_target', text: 'Draft.' }];
+  const payload = logic.withFlagEntryMessage(named);
+  assert.equal(named.length, 1);
+  assert.deepStrictEqual(payload.map(m => m.role), ['user', 'assistant']);
+});
+
 test('checker sends instructions plus the review target, without cloning the Writer conversation', () => {
   const writerMessages = [
     { role: 'system', content: 'Writer system prompt.' },
@@ -122,8 +153,51 @@ test('checker model assignment reuses the Writer by default', () => {
   assert.equal(assignment.subprovider, 'deepseek');
 });
 
-test('checker model assignment uses its plugin model when reuse is disabled', () => {
-  const settings = logic.resolveSettings({ reuse_writer_model: false });
+test('unified HQ assignment uses the quality route, not the Writer', () => {
+  const settings = logic.resolveSettings({});
+  const tools = {
+    llm: {
+      getCoreModel: () => ({
+        model: 'veryhighendmodel',
+        provider: 'nano_gpt',
+        resolvedModel: 'vendor/high',
+        subprovider: null
+      }),
+      getPluginModel: (pluginId, key) => key === 'hq_quality_model_def' ? {
+        model: 'highendmodel',
+        provider: 'generic',
+        resolvedModel: 'generic/high',
+        subprovider: null
+      } : null
+    }
+  };
+
+  const assignment = logic.resolveUnifiedHqAssignment(settings, tools);
+
+  assert.equal(assignment.source, 'hq_quality');
+  assert.equal(assignment.model, 'highendmodel');
+  assert.equal(assignment.provider, 'generic');
+});
+
+test('unified HQ assignment falls back to settings quality model without a plugin model', () => {
+  const settings = logic.resolveSettings({});
+  const tools = {
+    llm: {
+      getCoreModel: () => ({
+        model: 'veryhighendmodel',
+        provider: 'nano_gpt'
+      }),
+      getPluginModel: () => null
+    }
+  };
+
+  const assignment = logic.resolveUnifiedHqAssignment(settings, tools);
+
+  assert.equal(assignment.source, 'hq_quality');
+  assert.equal(assignment.model, 'lowendmodel');
+});
+
+test('checker model assignment uses its plugin model when reuse is disabled', () => {  const settings = logic.resolveSettings({ reuse_writer_model: false });
   const tools = {
     llm: {
       getCoreModel: () => ({ model: 'veryhighendmodel' }),
@@ -695,6 +769,36 @@ test('HQ gives the corrector both line- and passage-scope verified findings', as
   assert.match(prompt, /"id": "F2"/);
   assert.match(prompt, /A broader issue/);
   assert.match(prompt, /"scope": "passage"/);
+  // The corrector CoT procedure plus entry message trail the payload.
+  const roles = correctorPayload.prompt.messages.map(m => m.role);
+  assert.deepStrictEqual(roles.slice(-2), ['assistant', 'assistant']);
+  assert.match(correctorPayload.prompt.messages[correctorPayload.prompt.messages.length - 2].text, /Mandatory Correction Procedure/);
+  assert.match(correctorPayload.prompt.messages[correctorPayload.prompt.messages.length - 1].text, /Step 1/);
+});
+
+test('corrector CoT file carries the six-step finding-only procedure', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const text = fs.readFileSync(path.join(__dirname, 'hq', 'corrector_cot.txt'), 'utf8');
+  for (const step of ['STEP 1', 'STEP 2', 'STEP 3', 'STEP 4', 'STEP 5', 'STEP 6']) {
+    assert.match(text, new RegExp(step));
+  }
+  // Finding-only: the procedure maps supplied findings, never hunts new defects.
+  assert.match(text, /Do not output your working notes/);
+  assert.doesNotMatch(text, /cliché|participation|Visit every line/i);
+  assert.match(text, /Finish mapping every finding before drafting/);
+  assert.match(text, /Finish ALL ranges first/);
+  assert.match(text, /Do not generate competing versions/);
+});
+
+test('cat3 dialogue CoT file carries the three-pass review procedure', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const text = fs.readFileSync(path.join(__dirname, 'hq', 'cat3_dialogue_cot.txt'), 'utf8');
+  for (const pass of ['Pass 1', 'Pass 2', 'Pass 3']) {
+    assert.match(text, new RegExp(pass));
+  }
+  assert.match(text, /Do not draft replacement wording/);
 });
 
 test('HQ preserves findings alongside stats when the pluginState toolkit is absent', async () => {
@@ -740,7 +844,9 @@ test('HQ keeps original script and writerResponse when retry still misses a cite
       occurrences: [{ line: 1, quote: 'Aether: We ride at dawn.' }]
     }]) });
     if (task.msg.startsWith('Post Writer HQ Corrector')) {
-      if (task.msg.endsWith('Repair')) repairFeedback = task.prompt.messages[2].text;
+      // Initial call ends with the assistant entry message; the repair retry
+      // appends validation feedback as a trailing user message.
+      if (task.msg.endsWith('Repair')) repairFeedback = task.prompt.messages[task.prompt.messages.length - 1].text;
       return Promise.resolve({ content: JSON.stringify({ hunks: [
         { start_line: 2, end_line: 2, finding_ids: ['F1'], replacement_lines: [HQ_FIXED_LINE] }
       ] }) });
@@ -834,8 +940,7 @@ test('HQ distinguishes a malformed flag response from a genuine empty findings l
   assert.equal(stats.perAgent.find(agent => agent.key === 'cat4_familiarity').invalidOutput, false);
 });
 
-test('patches are rejected when cumulative dialogue count delta exceeds tolerance', () => {
-  const lines = [
+test('patches are rejected when cumulative dialogue count delta exceeds tolerance', () => {  const lines = [
     dialogue('Storm far away', 'we hear thundering.'),
     dialogue('Wind over camp', 'canvas snaps.'),
     dialogue('Aether', 'Stay close.'),
@@ -861,4 +966,386 @@ test('patches are rejected when cumulative dialogue count delta exceeds toleranc
   assert.strictEqual(result.stats.rejections[0].reason, 'dialogue_count_delta_exceeded');
   assert.strictEqual(lines[0].type, 'dialogue');
   assert.strictEqual(lines[1].type, 'dialogue');
+});
+
+// Shared-prefix reuse: a stored prepared prefix is rehydrated through the
+// real compiler, so the HQ suffix leads with byte-identical prefix messages.
+function makeStoredPrefix() {
+  const { compilePluginRequest } = require('../../modules/prompt/request_compiler.js');
+  const prepared = compilePluginRequest('post_writer_consistency_checker', 'test_shared_prefix', {
+    messages: [
+      { role: 'system', piece: 'contract', text: 'Shared contract text.' },
+      { role: 'user', piece: 'simulation', text: 'Current state text.' }
+    ]
+  }, {});
+  return JSON.parse(JSON.stringify({ id: prepared.id, messages: prepared.messages, manifest: prepared.manifest }));
+}
+
+function makeComposeStub(seen) {
+  const { createPluginPromptScope } = require('../../modules/prompt/request_compiler.js');
+  return (requestId, build) => {
+    seen.push(requestId);
+    const scope = createPluginPromptScope('post_writer_consistency_checker', requestId, {});
+    const draft = scope.prompt;
+    const wrap = (add) => (fn) => {
+      draft[add]((message) => fn({
+        add: (id, text) => message.add(scope.addPiece(id, {}), text)
+      }));
+    };
+    const api = {
+      usePrefix: (prepared) => { draft.usePrefix(prepared); return api; },
+      user: wrap('user'),
+      assistant: wrap('assistant')
+    };
+    build(api);
+    return draft.prepare();
+  };
+}
+
+function hqPrefixedHarness() {
+  const { lines, turnContext } = hqTwoLineContext();
+  turnContext.processed.promptBuilder.sharedPrefixPrepared = makeStoredPrefix();
+  const prompts = [];
+  const state = {};
+  const tools = makeHqTools(state, [], { withBatch: false });
+  const baseRunTask = tools.llm.runTask;
+  tools.llm.runTask = (task) => {
+    prompts.push(task);
+    return baseRunTask(task);
+  };
+  tools.prompt = { compose: makeComposeStub([]) };
+  tools._composeSeen = tools.prompt.compose;
+  return { lines, turnContext, tools, prompts, state };
+}
+
+test('getSharedPrefixPrepared falls back when no prepared prefix exists', () => {
+  assert.equal(logic.getSharedPrefixPrepared({ processed: { promptBuilder: {} } }), null);
+  assert.equal(logic.getSharedPrefixPrepared(null), null);
+  const stored = makeStoredPrefix();
+  assert.deepEqual(
+    logic.getSharedPrefixPrepared({ processed: { promptBuilder: { sharedPrefixPrepared: stored } } }),
+    stored
+  );
+});
+
+test('consistency flagger leads with the shared prefix bytes when available', async () => {
+  const { turnContext, tools, prompts } = hqPrefixedHarness();
+  const seen = [];
+  tools.prompt = { compose: makeComposeStub(seen) };
+
+  await logic.runHqCheck(turnContext, tools);
+
+  assert.ok(seen.includes('hq_flag_consistency'));
+  const flagTask = prompts.find(task => task.msg === 'Post Writer HQ Flag: Consistency');
+  assert.ok(flagTask, 'consistency task was sent');
+  // A composed PreparedPrompt, not a {messages} structure.
+  assert.ok(Array.isArray(flagTask.prompt.messages));
+  assert.ok(flagTask.prompt.manifest);
+  const stored = turnContext.processed.promptBuilder.sharedPrefixPrepared;
+  const leading = flagTask.prompt.messages.slice(0, stored.messages.length);
+  assert.deepStrictEqual(
+    leading.map(m => ({ role: m.role, content: m.content })),
+    stored.messages.map(m => ({ role: m.role, content: m.content }))
+  );
+  // Suffix follows: task rules + review target, then the entry fake-out.
+  const trailing = flagTask.prompt.messages.slice(stored.messages.length);
+  assert.deepStrictEqual(trailing.map(m => m.role), ['user', 'assistant']);
+  assert.match(trailing[0].content, /consistency flagger/);
+  assert.match(trailing[0].content, /<draft_to_validate>/);
+  assert.match(trailing[1].content, /consistency checks rule by rule/);
+  // The five other flaggers keep the standalone messages shape.
+  const dialogueTask = prompts.find(task => task.msg === 'Post Writer HQ Flag: Dialogue Dynamics');
+  assert.ok(dialogueTask.prompt.messages);
+  assert.equal(dialogueTask.prompt.manifest, undefined);
+});
+
+test('corrector leads with the shared prefix bytes and keeps CoT plus entry', async () => {
+  const { turnContext, tools, prompts } = hqPrefixedHarness();
+  const seen = [];
+  tools.prompt = { compose: makeComposeStub(seen) };
+
+  const stats = await logic.runHqCheck(turnContext, tools);
+  assert.equal(stats.acceptedCount, 1);
+
+  assert.ok(seen.includes('hq_corrector'));
+  const correctorTask = prompts.find(task => task.msg === 'Post Writer HQ Corrector');
+  assert.ok(correctorTask, 'corrector task was sent');
+  const stored = turnContext.processed.promptBuilder.sharedPrefixPrepared;
+  const leading = correctorTask.prompt.messages.slice(0, stored.messages.length);
+  assert.deepStrictEqual(
+    leading.map(m => ({ role: m.role, content: m.content })),
+    stored.messages.map(m => ({ role: m.role, content: m.content }))
+  );
+  const trailing = correctorTask.prompt.messages.slice(stored.messages.length);
+  assert.deepStrictEqual(trailing.map(m => m.role), ['user', 'assistant', 'assistant']);
+  assert.match(trailing[0].content, /<flagged_findings>/);
+  assert.match(trailing[1].content, /Mandatory Correction Procedure/);
+  assert.match(trailing[2].content, /correction procedure step by step/);
+});
+
+test('corrector retry recomposes on the prefix with feedback as a trailing part', async () => {
+  const { turnContext, tools, prompts } = hqPrefixedHarness();
+  const seen = [];
+  tools.prompt = { compose: makeComposeStub(seen) };
+  const baseRunTask = tools.llm.runTask;
+  let calls = 0;
+  tools.llm.runTask = (task) => {
+    prompts.push(task);
+    if (task.msg === 'Post Writer HQ Corrector' && calls++ === 0) {
+      return Promise.resolve({ content: '{"hunks":[]}' });
+    }
+    return baseRunTask(task);
+  };
+
+  const stats = await logic.runHqCheck(turnContext, tools);
+  assert.equal(stats.correctionAttempts, 2);
+  assert.ok(seen.includes('hq_corrector_repair'));
+  const retryTask = prompts.find(task => task.msg === 'Post Writer HQ Corrector Repair');
+  assert.ok(retryTask, 'repair retry was sent');
+  const stored = turnContext.processed.promptBuilder.sharedPrefixPrepared;
+  assert.deepStrictEqual(
+    retryTask.prompt.messages.slice(0, stored.messages.length).map(m => m.content),
+    stored.messages.map(m => m.content)
+  );
+  assert.match(retryTask.prompt.messages[stored.messages.length].content, /rejected/);
+});
+
+test('corrector CoT states the draft-first precedence rule', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const text = fs.readFileSync(path.join(__dirname, 'hq', 'corrector_cot.txt'), 'utf8');
+  assert.match(text, /Precedence/);
+  assert.match(text, /never invent facts the draft does not support/);
+});
+
+test('fast dialogue miner settings default and resolve', () => {
+  const defaults = logic.resolveSettings({});
+  assert.equal(defaults.hq_cat3_fast_enabled, false);
+  assert.equal(defaults.hq_cat3_fast_target, 20);
+  assert.equal(defaults.hq_cat3_fast_threshold, 80);
+  assert.equal(defaults.hq_cat3_fast_max_tokens, 6000);
+  assert.equal(defaults.hq_cat3_fast_model_def.model, 'veryhighendmodel');
+
+  const custom = logic.resolveSettings({ hq_cat3_fast_enabled: true, hq_cat3_fast_target: 12, hq_cat3_fast_threshold: 65, hq_cat3_fast_max_tokens: 9000, hq_cat3_fast_model_def: { model: 'lowendmodel' } });
+  assert.equal(custom.hq_cat3_fast_enabled, true);
+  assert.equal(custom.hq_cat3_fast_target, 12);
+  assert.equal(custom.hq_cat3_fast_threshold, 65);
+  assert.equal(custom.hq_cat3_fast_max_tokens, 9000);
+  assert.equal(custom.hq_cat3_fast_model_def.model, 'lowendmodel');
+});
+
+test('fast cat3 model assignment uses the fast model setting', () => {
+  const settings = logic.resolveSettings({ hq_cat3_fast_model_def: { model: 'lowendmodel', provider: 'generic' } });
+  const assignment = logic.resolveFastCat3ModelAssignment(settings, {});
+  assert.equal(assignment.model, 'lowendmodel');
+  assert.equal(assignment.provider, 'generic');
+  assert.equal(assignment.source, 'hq_cat3_fast');
+});
+
+test('normalizeFlagFinding carries an optional clamped confidence', () => {
+  const base = {
+    rule: 'in_scene_ownership',
+    reason: 'conflict',
+    scope: 'line',
+    occurrences: [{ line: 3, quote: 'x' }]
+  };
+  assert.equal(logic._private.normalizeFlagFinding(base, 'cat3_dialogue').confidence, null);
+  assert.equal(logic._private.normalizeFlagFinding({ ...base, confidence: 87.6 }, 'cat3_dialogue').confidence, 88);
+  assert.equal(logic._private.normalizeFlagFinding({ ...base, confidence: 140 }, 'cat3_dialogue').confidence, 100);
+  assert.equal(logic._private.normalizeFlagFinding({ ...base, confidence: -5 }, 'cat3_dialogue').confidence, 0);
+  assert.equal(logic._private.normalizeFlagFinding({ ...base, confidence: 'n/a' }, 'cat3_dialogue').confidence, null);
+});
+
+test('applyConfidenceGate keeps only candidates at or above the threshold', () => {
+  const agents = [{
+    key: 'cat3_dialogue',
+    label: 'Dialogue Dynamics',
+    findings: [
+      { id: 'F1', rule: 'r', scope: 'line', confidence: 95, occurrences: [{ line: 1, quote: 'a' }], repair_targets: [1], reason: 'strong' },
+      { id: 'F2', rule: 'r', scope: 'line', confidence: 40, occurrences: [{ line: 2, quote: 'b' }], repair_targets: [2], reason: 'weak' },
+      { id: 'F3', rule: 'r', scope: 'line', confidence: null, occurrences: [{ line: 3, quote: 'c' }], repair_targets: [3], reason: 'unscored' }
+    ]
+  }];
+  const verified = { agents, actionable: agents[0].findings, flagCount: 3, passageCount: 0, invalidAnchorCount: 0, invalidFindingCount: 0 };
+
+  const gated = logic.applyConfidenceGate(verified, 'cat3_dialogue', 80);
+
+  assert.equal(gated.stats.candidates, 3);
+  assert.equal(gated.stats.accepted, 1);
+  assert.equal(gated.stats.belowThreshold, 1);
+  assert.equal(gated.stats.missingConfidence, 1);
+  assert.deepStrictEqual(gated.verified.actionable.map(f => f.id), ['F1']);
+  assert.equal(gated.verified.flagCount, 1);
+  assert.equal(gated.rejected.length, 2);
+  // Non-target agents pass through untouched.
+  const other = logic.applyConfidenceGate({ agents: [{ key: 'cat1', findings: [{ id: 'X', confidence: 1 }] }], actionable: [], flagCount: 0 }, 'cat3_dialogue', 80);
+  assert.equal(other.stats.candidates, 0);
+  assert.equal(other.verified.agents[0].findings.length, 1);
+});
+
+test('buildFlagMessages omits the CoT and entry for the fast miner', () => {
+  const fast = logic.buildFlagMessages({
+    key: 'cat3_dialogue',
+    fast: true,
+    messages: [{ role: 'user', content: 'candidates please' }]
+  });
+  assert.deepStrictEqual(fast.map(m => m.role), ['user']);
+
+  const normal = logic.buildFlagMessages({
+    key: 'cat3_dialogue',
+    entryText: logic.HQ_FLAG_ENTRY_MESSAGE,
+    cotTrail: [{ role: 'assistant', piece: 'x', text: 'cot' }],
+    messages: [{ role: 'user', content: 'review please' }]
+  });
+  assert.deepStrictEqual(normal.map(m => m.role), ['user', 'assistant', 'assistant']);
+  assert.equal(normal[1].text, 'cot');
+});
+
+test('applyCandidateTarget substitutes the target count', () => {
+  assert.equal(logic.applyCandidateTarget('Aim for {{CANDIDATE_TARGET}} candidates.', 12), 'Aim for 12 candidates.');
+  assert.equal(logic.applyCandidateTarget('Aim for {{CANDIDATE_TARGET}} candidates.', 0), 'Aim for 20 candidates.');
+});
+
+test('candidate prompt file carries every rule and the target placeholder', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const text = fs.readFileSync(path.join(__dirname, 'hq', 'cat3_dialogue_candidates.txt'), 'utf8');
+  for (const rule of ['dialogue_presence', 'character_participation', 'narrated_silence', 'uniform_ping_pong', 'in_scene_ownership', 'friction_and_memory']) {
+    assert.match(text, new RegExp(`RULE\\s*\\d+: ${rule}`));
+  }
+  assert.match(text, /\{\{CANDIDATE_TARGET\}\}/);
+});
+
+for (const withBatch of [false, true]) {
+test(`fast cat3 filters final scores after review and preserves diagnostics (${withBatch ? 'batch' : 'fallback'})`, async () => {
+  const { lines, turnContext } = hqTwoLineContext();
+  turnContext.output = {};
+  Object.defineProperty(turnContext.output, 'fulltext', {
+    get: () => turnContext.processed.narrativeEngine.writerResponse
+  });
+  turnContext.runtime = { lastSearchstring: turnContext.processed.narrativeEngine.writerResponse.substring(0, 500) };
+
+  const state = {};
+  const tasks = [];
+  const tools = makeHqTools(state, [], { withBatch });
+  const baseRunTask = tools.llm.runTask;
+  tools.llm.runTask = (task) => {
+    tasks.push(task);
+    if (task.msg === 'Post Writer HQ Flag: Dialogue Dynamics') {
+      return Promise.resolve({ content: JSON.stringify([
+        {
+          rule: 'in_scene_ownership', scope: 'line', reason: 'strong conflict',
+          occurrences: [{ line: 2, quote: HQ_FLAGGED_LINE }], repair_targets: [2],
+          draft_confidence: 45,
+          review: { counterevidence_lines: [], assessment: 'No bridge explains the conflict.', verdict: 'supported' },
+          confidence: 96
+        },
+        {
+          rule: 'in_scene_ownership', scope: 'line', reason: 'weak suspicion',
+          occurrences: [{ line: 1, quote: 'Aether: We ride at dawn.' }], repair_targets: [1],
+          draft_confidence: 95,
+          review: { counterevidence_lines: [2], assessment: 'The surrounding text explains it.', verdict: 'explained' },
+          confidence: 30
+        },
+        {
+          rule: 'in_scene_ownership', scope: 'line', reason: 'missing final score',
+          occurrences: [{ line: 1, quote: 'Aether: We ride at dawn.' }], repair_targets: [1],
+          draft_confidence: 99,
+          review: { counterevidence_lines: [], assessment: 'Still appears unsupported by a bridge.', verdict: 'supported' }
+        }
+      ]) });
+    }
+    if (task.msg.startsWith('Post Writer HQ Flag')) {
+      return Promise.resolve({ content: '[]' });
+    }
+    return baseRunTask(task);
+  };
+  tools.settings = { getSelf: () => ({ hq_multipass_enabled: true, hq_cat3_fast_enabled: true, hq_cat3_fast_threshold: 80 }) };
+
+  const stats = await logic.runHqCheck(turnContext, tools);
+
+  const dialogueTask = tasks.find(task => task.msg === 'Post Writer HQ Flag: Dialogue Dynamics');
+  assert.ok(dialogueTask, 'dialogue task sent');
+  // Direct output: no assistant entry/CoT, reasoning forced off, larger budget.
+  assert.deepStrictEqual(dialogueTask.prompt.messages.map(m => m.role), ['user']);
+  assert.deepStrictEqual(dialogueTask.params.reasoning, { effort: 'off' });
+  assert.equal(dialogueTask.params.max_tokens, 6000);
+  // The fast miner runs on its own reasoning-off-capable model.
+  assert.equal(dialogueTask.model, 'veryhighendmodel');
+  assert.match(dialogueTask.prompt.messages[0].content ?? dialogueTask.prompt.messages[0].text, /candidate detector/);
+  // The other agents keep their own (unified) model and no reasoning override.
+  const consistencyTask = tasks.find(task => task.msg === 'Post Writer HQ Flag: Consistency');
+  assert.equal(consistencyTask.params.reasoning, undefined);
+
+  assert.ok(stats.cat3Fast, 'gate stats recorded');
+  assert.equal(stats.cat3Fast.candidates, 3);
+  assert.equal(stats.cat3Fast.accepted, 1);
+  assert.equal(stats.cat3Fast.belowThreshold, 1);
+  assert.equal(stats.cat3Fast.missingConfidence, 1);
+  assert.equal(stats.flagCount, 1);
+
+  const correctorTask = tasks.find(task => task.msg === 'Post Writer HQ Corrector');
+  assert.ok(correctorTask, 'corrector ran');
+  const correctorPayload = correctorTask.prompt.messages.map(m => m.content ?? m.text).join('\n');
+  assert.match(correctorPayload, /strong conflict/);
+  assert.doesNotMatch(correctorPayload, /weak suspicion/);
+  assert.doesNotMatch(correctorPayload, /missing final score/);
+  assert.doesNotMatch(correctorPayload, /draft_confidence|counterevidence_lines/);
+
+  const saved = state.hqFindings.find(agent => agent.key === 'cat3_dialogue').findings;
+  assert.equal(saved[0].draft_confidence, 45);
+  assert.equal(saved[0].confidence, 96);
+  assert.equal(saved[0].review.verdict, 'supported');
+  assert.equal(saved[0].confidenceStatus, 'accepted');
+  assert.equal(saved[1].draft_confidence, 95);
+  assert.equal(saved[1].confidence, 30);
+  assert.deepStrictEqual(saved[1].review.counterevidence_lines, [2]);
+  assert.equal(saved[1].confidenceStatus, 'rejected');
+  assert.equal(saved[2].confidence, null);
+  assert.equal(saved[2].filterReason, 'missing_confidence');
+  assert.equal(stats.cat3Fast.rejected[0].draft_confidence, 95);
+  assert.equal(stats.cat3Fast.rejected[0].review.verdict, 'explained');
+});
+}
+
+test('missing final scores stay missing through parsing and validation, even at threshold zero', () => {
+  const candidate = {
+    rule: 'in_scene_ownership', reason: 'provisional', scope: 'line',
+    occurrences: [{ line: 1, quote: 'Ari: The key is here.' }], repair_targets: [1],
+    draft_confidence: 98,
+    review: { counterevidence_lines: [], assessment: 'No explanation located.', verdict: 'supported' }
+  };
+  for (const confidence of [undefined, null, '', 'n/a', false]) {
+    const findings = logic.parseFlagFindings(JSON.stringify([{ ...candidate, confidence }]), 'cat3_dialogue');
+    const verified = logic.validateFlagFindings([{ key: 'cat3_dialogue', findings }], [dialogue('Ari', 'The key is here.')]);
+    assert.equal(verified.agents[0].findings[0].confidence, null);
+    assert.equal(verified.agents[0].findings[0].draft_confidence, 98);
+    const gated = logic.applyConfidenceGate(verified, 'cat3_dialogue', 0);
+    assert.equal(gated.stats.missingConfidence, 1);
+    assert.equal(gated.verified.actionable.length, 0);
+  }
+});
+
+test('ordered review examples have exact anchors and filter only on their final scores', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const text = fs.readFileSync(path.join(__dirname, 'hq', 'cat3_dialogue_candidates.txt'), 'utf8');
+  const sections = text.split(/OUTPUT EXAMPLE [A-D] — /).slice(1);
+  assert.equal(sections.length, 4);
+  for (let index = 0; index < sections.length; index++) {
+    const section = sections[index];
+    const scriptLines = [...section.matchAll(/^\d+ \| (.*)$/gm)].map(match => ({ type: 'narrative', line: match[1] }));
+    const json = section.match(/\[\n  \{[\s\S]*?\n\]/)[0];
+    const raw = JSON.parse(json)[0];
+    assert.deepStrictEqual(Object.keys(raw), [
+      'rule', 'scope', 'reason', 'occurrences', 'repair_targets', 'draft_confidence', 'review', 'confidence'
+    ]);
+    const findings = logic.parseFlagFindings(json, 'cat3_dialogue');
+    const verified = logic.validateFlagFindings([{ key: 'cat3_dialogue', findings }], scriptLines);
+    assert.equal(verified.invalidAnchorCount, 0);
+    assert.equal(verified.invalidFindingCount, 0);
+    assert.deepStrictEqual(verified.agents[0].findings[0].review, raw.review);
+    const gated = logic.applyConfidenceGate(verified, 'cat3_dialogue', 80);
+    assert.equal(gated.verified.actionable.length, index === 1 ? 1 : 0);
+  }
 });

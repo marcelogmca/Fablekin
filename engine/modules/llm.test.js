@@ -92,11 +92,16 @@ test('normalizes reasoning payloads for router and direct providers', () => {
   );
   assert.deepEqual(
     normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'none' } }),
-    {}
+    { thinking: { type: 'disabled' } }
   );
   assert.deepEqual(
     normalizeReasoningParamsForProvider('generic', { reasoning_effort: 'none' }),
-    {}
+    { thinking: { type: 'disabled' } }
+  );
+  // A caller-supplied thinking flag is never overwritten.
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'none' }, thinking: { type: 'enabled' } }),
+    { thinking: { type: 'enabled' } }
   );
   assert.deepEqual(
     normalizeReasoningParamsForProvider('generic', { reasoning_effort: 'minimal' }),
@@ -109,6 +114,12 @@ test('normalizes reasoning payloads for router and direct providers', () => {
   assert.deepEqual(
     normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'xhigh' } }),
     { reasoning_effort: 'xhigh' }
+  );
+  // 'off' is a real level on reasoning-off-capable models (DeepSeek); it must
+  // pass through, never be swallowed.
+  assert.deepEqual(
+    normalizeReasoningParamsForProvider('generic', { reasoning: { effort: 'off' } }),
+    { reasoning_effort: 'off' }
   );
 });
 
@@ -165,6 +176,74 @@ test('clears the deadline after a successful model response', async () => {
 
   const result = await invokeModelWithDeadline(model, [], { timeout: 1000 });
   assert.equal(result.content, 'ok');
+});
+
+test('forwards token and reasoning deltas without changing the resolved content', async () => {
+  const seen = [];
+  const model = {
+    invoke: async (_messages, options) => {
+      const callbacks = options?.callbacks || [];
+      assert.equal(callbacks.length, 1);
+      // The handler must opt into streaming or BaseChatModel takes the
+      // non-streaming path and handleLLMNewToken never fires.
+      assert.equal(callbacks[0]?.lc_prefer_streaming, true);
+      const handler = callbacks[0]?.handleLLMNewToken;
+      assert.equal(typeof handler, 'function');
+      handler('Hello ', 0, 'run-1', null, null, { chunk: { text: 'Hello ' } });
+      handler('', 1, 'run-1', null, null, {
+        chunk: { additional_kwargs: { reasoning_content: 'thinking…' } }
+      });
+      handler('world', 2, 'run-1', null, null, { chunk: { text: 'world' } });
+      return { content: 'Hello world' };
+    }
+  };
+
+  const result = await invokeModelWithDeadline(model, [], {
+    timeout: 1000,
+    onToken: (delta) => seen.push(delta)
+  });
+  assert.equal(result.content, 'Hello world');
+  assert.deepEqual(seen, [
+    { content: 'Hello ', reasoning: '' },
+    { content: '', reasoning: 'thinking…' },
+    { content: 'world', reasoning: '' }
+  ]);
+});
+
+test('omits callbacks entirely when no token sink is registered', async () => {
+  let receivedOptions = null;
+  const model = {
+    invoke: async (_messages, options) => {
+      receivedOptions = options;
+      return { content: 'ok' };
+    }
+  };
+
+  await invokeModelWithDeadline(model, [], { timeout: 1000 });
+  assert.equal(receivedOptions?.callbacks, undefined);
+});
+
+test('liveTracker accumulates full streamed reasoning and peeks it back', () => {
+  const liveTracker = require('./llm_live_tracker.js');
+  const callId = liveTracker.start({ title: 'reasoning-probe', callingModule: 'test', model: 'm', provider: 'generic' });
+  liveTracker.chunk(callId, { content: 'Hi', reasoning: '' });
+  liveTracker.chunk(callId, { content: '', reasoning: 'think one ' });
+  liveTracker.chunk(callId, { content: '', reasoning: 'think two' });
+  assert.equal(liveTracker.peekStreamedReasoning(callId), 'think one think two');
+  const summary = liveTracker.end(callId, { status: 'done', model: 'm', provider: 'generic' });
+  assert.equal(summary.streamedReasoning, 'think one think two');
+  assert.equal(summary.streamedReasoningTruncated, false);
+  // Buffer is consumed at end; nothing leaks into the next call.
+  assert.equal(liveTracker.peekStreamedReasoning(callId), null);
+});
+
+test('liveTracker retry reset clears streamed reasoning', () => {
+  const liveTracker = require('./llm_live_tracker.js');
+  const callId = liveTracker.start({ title: 'retry-probe', callingModule: 'test', model: 'm', provider: 'generic' });
+  liveTracker.chunk(callId, { reasoning: 'stale thought' });
+  liveTracker.update(callId, { status: 'retrying', attempt: 2 });
+  assert.equal(liveTracker.peekStreamedReasoning(callId), null);
+  liveTracker.end(callId, { status: 'done', model: 'm', provider: 'generic' });
 });
 
 test('generic provider instantiates from a URL with an optional key', () => {

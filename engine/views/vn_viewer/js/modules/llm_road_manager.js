@@ -54,7 +54,12 @@ function setFollowMode(enabled) {
 function statusChip(call) {
     if (call.status === 'error') return '✖';
     if (call.status === 'retrying') return `↻${call.attempt || 2}`;
-    if (isRunning(call)) return 'running';
+    if (isRunning(call)) {
+        // Always-visible stream evidence: if the badge never appears while a
+        // call runs, no token deltas are reaching the frontend at all.
+        const stream = call.streamTokens ? ` · ≈${call.streamTokens} tok` : '';
+        return `running${stream}`;
+    }
     if (call.cached) return '⚡cache';
     return '✅';
 }
@@ -158,7 +163,14 @@ export function handleLlmUpdate(payload) {
             attempt: payload.attempt || 1,
             maxAttempts: payload.maxAttempts || 1,
             retryMessage: null,
-            seq: state.llmSequence
+            seq: state.llmSequence,
+            outputTail: '',
+            reasoningTail: '',
+            streamChars: 0,
+            streamTokens: 0,
+            streamFirstAt: null,
+            streamLastAt: null,
+            streamRate: null
         };
 
         state.llmCalls.set(callId, call);
@@ -180,6 +192,28 @@ export function handleLlmUpdate(payload) {
         if (payload.model) call.model = payload.model;
         if (payload.provider) call.provider = payload.provider;
         call.retryMessage = payload.message || null;
+        call.outputTail = '';
+        call.reasoningTail = '';
+        call.streamChars = 0;
+        call.streamTokens = 0;
+        call.streamFirstAt = null;
+        call.streamLastAt = null;
+        call.streamRate = null;
+        renderLlmRoad();
+        return;
+    }
+
+    if (type === 'chunk') {
+        // Live token deltas for the tooltip: keep only the tail, in small
+        // mono text, always showing the last lines. Control flow is untouched
+        // — the backend still resolves the full response before continuing.
+        if (typeof payload.outputTail === 'string') call.outputTail = payload.outputTail;
+        if (typeof payload.reasoningTail === 'string') call.reasoningTail = payload.reasoningTail;
+        if (Number.isFinite(Number(payload.streamChars))) call.streamChars = Number(payload.streamChars);
+        if (Number.isFinite(Number(payload.streamTokens))) call.streamTokens = Number(payload.streamTokens);
+        if (payload.streamFirstAt) call.streamFirstAt = payload.streamFirstAt;
+        if (payload.streamLastAt) call.streamLastAt = payload.streamLastAt;
+        if (payload.streamRate !== undefined) call.streamRate = payload.streamRate;
         renderLlmRoad();
         return;
     }
@@ -313,6 +347,26 @@ export function renderLlmRoad() {
     }
 
     applyAutoScroll(totalWidth);
+
+    // Token deltas rewrite the hovered lane's title; push any open tooltip
+    // forward immediately rather than waiting for the refresh timer.
+    if (typeof window !== 'undefined') window.PremiumTooltips?.refresh?.();
+}
+
+function formatStreamStats(call, elapsedMs) {
+    const tokens = Number(call.streamTokens) || 0;
+    const rate = Number(call.streamRate);
+    const lastAt = Number(call.streamLastAt) || 0;
+    const idleMs = lastAt ? Math.max(0, nowMs() - lastAt) : 0;
+    const parts = [];
+    if (tokens) parts.push(`≈${tokens} deltas`);
+    if (Number.isFinite(rate) && rate > 0) parts.push(`${rate.toFixed(1)} del/s`);
+    if (lastAt) {
+        parts.push(idleMs > 10000
+            ? `stalled ${Math.round(idleMs / 1000)}s`
+            : `last token ${(idleMs / 1000).toFixed(1)}s ago`);
+    }
+    return parts.length ? parts.join(' · ') : `streaming… (${formatElapsedTime(elapsedMs)})`;
 }
 
 function buildTooltip(call, elapsedMs) {
@@ -323,7 +377,18 @@ function buildTooltip(call, elapsedMs) {
     if (call.pluginId) parts.push(`plugin: ${call.pluginId}`);
     parts.push(`elapsed ${formatElapsedTime(elapsedMs)}`);
     if (call.retryMessage) parts.push(call.retryMessage);
-    if (call.error) parts.push(`error: ${call.error}`);
+    if (call.error) parts.push(`error: ${call.error}${call.streamChars ? ` (streamed ≈${call.streamChars} chars)` : ''}`);
+    if (call.outputTail || call.reasoningTail || (isRunning(call) && call.streamChars > 0)) {
+        parts.push(formatStreamStats(call, elapsedMs));
+        if (call.reasoningTail) {
+            parts.push(`THINKING (tail):\n${call.reasoningTail}`);
+        }
+        if (call.outputTail) {
+            parts.push(`OUTPUT (tail):\n${call.outputTail}`);
+        } else if (isRunning(call) && call.reasoningTail) {
+            parts.push('(no visible output yet — still reasoning)');
+        }
+    }
     return parts.join('\n');
 }
 

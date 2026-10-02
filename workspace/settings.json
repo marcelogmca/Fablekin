@@ -8,6 +8,11 @@
       "enabled": true
     },
     "include_cache_usage": false,
+    "llm_stream_display": {
+      "enabled": true,
+      "throttle_ms": 200,
+      "tail_lines": 8
+    },
     "prompt_caching": {
       "vn_pipeline": {
         "enabled": true,
@@ -638,33 +643,28 @@
       }
     },
     "socket_host": "127.0.0.1",
-    "socket_port": 64360,
-    "socket_url": "http://127.0.0.1:64360",
+    "socket_port": 64417,
+    "socket_url": "http://127.0.0.1:64417",
     "llm_routing": {
       "aliases": {
         "lowendmodel": {
           "provider": "generic",
-          "model": "deepseek/deepseek-v4.1-flash-fast",
-          "reasoning_effort": "low",
-          "fallback": {
-            "provider": "nano_gpt",
-            "model": "inception/mercury-2.5",
-            "reasoning_effort": "high"
-          }
+          "model": "gpt-6-luna",
+          "reasoning_effort": "low"
         },
         "mediumendmodel": {
           "provider": "generic",
-          "model": "deepseek/deepseek-v4.1-flash-fast",
+          "model": "gpt-6-luna",
           "reasoning_effort": "medium"
         },
         "highendmodel": {
           "provider": "generic",
-          "model": "meta/muse-spark-1.3-contributor",
-          "reasoning_effort": "xhigh"
+          "model": "deepseek/deepseek-v4.1-flash-fast",
+          "reasoning_effort": "high"
         },
         "veryhighendmodel": {
           "provider": "generic",
-          "model": "xiaomi/mimo-v2.6-pro",
+          "model": "deepseek/deepseek-v4.1-flash-fast",
           "reasoning_effort": "xhigh"
         }
       }
@@ -1690,6 +1690,13 @@
       "hq_context_lines": 5,
       "hq_history_count": 10,
       "hq_concurrency": 6,
+      "hq_cat3_fast_enabled": true,
+      "hq_cat3_fast_model_def": {
+        "model": "veryhighendmodel"
+      },
+      "hq_cat3_fast_target": 20,
+      "hq_cat3_fast_threshold": 80,
+      "hq_cat3_fast_max_tokens": 6000,
       "reuse_writer_model": true,
       "model_def": {
         "model": "highendmodel"

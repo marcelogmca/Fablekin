@@ -37,7 +37,17 @@ const DEFAULT_SETTINGS = {
   hq_corrector_max_tokens: 8000,
   hq_context_lines: 5,
   hq_history_count: 10,
-  hq_concurrency: 6
+  hq_concurrency: 6,
+  // Experimental fast dialogue miner: replaces the cat3 reasoning procedure
+  // with a single non-reasoning call that emits many confidence-scored
+  // candidates; code keeps only those at/above the threshold.
+  hq_cat3_fast_enabled: false,
+  hq_cat3_fast_target: 20,
+  hq_cat3_fast_threshold: 80,
+  hq_cat3_fast_max_tokens: 6000,
+  // The fast miner must target a model whose route can actually disable
+  // reasoning (reasoning_effort 'off' is DeepSeek-only on the generic relay).
+  hq_cat3_fast_model_def: { model: 'veryhighendmodel' }
 };
 
 function normalizeText(value) {
@@ -120,7 +130,12 @@ function resolveSettings(settings = {}) {
     hq_corrector_max_tokens: normalizePositiveInteger(source.hq_corrector_max_tokens, DEFAULT_SETTINGS.hq_corrector_max_tokens),
     hq_context_lines: normalizePositiveInteger(source.hq_context_lines, DEFAULT_SETTINGS.hq_context_lines),
     hq_history_count: normalizePositiveInteger(source.hq_history_count, DEFAULT_SETTINGS.hq_history_count),
-    hq_concurrency: normalizePositiveInteger(source.hq_concurrency, DEFAULT_SETTINGS.hq_concurrency)
+    hq_concurrency: normalizePositiveInteger(source.hq_concurrency, DEFAULT_SETTINGS.hq_concurrency),
+    hq_cat3_fast_enabled: source.hq_cat3_fast_enabled === true,
+    hq_cat3_fast_target: normalizePositiveInteger(source.hq_cat3_fast_target, DEFAULT_SETTINGS.hq_cat3_fast_target),
+    hq_cat3_fast_threshold: normalizeNumber(source.hq_cat3_fast_threshold, DEFAULT_SETTINGS.hq_cat3_fast_threshold, 0, 100),
+    hq_cat3_fast_max_tokens: normalizePositiveInteger(source.hq_cat3_fast_max_tokens, DEFAULT_SETTINGS.hq_cat3_fast_max_tokens),
+    hq_cat3_fast_model_def: normalizeModelDef(source.hq_cat3_fast_model_def, DEFAULT_SETTINGS.hq_cat3_fast_model_def)
   };
 }
 
@@ -482,11 +497,66 @@ function formatSpeakerLabelAudit(lines) {
   return output.join('\n');
 }
 
+// Shared-prefix reuse (prefix-cache eligibility): the consistency flagger
+// and the corrector adjudicate story truth, so they compose their requests on
+// the frozen Director/Writer shared prefix via usePrefix() instead of the old
+// slim compact-history payload. Identical leading bytes on the same
+// model/provider route hit the provider prefix cache; the HQ suffix (task +
+// draft + CoT + entry) is the only uncached part. The four style flaggers
+// keep the slim payload — they judge prose patterns, not truth.
+// When no prepared prefix exists on the turn (unit tests, early hooks), the
+// builders fall back to the standalone {messages} shape.
+function getSharedPrefixPrepared(turnContext) {
+  const stored = turnContext?.processed?.promptBuilder?.sharedPrefixPrepared;
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return null;
+  if (typeof stored.id !== 'string' || !stored.id || !Array.isArray(stored.messages) || stored.messages.length === 0) return null;
+  if (!stored.manifest || typeof stored.manifest !== 'object') return null;
+  return stored;
+}
+
+function rehydrateSharedPrefix(stored) {
+  const { PreparedPrompt } = require('../../modules/prompt/prompt.js');
+  return PreparedPrompt.rehydrate({
+    id: stored.id,
+    messages: stored.messages.map(message => ({ role: message.role, content: message.content })),
+    manifest: stored.manifest
+  });
+}
+
+function logHqSharedPrefixUsage(turnContext, tools, actor, assignment) {
+  try {
+    const { logSharedPrefixUsage } = require('../../modules/shared_narrative_prompt.js');
+    logSharedPrefixUsage(turnContext, actor, assignment?.model, assignment?.provider);
+  } catch {
+    // Diagnostics must never break the check.
+  }
+}
+
+// Compose an HQ suffix (task user message + CoT + entry assistant messages)
+// onto the shared prefix. Returns { prompt: PreparedPrompt } for runTask, or
+// null when no prefix is available (caller keeps the {messages} fallback).
+function composeHqPrefixedRequest({ tools, turnContext, requestId, actor, assignment, userParts, cotText, entryText }) {
+  const stored = getSharedPrefixPrepared(turnContext);
+  if (!stored) return null;
+  const compose = tools?.prompt?.compose;
+  if (typeof compose !== 'function') return null;
+  const prefix = rehydrateSharedPrefix(stored);
+  logHqSharedPrefixUsage(turnContext, tools, actor, assignment);
+  const prepared = compose(requestId, (draft) => {
+    draft.usePrefix(prefix);
+    draft.user((message) => {
+      for (const part of userParts) message.add(part.id, part.text);
+    });
+    if (cotText) draft.assistant((message) => { message.add('procedure', cotText); });
+    if (entryText) draft.assistant((message) => { message.add('entry', entryText); });
+  });
+  return { prompt: prepared };
+}
+
 // The checker validates the drafted scene against the checker instructions;
-// it does not need the Writer's full conversation (shared contract, replayed
-// chapters, CoT suffix) — that clone made this the heaviest call of the turn.
-// The HQ consistency flagger receives compact history + a numbered draft;
-// single-pass mode keeps its existing unnumbered review target.
+// single-pass mode keeps its existing unnumbered review target. HQ
+// consistency mode now prefers the shared prefix (see above); the compact
+// history fallback remains for turns without a prepared prefix.
 function buildCheckerMessages(turnContext, promptText = readPromptText(), settingsInput = {}, compactContext = null) {
   const canonicalLines = getCanonicalLines(turnContext);
   const dialogueText = turnContext?.processed?.dialogueProcessor?.dialogue || buildScriptFromLines(canonicalLines);
@@ -502,6 +572,50 @@ function buildCheckerMessages(turnContext, promptText = readPromptText(), settin
   ];
 }
 
+// CoT procedure messages ("assistant pre-rolls"): each carries the review or
+// correction procedure as its own trailing assistant message, mirroring the
+// Writer's WRITER_COT_FINAL_INVOCATION pattern. The model continues from
+// inside the procedure instead of deciding how to approach the task.
+// A trailing assistant turn is a provider-side continuation cue, not a claim
+// that the model already did anything.
+function buildCat3DialogueCotMessage() {
+  return {
+    role: 'assistant',
+    piece: 'flag.cat3_dialogue.review_procedure',
+    text: readHqPromptText('cat3_dialogue_cot.txt').trim()
+  };
+}
+
+function buildCorrectorCotMessage() {
+  return {
+    role: 'assistant',
+    piece: 'corrector.correction_procedure',
+    text: readHqPromptText('corrector_cot.txt').trim()
+  };
+}
+
+const HQ_FLAG_ENTRY_MESSAGE = 'Alright, let me work through the dialogue review procedure pass by pass, starting with Pass 1 at line 1.';
+
+// Consistency-flagger entry: same Writer-style device, naming its own job
+// (no passes exist for this agent — it scans the whole draft per its rules).
+const HQ_CONSISTENCY_ENTRY_MESSAGE = 'Alright, let me work through the consistency checks rule by rule, starting with the physical-trait scan of the numbered draft.';
+
+// Assistant entry message for the corrector ("prefill"): continues the
+// correction procedure message by starting Step 1 on the first finding.
+// Same device as the Writer's WRITER_COT_FINAL_INVOCATION and the HQ flag
+// entry message — the natural next token is the first finding's mapping, not
+// a decision about how to approach the repair.
+const HQ_CORRECTOR_ENTRY_MESSAGE = 'Alright, let me work through the correction procedure step by step, starting with Step 1 on finding F1.';
+
+function withFlagEntryMessage(namedMessages, entryText = HQ_FLAG_ENTRY_MESSAGE, extraAssistantMessages = []) {
+  const base = Array.isArray(namedMessages) ? namedMessages : [];
+  const cotTrail = Array.isArray(extraAssistantMessages) ? extraAssistantMessages : [];
+  return [
+    ...base,
+    ...cotTrail,
+    { role: 'assistant', piece: 'flag.entry', text: String(entryText || '') }
+  ];
+}
 // Name each prompt message by what it carries rather than by position, so the
 // Token Map shows `check.instructions` / `check.review_target` instead of a
 // wall of anonymous `message_N` rows.
@@ -552,6 +666,20 @@ function readPromptText(promptPath = DEFAULT_PROMPT_PATH) {
 
 function readHqPromptText(fileName) {
   return fs.readFileSync(path.join(HQ_PROMPT_DIR, fileName), 'utf8');
+}
+
+function applyCandidateTarget(promptText, target) {
+  const resolved = normalizePositiveInteger(target, DEFAULT_SETTINGS.hq_cat3_fast_target);
+  return String(promptText || '').replace(/\{\{CANDIDATE_TARGET\}\}/g, String(resolved));
+}
+
+// Builds the final message sequence for a flag task. The fast dialogue miner
+// answers directly (no CoT procedure, no assistant entry fake-out); every other
+// flagger keeps the Writer-style trailing assistant entry.
+function buildFlagMessages(flagTask) {
+  const named = namePromptMessages(flagTask.messages, `flag.${flagTask.key || 'check'}`);
+  if (flagTask.fast) return named;
+  return withFlagEntryMessage(named, flagTask.entryText || HQ_FLAG_ENTRY_MESSAGE, flagTask.cotTrail || []);
 }
 
 function formatTaggedFindings(findingsPayload) {
@@ -668,6 +796,27 @@ function buildCompressedFlagMessages(categoryPromptText, compressedContext) {
   ];
 }
 
+function normalizeFlagConfidence(value) {
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  if (typeof value === 'string' && !value.trim()) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, Math.min(100, Math.round(number))) : null;
+}
+
+function normalizeCandidateReview(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) ||
+      !Array.isArray(raw.counterevidence_lines) || typeof raw.assessment !== 'string' ||
+      !raw.assessment.trim() || !['supported', 'explained', 'uncertain'].includes(raw.verdict)) {
+    return null;
+  }
+  // Diagnostic model assertions, not independently verified evidence or scores.
+  return {
+    counterevidence_lines: [...new Set(raw.counterevidence_lines.filter(line => Number.isInteger(line) && line > 0))],
+    assessment: raw.assessment.trim().slice(0, 1000),
+    verdict: raw.verdict
+  };
+}
+
 function normalizeFlagFinding(raw, category) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const reason = String(raw.reason || '').trim();
@@ -682,13 +831,77 @@ function normalizeFlagFinding(raw, category) {
   const rawTargets = Array.isArray(raw.repair_targets) ? raw.repair_targets : occurrences.map(entry => entry.line);
   const repairTargets = [...new Set(rawTargets.filter(line => Number.isInteger(line)))];
   if (!repairTargets.length || !repairTargets.every(line => occurrences.some(entry => entry.line === line))) return null;
+  // Confidence is optional: only the experimental fast dialogue miner emits it.
+  // Preserved through validation so the programmatic gate can read it.
+  // Normalization happens twice (parse, then citation validation). Missing
+  // final confidence must stay null, never become Number(null) === 0 and
+  // never fall back to the preliminary draft_confidence.
+  const confidence = normalizeFlagConfidence(raw.confidence);
+  const review = normalizeCandidateReview(raw.review);
   return {
     category: String(category || 'unknown'),
     rule: rule.slice(0, 100),
     scope,
     occurrences,
     repair_targets: repairTargets,
-    reason: reason.slice(0, 1000)
+    reason: reason.slice(0, 1000),
+    confidence,
+    ...(Object.prototype.hasOwnProperty.call(raw, 'draft_confidence')
+      ? { draft_confidence: normalizeFlagConfidence(raw.draft_confidence) } : {}),
+    ...(review ? { review } : {})
+  };
+}
+
+// Programmatic confidence gate for the fast dialogue miner. Findings below the
+// threshold (or missing a numeric score) are annotated and withheld from the
+// corrector, but retained on the agent for diagnostics. Only the final
+// confidence counts; draft_confidence and review are diagnostic metadata.
+function applyConfidenceGate(verified, agentKey, threshold) {
+  const stats = {
+    agentKey,
+    threshold,
+    candidates: 0,
+    accepted: 0,
+    belowThreshold: 0,
+    missingConfidence: 0
+  };
+  const rejected = [];
+  const agents = (Array.isArray(verified?.agents) ? verified.agents : []).map(agent => {
+    if (agent.key !== agentKey) return agent;
+    const findings = (Array.isArray(agent.findings) ? agent.findings : []).map(finding => {
+      stats.candidates++;
+      const raw = finding.confidence;
+      const hasScore = raw !== null && raw !== undefined && raw !== '' && Number.isFinite(Number(raw));
+      if (!hasScore) {
+        stats.missingConfidence++;
+        rejected.push({ ...finding, confidenceStatus: 'rejected', filterReason: 'missing_confidence' });
+        return { ...finding, confidenceStatus: 'rejected', filterReason: 'missing_confidence' };
+      }
+      const value = Number(raw);
+      if (value >= threshold) {
+        stats.accepted++;
+        return { ...finding, confidenceStatus: 'accepted' };
+      }
+      stats.belowThreshold++;
+      rejected.push({ ...finding, confidenceStatus: 'rejected', filterReason: 'below_threshold' });
+      return { ...finding, confidenceStatus: 'rejected', filterReason: 'below_threshold' };
+    });
+    return { ...agent, findings };
+  });
+  const actionable = agents
+    .flatMap(agent => agent.findings)
+    .filter(finding => finding.confidenceStatus !== 'rejected');
+  return {
+    verified: {
+      agents,
+      actionable,
+      flagCount: actionable.length,
+      passageCount: actionable.filter(finding => finding.scope === 'passage').length,
+      invalidAnchorCount: verified?.invalidAnchorCount || 0,
+      invalidFindingCount: verified?.invalidFindingCount || 0
+    },
+    stats,
+    rejected
   };
 }
 
@@ -954,6 +1167,37 @@ function resolveQualityModelAssignment(settings, tools) {
   };
 }
 
+// Unified HQ assignment: every HQ agent (all 6 flaggers + the corrector) runs
+// on the quality route. The checker's Writer-following assignment stays
+// available for single-pass mode only.
+function resolveUnifiedHqAssignment(settings, tools) {
+  return resolveQualityModelAssignment(settings, tools);
+}
+
+// The fast dialogue miner runs on its own model because it must be able to
+// disable reasoning (reasoning_effort 'off' is accepted only by models that can
+// turn thinking off - the DeepSeek family on the generic relay). The quality
+// route model (e.g. gpt-6-luna) reasons regardless of any flag.
+function resolveFastCat3ModelAssignment(settings, tools) {
+  const pluginAssignment = tools?.llm?.getPluginModel?.(PLUGIN_ID, 'hq_cat3_fast_model_def');
+  if (pluginAssignment?.model) {
+    return {
+      model: pluginAssignment.model,
+      provider: pluginAssignment.provider || null,
+      resolvedModel: pluginAssignment.resolvedModel || null,
+      subprovider: pluginAssignment.subprovider || null,
+      source: 'hq_cat3_fast'
+    };
+  }
+  return {
+    model: settings.hq_cat3_fast_model_def.model,
+    provider: settings.hq_cat3_fast_model_def.provider || null,
+    resolvedModel: null,
+    subprovider: null,
+    source: 'hq_cat3_fast'
+  };
+}
+
 function logModelAssignment(tools, label, assignment) {
   tools?.logger?.runtime?.(
     `${label} model source: ${assignment.source}; `
@@ -962,17 +1206,18 @@ function logModelAssignment(tools, label, assignment) {
   );
 }
 
-async function runSingleFlagAgent({ key, label, messages, modelAssignment, settings, tools }) {
+async function runSingleFlagAgent({ key, label, messages, modelAssignment, settings, tools, prompt = null, maxTokens = null, reasoning = null }) {
   const response = await tools.llm.runTask({
     msg: `Post Writer HQ Flag: ${label}`,
     requestId: `hq_flag_${String(key || 'check').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48) || 'check'}`,
-    prompt: { messages: namePromptMessages(messages, `flag.${key || 'check'}`) },
+    prompt: prompt ? prompt : { messages },
     model: modelAssignment.model,
     provider: modelAssignment.provider,
     params: {
       retries: settings.retries,
       timeout: settings.timeout,
-      max_tokens: settings.hq_flag_max_tokens,
+      max_tokens: maxTokens || settings.hq_flag_max_tokens,
+      ...(reasoning ? { reasoning } : {}),
       callingModule: `Plugin:${PLUGIN_ID}:HQ:${key}`
     }
   });
@@ -1010,44 +1255,92 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
 
   syncDialogueProcessor(turnContext, lines);
 
-  const consistencyAssignment = resolveCheckerModelAssignment(settings, tools);
-  const qualityAssignment = resolveQualityModelAssignment(settings, tools);
-  logModelAssignment(tools, 'Post Writer HQ consistency', consistencyAssignment);
-  logModelAssignment(tools, 'Post Writer HQ quality', qualityAssignment);
+  // All HQ agents share one model: the quality route (highend). One route =
+  // one prefix-cache key for the shared-prefix calls.
+  const hqAssignment = resolveUnifiedHqAssignment(settings, tools);
+  const consistencyAssignment = hqAssignment;
+  const qualityAssignment = hqAssignment;
+  const fastCat3Assignment = settings.hq_cat3_fast_enabled
+    ? resolveFastCat3ModelAssignment(settings, tools)
+    : hqAssignment;
+  logModelAssignment(tools, 'Post Writer HQ unified', hqAssignment);
+  if (settings.hq_cat3_fast_enabled) {
+    logModelAssignment(tools, 'Post Writer HQ fast dialogue miner', fastCat3Assignment);
+  }
 
   const compressedContext = await collectCompressedContext(turnContext, settings);
   const consistencyMessages = buildCheckerMessages(turnContext, readHqPromptText('consistency.txt'), settings, compressedContext);
-  const categoryPrompts = HQ_QUALITY_CATEGORIES.map(category => ({
-    ...category,
-    promptText: readHqPromptText(category.promptFile)
-  }));
+  // Experimental fast path: cat3 becomes a single non-reasoning candidate miner
+  // (rules + examples + confidence) instead of the CoT procedure.
+  const categoryPrompts = HQ_QUALITY_CATEGORIES.map(category => {
+    const fast = settings.hq_cat3_fast_enabled && category.key === 'cat3_dialogue';
+    const promptText = fast
+      ? applyCandidateTarget(readHqPromptText('cat3_dialogue_candidates.txt'), settings.hq_cat3_fast_target)
+      : readHqPromptText(category.promptFile);
+    return { ...category, promptText, fast };
+  });
 
   const flagTasks = [
     {
       key: 'consistency',
       label: 'Consistency',
       messages: consistencyMessages,
-      modelAssignment: consistencyAssignment
+      modelAssignment: consistencyAssignment,
+      entryText: HQ_CONSISTENCY_ENTRY_MESSAGE
     },
     ...categoryPrompts.map(category => ({
       key: category.key,
       label: category.label,
       messages: buildCompressedFlagMessages(category.promptText, compressedContext, settings),
-      modelAssignment: qualityAssignment
+      // The fast miner needs its reasoning-off-capable model; the other agents
+      // stay on the unified quality route.
+      modelAssignment: category.fast ? fastCat3Assignment : qualityAssignment,
+      fast: category.fast === true,
+      entryText: HQ_FLAG_ENTRY_MESSAGE,
+      cotTrail: category.key === 'cat3_dialogue' && !category.fast ? [buildCat3DialogueCotMessage()] : [],
+      maxTokens: category.fast ? settings.hq_cat3_fast_max_tokens : settings.hq_flag_max_tokens,
+      reasoning: category.fast ? { effort: 'off' } : null
     }))
   ];
 
+  // Consistency flagger on the shared prefix: its system rules become a task
+  // part of the suffix user message (the prefix owns the single system
+  // message). Falls back to the standalone messages when no prefix exists.
+  const consistencyTask = flagTasks[0];
+  const consistencyRules = String(readHqPromptText('consistency.txt')).trim();
+  const consistencyTarget = consistencyMessages.length > 1
+    ? String(consistencyMessages[consistencyMessages.length - 1]?.content || '').trim()
+    : '';
+  const consistencyPrefixed = composeHqPrefixedRequest({
+    tools, turnContext,
+    requestId: 'hq_flag_consistency',
+    actor: 'Post Writer HQ consistency',
+    assignment: consistencyAssignment,
+    userParts: [
+      { id: 'task', text: consistencyRules },
+      ...(consistencyTarget ? [{ id: 'review_target', text: consistencyTarget }] : [])
+    ],
+    cotText: null,
+    entryText: HQ_CONSISTENCY_ENTRY_MESSAGE
+  });
+  if (consistencyPrefixed) consistencyTask.prompt = consistencyPrefixed.prompt;
+
   const concurrency = Math.max(1, Math.min(flagTasks.length, settings.hq_concurrency));
+  // The dialogue agent carries its review procedure as a trailing assistant
+  // message (Writer-CoT style); the other agents keep their user-message
+  // instructions and get only the entry fake-out. A task with a composed
+  // shared-prefix prompt sends that PreparedPrompt directly.
   const buildFlagTaskPayload = (flagTask) => ({
     msg: `Post Writer HQ Flag: ${flagTask.label}`,
     requestId: `hq_flag_${String(flagTask.key || 'check').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 48) || 'check'}`,
-    prompt: { messages: namePromptMessages(flagTask.messages, `flag.${flagTask.key || 'check'}`) },
+    prompt: flagTask.prompt ? flagTask.prompt : { messages: buildFlagMessages(flagTask) },
     model: flagTask.modelAssignment.model,
     provider: flagTask.modelAssignment.provider,
     params: {
       retries: settings.retries,
       timeout: settings.timeout,
-      max_tokens: settings.hq_flag_max_tokens,
+      max_tokens: flagTask.maxTokens || settings.hq_flag_max_tokens,
+      ...(flagTask.reasoning ? { reasoning: flagTask.reasoning } : {}),
       callingModule: `Plugin:${PLUGIN_ID}:HQ:${flagTask.key}`
     }
   });
@@ -1098,10 +1391,13 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
     const settled = await Promise.allSettled(flagTasks.map(flagTask => runSingleFlagAgent({
       key: flagTask.key,
       label: flagTask.label,
-      messages: flagTask.messages,
+      messages: buildFlagMessages(flagTask),
       modelAssignment: flagTask.modelAssignment,
       settings,
-      tools
+      tools,
+      prompt: flagTask.prompt || null,
+      maxTokens: flagTask.maxTokens || null,
+      reasoning: flagTask.reasoning || null
     })));
     flagResults = settled.map((entry, index) => {
       const task = flagTasks[index];
@@ -1139,12 +1435,34 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
     }
   }
 
-  const verified = validateFlagFindings(findingsByAgent, lines);
+  let verified = validateFlagFindings(findingsByAgent, lines);
+  // Fast dialogue miner: code keeps only candidates the model scored at or
+  // above the threshold (or rejects missing scores). Rejected candidates stay
+  // on the agent for diagnostics but never reach the corrector.
+  let cat3GateStats = null;
+  if (settings.hq_cat3_fast_enabled) {
+    const gated = applyConfidenceGate(verified, 'cat3_dialogue', settings.hq_cat3_fast_threshold);
+    verified = gated.verified;
+    cat3GateStats = {
+      ...gated.stats,
+      rejected: gated.rejected.map(finding => ({
+        rule: finding.rule,
+        ...(finding.draft_confidence !== undefined ? { draft_confidence: finding.draft_confidence } : {}),
+        ...(finding.review ? { review: finding.review } : {}),
+        confidence: finding.confidence,
+        reason: finding.filterReason
+      }))
+    };
+    tools?.logger?.runtime?.(
+      `Post Writer cat3 fast miner: ${gated.stats.candidates} candidate(s) -> ${gated.stats.accepted} accepted `
+      + `(${gated.stats.belowThreshold} below ${settings.hq_cat3_fast_threshold}, ${gated.stats.missingConfidence} missing confidence).`
+    );
+  }
   storeHqFindings(turnContext, tools, verified.agents);
   const perAgent = verified.agents.map(agent => ({
     key: agent.key,
     label: agent.label,
-    flagCount: agent.findings.length,
+    flagCount: agent.findings.filter(finding => finding.confidenceStatus !== 'rejected').length,
     invalidOutput: Boolean(agent.invalidOutput),
     failed: Boolean(agent.error)
   }));
@@ -1155,7 +1473,8 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
     passageCount: verified.passageCount,
     invalidAnchorCount: verified.invalidAnchorCount,
     invalidFindingCount: verified.invalidFindingCount,
-    invalidFlagOutputCount: perAgent.filter(agent => agent.invalidOutput).length
+    invalidFlagOutputCount: perAgent.filter(agent => agent.invalidOutput).length,
+    ...(cat3GateStats ? { cat3Fast: cat3GateStats } : {})
   };
   tools?.logger?.runtime?.(
     `Post Writer HQ findings: ${verified.flagCount} verified (${verified.flagCount - verified.passageCount} direct, ${verified.passageCount} passage-scope).`
@@ -1187,22 +1506,67 @@ async function runHqCheck(turnContext, tools, settingsInput = null) {
   }
 
   const correctorMessages = buildCorrectorMessages(turnContext, readHqPromptText('corrector.txt'), verified.actionable, settings);
-  const correctorAssignment = resolveCheckerModelAssignment(settings, tools);
+  const correctorAssignment = resolveUnifiedHqAssignment(settings, tools);
   logModelAssignment(tools, 'Post Writer HQ corrector', correctorAssignment);
+  // Entry message is fixed for the initial call; the repair retry keeps the
+  // same trajectory and adds validation feedback as a user follow-up.
+  const correctorNamed = namePromptMessages(correctorMessages, 'corrector');
+  const correctorEntry = withFlagEntryMessage(correctorNamed, HQ_CORRECTOR_ENTRY_MESSAGE, [buildCorrectorCotMessage()]);
+  // Corrector on the shared prefix: rules + findings/draft become suffix user
+  // parts, CoT + entry stay trailing assistants. The retry feedback appends
+  // as a final user message in both shapes.
+  const correctorRules = String(readHqPromptText('corrector.txt')).trim();
+  const correctorTarget = correctorMessages.length > 1
+    ? String(correctorMessages[correctorMessages.length - 1]?.content || '').trim()
+    : '';
+  const correctorCotText = readHqPromptText('corrector_cot.txt').trim();
+  const correctorPrefixed = composeHqPrefixedRequest({
+    tools, turnContext,
+    requestId: 'hq_corrector',
+    actor: 'Post Writer HQ corrector',
+    assignment: correctorAssignment,
+    userParts: [
+      { id: 'task', text: correctorRules },
+      ...(correctorTarget ? [{ id: 'repair_target', text: correctorTarget }] : [])
+    ],
+    cotText: correctorCotText,
+    entryText: HQ_CORRECTOR_ENTRY_MESSAGE
+  });
   let result = null;
   let errors = [];
   let attempts = 0;
   for (let attempt = 0; attempt < 2; attempt++) {
     attempts++;
-    const retryFeedback = attempt === 0 ? [] : [{
-      role: 'user',
-      content: `Your previous correction was rejected (${errors.length} validation issue(s)). Rebuild the COMPLETE hunks JSON from the original numbered draft. Address EVERY verified finding and cited line, not just the failures listed below. No changes have been applied:\n${errors.slice(0, 30).join('\n')}`
+    // The retry must recompile the SAME named base (system/user) and append
+    // the feedback after the assistant entry, preserving message order:
+    // system, user, assistant(entry), user(feedback).
+    const retryFeedbackText = attempt === 0 ? null
+      : `Your previous correction was rejected (${errors.length} validation issue(s)). Rebuild the COMPLETE hunks JSON from the original numbered draft. Address EVERY verified finding and cited line, not just the failures listed below. No changes have been applied:\n${errors.slice(0, 30).join('\n')}`;
+    const retryFeedback = retryFeedbackText === null ? [] : [{
+      role: 'user', piece: 'corrector.repair_feedback',
+      text: retryFeedbackText
     }];
+    // Prefixed retry: recompose with the feedback as an extra trailing user
+    // part so the order stays prefix, user(task), asst(CoT), asst(entry),
+    // user(feedback). Falls back to the messages shape when uncomposable.
+    const prefixedRetry = attempt === 0 || !correctorPrefixed ? null : composeHqPrefixedRequest({
+      tools, turnContext,
+      requestId: 'hq_corrector_repair',
+      actor: 'Post Writer HQ corrector',
+      assignment: correctorAssignment,
+      userParts: [
+        { id: 'task', text: correctorRules },
+        ...(correctorTarget ? [{ id: 'repair_target', text: correctorTarget }] : []),
+        { id: 'repair_feedback', text: retryFeedbackText }
+      ],
+      cotText: correctorCotText,
+      entryText: HQ_CORRECTOR_ENTRY_MESSAGE
+    });
     try {
       const response = await tools.llm.runTask({
         msg: attempt ? 'Post Writer HQ Corrector Repair' : 'Post Writer HQ Corrector',
         requestId: attempt ? 'hq_corrector_repair' : 'hq_corrector',
-        prompt: { messages: namePromptMessages([...correctorMessages, ...retryFeedback], 'corrector') },
+        prompt: prefixedRetry ? prefixedRetry.prompt : (correctorPrefixed && attempt === 0 ? correctorPrefixed.prompt : { messages: [...correctorEntry, ...retryFeedback] }),
         model: correctorAssignment.model,
         provider: correctorAssignment.provider,
         params: {
@@ -1258,6 +1622,11 @@ function storeHqFindings(turnContext, tools, findingsByAgent) {
       id: finding.id,
       rule: finding.rule,
       scope: finding.scope,
+      confidence: normalizeFlagConfidence(finding.confidence),
+      ...(finding.draft_confidence !== undefined ? { draft_confidence: finding.draft_confidence } : {}),
+      ...(finding.review ? { review: finding.review } : {}),
+      confidenceStatus: finding.confidenceStatus || undefined,
+      filterReason: finding.filterReason || undefined,
       occurrences: finding.occurrences.map(entry => ({ line: entry.line, quote: entry.quote })),
       reason: String(finding.reason || '').slice(0, 500)
     }))
@@ -1405,14 +1774,27 @@ module.exports = {
   buildCheckerMessages,
   buildCompressedFlagMessages,
   buildCorrectorMessages,
+  buildCat3DialogueCotMessage,
+  buildCorrectorCotMessage,
+  composeHqPrefixedRequest,
+  getSharedPrefixPrepared,
+  withFlagEntryMessage,
+  HQ_FLAG_ENTRY_MESSAGE,
+  HQ_CONSISTENCY_ENTRY_MESSAGE,
+  HQ_CORRECTOR_ENTRY_MESSAGE,
   collectCompressedContext,
   parseFlagFindings,
   validateFlagFindings,
+  applyConfidenceGate,
+  buildFlagMessages,
+  applyCandidateTarget,
   parseHqCorrections,
   applyHqCorrectionsToLines,
   formatFindingsForCorrector,
   resolveSettings,
   resolveQualityModelAssignment,
+  resolveUnifiedHqAssignment,
+  resolveFastCat3ModelAssignment,
   runConsistencyCheck,
   runHqCheck,
   _private: {

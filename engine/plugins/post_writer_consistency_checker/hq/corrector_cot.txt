@@ -1,0 +1,84 @@
+<internal_correction_procedure>
+### Mandatory Correction Procedure (Pre-Response Analysis)
+
+Before outputting your hunks JSON, you will perform these six steps. This is your thought process for repairing the numbered draft. Keep working notes brief and concrete. Do not output your working notes.
+
+STEP 1 - MAP ALL FINDINGS BEFORE DRAFTING
+
+For EACH supplied finding, identify:
+
+1. DEFECT: What exactly does its reason say is wrong? Do not add a new diagnosis.
+2. TARGETS: Which original lines must change or be removed?
+3. PROTECTED EVIDENCE: Which cited lines establish facts and must remain verbatim?
+4. REQUIRED RESULT: What specific condition would resolve this finding? State it so the corrected passage can be checked against it.
+5. NECESSARY CONTRIBUTION: What information, action, question, or reaction does the existing passage provide that the surrounding scene still needs? If none, record "none."
+
+Precedence: the numbered draft's evidence comes first, the shared story context second. Use the shared context to resolve what the draft leaves ambiguous; never let it override what the draft explicitly establishes, and never invent facts the draft does not support.
+
+Finish mapping every finding before drafting any replacement. When findings share a passage, collect their required results together.
+
+STEP 2 - CHOOSE THE REPLACEMENT RANGES
+
+For each target or nearby group of targets:
+
+1. Read the line immediately before it. What does that line set up?
+2. Read the line immediately after it. What does that line expect or refer to?
+3. Would changing only the target break either connection?
+   - No: use the target line as the range.
+   - Yes: include only the neighboring lines necessary to restore the connection.
+4. If ranges overlap, combine them and combine their finding IDs.
+5. If targets are distant, use separate ranges. Keep every range local to its cited occurrences.
+
+Record each range using ORIGINAL start_line and end_line. Protect evidence-only lines within a range by copying them verbatim into its eventual replacement.
+
+Do not choose the smallest range merely because it is easiest. Choose the smallest range that can produce a coherent repair.
+
+STEP 3 - DRAFT THE ENTIRE REPAIR SET ONCE
+
+Work through the ranges in original order. For each range:
+
+1. Execute the required results assigned to its findings.
+2. Preserve the necessary contributions identified in Step 1.
+3. Make the opening follow from the preceding untouched line.
+4. Make the ending leave the following untouched line meaningful.
+5. Preserve established facts, speaker identities, characterization, player agency, and protected evidence unless a finding specifically requires a change.
+
+You may rewrite dialogue and narration, add lines, or remove lines when the repair needs it. A small change is acceptable if it genuinely resolves the finding. A cosmetic synonym swap that leaves the diagnosed problem intact is not.
+
+After drafting a range, move to the next one. Do NOT critique it, generate alternatives, or restart it yet. Finish ALL ranges first.
+
+STEP 4 - CHECK THE COMPLETE CORRECTED SCENE ONCE
+
+Read the scene in order, combining untouched lines with your proposed replacement ranges.
+
+For EACH finding, answer:
+
+- Is its required result now true?
+- Has every repair target actually changed or been removed?
+- Are its evidence-only lines still verbatim?
+
+For EACH replacement range, answer:
+
+- Does it follow from the preceding untouched line?
+- Does the following untouched line still make sense?
+- Did it lose a necessary contribution?
+- Did it introduce an unsupported fact, speaker change, action, or player decision?
+
+Record ONLY concrete failures and the exact adjustment needed. "Another wording might be better" is not a failure.
+
+Finish this check across the entire repair set before changing any draft.
+
+STEP 5 - REVISE FAILED CHECKS ONCE
+
+Visit only ranges with concrete failures from Step 4. Apply the recorded adjustments together, preserving what already passed. Leave passing ranges alone.
+
+Do not generate competing versions or begin another creative review cycle.
+
+STEP 6 - PACKAGE AND OUTPUT
+
+Collect the replacements into hunks in ORIGINAL line order, ready to emit as the required JSON. Each hunk has start_line and end_line (inclusive ORIGINAL 1-based range), finding_ids, and replacement_lines (complete new script lines WITHOUT number prefixes; an empty array deletes the range).
+
+Perform a final STRUCTURAL check only (coverage, IDs, non-overlap, locality, verbatim evidence, valid JSON). Fix structural packaging errors directly. Do not restart creative revision. Then output ONLY the JSON object.
+
+After you are done, close the </internal_correction_procedure> tags.
+</internal_correction_procedure>

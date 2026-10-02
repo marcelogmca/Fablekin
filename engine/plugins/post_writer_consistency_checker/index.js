@@ -52,8 +52,8 @@ module.exports = {
     },
     hq_quality_model_def: {
       type: 'select',
-      label: 'HQ Quality Flagger Model',
-      description: 'Model used by the 5 writing-quality flag agents (they receive a compressed context, so a cheaper model is fine).',
+      label: 'HQ Unified Model',
+      description: 'Model used by all 6 HQ flag agents plus the HQ corrector. One shared route means one prefix-cache key for the shared-prefix calls.',
       options: 'llm-aliases',
       default: { model: 'lowendmodel' }
     },
@@ -97,10 +97,55 @@ module.exports = {
       max: 6,
       default: 6
     },
+    HQ_CAT3_FAST_HEADER: {
+      type: 'header',
+      label: 'Experiment: Fast Dialogue Miner'
+    },
+    HQ_CAT3_FAST_DESCRIPTION: {
+      type: 'description',
+      content: 'Replaces the Dialogue Dynamics agent with a single non-reasoning call that sprays many confidence-scored candidates. Code keeps only those at or above the threshold and sends them to the corrector. Faster, but relies on self-scored evidence instead of an independent verifier.'
+    },
+    hq_cat3_fast_enabled: {
+      type: 'checkbox',
+      label: 'Enable Fast Dialogue Miner',
+      description: 'Use the non-reasoning candidate miner for the Dialogue Dynamics agent instead of the CoT review procedure.',
+      default: false
+    },
+    hq_cat3_fast_model_def: {
+      type: 'select',
+      label: 'Fast Miner Model',
+      description: 'Model for the candidate miner. Must be able to disable reasoning (reasoning_effort "off"), which on the generic relay means a DeepSeek model. Other models ignore the flag and keep reasoning.',
+      options: 'llm-aliases',
+      default: { model: 'veryhighendmodel' }
+    },
+    hq_cat3_fast_threshold: {
+      type: 'number',
+      label: 'Candidate Confidence Threshold',
+      description: 'Minimum self-scored confidence (0-100) for a mined candidate to reach the corrector. Lower keeps more, at the cost of more false positives.',
+      min: 0,
+      max: 100,
+      default: 80
+    },
+    hq_cat3_fast_target: {
+      type: 'number',
+      label: 'Candidate Target',
+      description: 'Number of candidates the miner aims for. Breadth pressure only; it never invents candidates to fill the count.',
+      min: 1,
+      max: 40,
+      default: 20
+    },
+    hq_cat3_fast_max_tokens: {
+      type: 'number',
+      label: 'Fast Miner Max Tokens',
+      description: 'Output allowance for the candidate miner. Long candidate lists need more room than the standard flag allowance.',
+      min: 512,
+      max: 16000,
+      default: 6000
+    },
     reuse_writer_model: {
       type: 'checkbox',
       label: 'Reuse the same model/provider as the Writer',
-      description: 'Runs the checker and HQ corrector on the Writer model/provider when available. Their prompts are independent of the Writer prompt.',
+      description: 'Runs the single-pass checker on the Writer model/provider when available. HQ mode always uses the HQ Unified Model above. Prompts are independent of the Writer prompt.',
       default: true
     },
     model_def: {

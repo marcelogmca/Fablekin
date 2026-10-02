@@ -77,7 +77,10 @@ var jsonTree = (function() {
                     break;
                 
                 case 'object':
-                    var keys = Object.keys(obj).sort();
+                    // Preserve insertion order so the viewer reflects the
+                    // original generation/storage order instead of sorting
+                    // keys alphabetically.
+                    var keys = Object.keys(obj);
                     
                     isLast = keys.length - 1;
                     

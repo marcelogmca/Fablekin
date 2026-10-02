@@ -1,0 +1,80 @@
+<internal_review_procedure>
+### Dialogue Review Procedure (Mandatory Pre-Response Analysis)
+
+Before outputting your findings JSON, you will perform this three-pass procedure. This is your thought process for reviewing the numbered draft. Keep working notes terse: short statements with line numbers, not paragraphs of analysis. Do not draft replacement wording.
+
+You are reviewing a completed draft, not planning or rewriting a scene.
+
+### Pass 1 - Walk the draft once, line by line
+
+Start at the first numbered line and proceed in order to the last. For each line, answer only these questions:
+
+**1. Who is speaking, and who is this line about?**
+- Speaker: the character name, or narration. Do not assume the subject is the speaker. "You're freezing" describes the addressee; "I'm freezing" describes the speaker.
+- If a pronoun or implied addressee cannot be resolved from the exchange, leave it unresolved. Do not guess an identity to create a finding.
+
+**2. Does this line establish or update a preference, physical state, memory, knowledge, possession, intention, or assigned role?**
+- If no: skip to question 4.
+- If yes: reduce it to a short statement keeping its subject, time, and qualifiers. Keep the line number with it.
+  - "I hate this cold water" -> the speaker dislikes THIS water, not all cold water.
+  - "I used to hate swimming" -> a PAST preference, not a current one.
+  - "You take the key" -> an instruction to transfer custody, not proof the transfer happened.
+  - "I gave you the key" -> the speaker claims a COMPLETED transfer.
+- Treat dialogue as what the speaker asserts, not as objective world truth.
+
+**3. Have earlier lines established something about the same person, the same subject, and the same relevant time or event?**
+- If no: keep the statement and continue.
+- If yes: put the two statements side by side and answer:
+  a. Are they about the same thing? A different key, occasion, or meaning is not a contradiction.
+  b. Can both be true as written? "I'm cold" and "You're hot" are compatible. "I'm cold" and "My hands are warm" can also be compatible.
+  c. Does the later line reverse the earlier state, or claim an experience or role previously assigned to somebody else?
+- Only case (c) needs the bridge check. Mere similarity to another character's line is not a swap.
+
+**4. If this line answers or reacts to somebody: whose experience or responsibility does the reply speak from?**
+- What question, request, or statement is it responding to? Who was addressed?
+- A different person may legitimately answer. Flag only when the reply takes another participant's explicitly established perspective in a way the scene does not explain.
+
+**5. The bridge check (only when question 3c or 4 raised a possible conflict).**
+Between the establishing line and the later line, look for a relevant change:
+- Did conditions change? Was there a handoff, a change of mind, a correction?
+- Does the exchange establish a joke, lie, quotation, or deliberate misunderstanding?
+- Does an explicit later clarification resolve it?
+- Name the supporting line if a bridge exists. Do not invent an unseen handoff, an unstated decision, or an imagined joke.
+  - Bridge explains the difference: update the earlier statement, no finding.
+  - Meaning or reference stays ambiguous: no finding.
+  - Same subject, incompatible statements, no supported bridge: record a candidate. Preserve the establishing lines as evidence; mark the defective later lines as repair targets. Do not decide that swapping the speaker is the fix.
+
+Carry relevant earlier statements forward across unrelated dialogue; many lines passing does not erase them. Keep candidates as short notes (rule, lines). Do not stop after the first candidate, and do not start rewriting.
+
+### Pass 2 - Judge the scene-level dialogue dynamics
+
+Using what Pass 1 showed, answer each of these once for the whole scene:
+
+**1. Participation:** List the major on-camera characters. For each: when do they enter and leave, and do they speak repeatedly while present? Flag a character who stays present through sustained stretches yet contributes nothing, or only one token reply.
+- A character entering near the end does not need the same participation as someone present throughout. A physically unable character is exempt.
+
+**2. Dialogue presence:** Find the longest narration-led passage. Is an interaction being summarized instead of played - an argument, confession, reunion, or decision rendered as narration about talking rather than spoken exchange? Name the passage.
+- Do not flag a brief quiet beat. Flag sustained narration where the scene's own stakes call for voices.
+
+**3. Rhythm:** Find the longest run of alternating short replies. Does that uniform pattern persist through material that needs a developed answer or a sustained speech (a story, an explanation, a eulogy)? Name the run.
+- Do not flag a brief rapid exchange; that is natural. Flag uniformity that flattens emphasis across a whole stretch.
+
+**4. Engagement:** For each exchange, who addresses whom? If companions consistently interact only through the player although the scene gives them reason to address each other, name the exchanges.
+- Do not flag the mere absence of disagreement or of a callback. Flag a supported pattern: for example, the scene establishes opposing positions and everyone immediately agrees with no explanation, or a past event the compact history marks as relevant goes unreferenced at the exact choice it should inform.
+
+Group instances of one underlying problem into one finding. Do not invent extra findings to demonstrate thoroughness.
+
+### Pass 3 - Verify each candidate once, then stop
+
+For each candidate from Pass 1 and Pass 2:
+1. Name the exact rule and the supporting draft lines.
+2. For ownership: establishing statement, incompatible later statement, and the bridge check result with its supporting line or its absence.
+3. Discard the candidate if: the meaning or reference is ambiguous; a supported bridge explains it; sarcasm, disagreement, deception, misunderstanding, an explicit change of mind, or a correction covers it; or it depends on canon outside this draft. Use textual evidence; do not invent an off-page explanation because one is imaginable.
+4. Keep it only as a supported violation. Diagnose the problem; propose no rewrite. Mark defective lines as repair_targets; keep establishing evidence in occurrences without requiring it to change.
+
+Decide each candidate once. Do not reopen one unless another candidate supplies specific new evidence for it.
+
+Your review is complete when: every numbered line has been walked once, the four scene-level questions have been answered once, each candidate has been kept or discarded, and the quotes, line numbers, and repair targets have been checked against the draft. Do not start another general review, search for hypothetical missed problems, or simulate the corrector's rewrite.
+
+After you are done, close the </internal_review_procedure> tags.
+</internal_review_procedure>

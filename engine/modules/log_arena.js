@@ -318,7 +318,13 @@ function createLogArenaService({ databasePath, callLLMDirect, listConfiguredProv
   const emitProgress = (event) => io.emit('log-arena-progress', event);
   const makePresetKey = (requestTitle, pluginId = '') => `${String(pluginId || '').trim()}::${String(requestTitle || '').trim()}`;
   const makeId = prefix => `${prefix}_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`;
-  const pricingFor = (provider, model) => readSettings()?.infrastructure?.model_costs?.[provider]?.[model] || null;
+  const pricingFor = (provider, model) => {
+    try {
+      return require('./model_pricing.js').getModelPricing(readSettings(), provider, model);
+    } catch {
+      return null;
+    }
+  };
 
   function waitForArenaRetry(signal) {
     return new Promise((resolve, reject) => {

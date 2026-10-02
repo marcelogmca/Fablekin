@@ -9,7 +9,7 @@ const { PipelineAbortError } = require('./plugin_manager/runtime/errors.js');
 const devCache = require('./memory_manager/storage/devcache');
 const JSON5 = require('json5');
 const { jsonrepair } = require('jsonrepair');
-const { extractReasoningContent } = require('./llm_response_metadata.js');
+const { extractReasoningContent, extractReasoningChunkText, extractContentChunkText } = require('./llm_response_metadata.js');
 const { resolveModelAlias: resolveModelAliasFromSettings } = require('./model_routing.js');
 
 const DEFAULT_LLM_TIMEOUT_MS = 300000;
@@ -35,6 +35,12 @@ function createLlmAbortError(reason) {
  * accept the `timeout` invocation option without actually terminating a stuck
  * HTTP request, so the local race is required in addition to aborting the
  * underlying request.
+ *
+ * When `options.onToken` is supplied, the model instance runs with
+ * `streaming: true` and per-token deltas are forwarded to the callback as
+ * `{ content, reasoning }` while the returned promise still resolves with the
+ * complete aggregated response. Streaming is therefore display-only: code
+ * only moves once the LLM call concludes.
  */
 async function invokeModelWithDeadline(configuredModel, messages, options = {}) {
   const parsedTimeout = Number(options.timeout);
@@ -42,6 +48,7 @@ async function invokeModelWithDeadline(configuredModel, messages, options = {}) 
     ? Math.floor(parsedTimeout)
     : DEFAULT_LLM_TIMEOUT_MS;
   const externalSignal = options.signal || null;
+  const onToken = typeof options.onToken === 'function' ? options.onToken : null;
   const requestController = typeof globalThis.AbortController === 'function'
     ? new globalThis.AbortController()
     : null;
@@ -49,6 +56,30 @@ async function invokeModelWithDeadline(configuredModel, messages, options = {}) 
 
   let timeoutTimer = null;
   let externalAbortHandler = null;
+
+  const invokeOptions = requestSignal
+    ? { timeout: timeoutMs, signal: requestSignal }
+    : { timeout: timeoutMs };
+  if (onToken) {
+    // LangChain aggregates the stream internally and resolves with the full
+    // message; the callback only observes deltas along the way. NOTE: the
+    // handler must declare `lc_prefer_streaming`, otherwise BaseChatModel
+    // takes the non-streaming _generate() path and this callback never fires.
+    invokeOptions.callbacks = [{
+      lc_prefer_streaming: true,
+      name: 'fablekin_stream_display',
+      handleLLMNewToken(token, _index, _runId, _parentRunId, _tags, fields) {
+        const chunk = fields?.chunk;
+        const reasoning = extractReasoningChunkText(chunk) || '';
+        const content = typeof token === 'string' && token ? token : extractContentChunkText(chunk);
+        try {
+          onToken({ content: content || '', reasoning });
+        } catch {
+          // Token display must never break narrative generation.
+        }
+      }
+    }];
+  }
 
   const deadlinePromise = new Promise((_, reject) => {
     timeoutTimer = setTimeout(() => {
@@ -61,7 +92,7 @@ async function invokeModelWithDeadline(configuredModel, messages, options = {}) 
   });
 
   const competingPromises = [
-    configuredModel.invoke(messages, requestSignal ? { timeout: timeoutMs, signal: requestSignal } : { timeout: timeoutMs }),
+    configuredModel.invoke(messages, invokeOptions),
     deadlinePromise
   ];
 
@@ -505,11 +536,20 @@ function normalizeReasoningParamsForProvider(providerKey, extra = {}) {
   if (normalized.reasoning && (providerKey === 'openai' || providerKey === 'deepseek' || providerKey === 'generic')) {
     const effort = normalized.reasoning.effort;
     if (providerKey === 'generic') {
-      // Commander GOAT (and OpenAI-compatible relays generally) only accept
-      // low/medium/high/xhigh/max. 'none' means "no reasoning" — send nothing.
-      // 'minimal' has no upstream equivalent; 'low' is the closest level.
+      // Commander GOAT reasoning contract (verified live): reasoning_effort
+      // accepts low/medium/high/xhigh/max, plus 'off' ONLY on models that can
+      // disable thinking (in practice the DeepSeek family). There is no generic
+      // 'none' level and `thinking`/`reasoning.enabled` flags are ignored by
+      // models that cannot turn thinking off (e.g. gpt-6-luna reasons no matter
+      // what). We therefore express an internal 'none' as the Anthropic-style
+      // `thinking: { type: 'disabled' }` ask - honored where supported, ignored
+      // elsewhere - and never auto-send 'off' (it 400s on non-DeepSeek models).
+      // Callers that must guarantee no reasoning should target a model whose
+      // route sets reasoning_effort 'off'. 'minimal' maps to 'low'.
       const mapped = effort === 'minimal' ? 'low' : effort;
-      if (mapped && mapped !== 'none' && !normalized.reasoning_effort) {
+      if (mapped === 'none') {
+        if (!normalized.thinking) normalized.thinking = { type: 'disabled' };
+      } else if (mapped && !normalized.reasoning_effort) {
         normalized.reasoning_effort = mapped;
       }
     } else if (effort && !normalized.reasoning_effort) {
@@ -527,8 +567,12 @@ function normalizeReasoningParamsForProvider(providerKey, extra = {}) {
   if (providerKey === 'generic' && (normalized.reasoning_effort === 'none' || normalized.reasoning_effort === 'minimal')) {
     // Same Commander GOAT contract as above, for callers that set
     // reasoning_effort directly instead of via reasoning.effort.
-    if (normalized.reasoning_effort === 'none') delete normalized.reasoning_effort;
-    else normalized.reasoning_effort = 'low';
+    if (normalized.reasoning_effort === 'none') {
+      delete normalized.reasoning_effort;
+      if (!normalized.thinking) normalized.thinking = { type: 'disabled' };
+    } else {
+      normalized.reasoning_effort = 'low';
+    }
   }
   return normalized;
 }
@@ -932,6 +976,18 @@ async function callLLM({ prompt, model, provider = null, retries = 1, timeout = 
     liveCallSettled = true;
     liveTracker.end(liveCallId, payload);
   };
+  // Reasoning the aggregated provider response omits (LangChain's
+  // chat-completions converter drops delta.reasoning_content) is recovered
+  // from the streamed deltas accumulated by the live tracker. Peeked before
+  // settle (which flushes the buffer), preferred only when the response
+  // itself carries no reasoning.
+  const streamedReasoningFallback = () => {
+    try {
+      return liveTracker.peekStreamedReasoning?.(liveCallId) || null;
+    } catch {
+      return null;
+    }
+  };
 
   try {
     for (let attempt = 1; attempt <= totalAttempts; attempt++) {
@@ -1047,15 +1103,31 @@ async function callLLM({ prompt, model, provider = null, retries = 1, timeout = 
         Logger.log(safeModule, resolvedModel, `Making API call attempt ${attempt}/${totalAttempts} via [${providerKey}]`, 'start');
 
         // Create a dynamic instance for this specific call to avoid mutating the base instance
+        // When a token sink is active the instance streams internally: LangChain
+        // aggregates the chunks and invoke() still resolves with the full message.
+        const streamDisplay = settings.infrastructure?.llm_stream_display;
+        const streamToDisplay = streamDisplay?.enabled !== false && liveCallId;
+        const streamUsageForProvider = (() => {
+          const override = settings.infrastructure?.providers?.[providerKey]?.stream_usage;
+          if (typeof override === 'boolean') return override;
+          // Commander GOAT and similar relays may reject stream_options, so
+          // usage falls back to the existing character-based estimate there.
+          return providerKey !== 'generic';
+        })();
         const dynamicInstance = new baseModelInstance.constructor({
           ...baseModelInstance.lc_kwargs, // Copy original configuration (API key, baseURL)
           model: resolvedModel,           // Support both 'model' (Gemini, Anthropic)
           modelName: resolvedModel,       // and 'modelName' (OpenAI)
           modelKwargs: callExtraParams,    // Pass extra params directly to the API request body
           ...(baseModelInstance instanceof ChatOpenAI ? { __includeRawResponse: true } : {}),
+          ...(streamToDisplay && baseModelInstance instanceof ChatOpenAI
+            ? { streaming: true, streamUsage: streamUsageForProvider }
+            : {})
         });
 
-        // Disable LangChain's internal retries to rely solely on our custom loop
+        // withConfig merges into the instance config; invoke() reads
+        // `streaming` from the model instance itself, so it must already be
+        // set on dynamicInstance above (not injected here).
         const configuredModel = dynamicInstance.withConfig({ retries: 0 });
 
         // Convert standard message format to LangChain's message objects
@@ -1084,7 +1156,13 @@ async function callLLM({ prompt, model, provider = null, retries = 1, timeout = 
           });
           response = await invokeModelWithDeadline(configuredModel, langChainMessages, {
             timeout,
-            signal: llmAbort.signal
+            signal: llmAbort.signal,
+            ...(streamToDisplay ? {
+              onToken: (delta) => liveTracker.chunk(liveCallId, {
+                content: delta.content,
+                reasoning: delta.reasoning
+              })
+            } : {})
           });
           llmAbort.throwIfCancelled(`LLM response for ${safeModule}`);
         } finally {
@@ -1093,7 +1171,7 @@ async function callLLM({ prompt, model, provider = null, retries = 1, timeout = 
         }
 
         let content = response.content;
-        const reasoning = extractReasoningContent(response);
+        const reasoning = extractReasoningContent(response) || streamedReasoningFallback();
         cancellation.throwIfCancelled(`LLM response handling for ${safeModule}`);
 
         // Sanitize CJK artifacts from multi-language models if enabled

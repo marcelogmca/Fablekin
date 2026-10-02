@@ -262,7 +262,8 @@ function createLogHandlers({ fs, logsDir, getProjectName, settings, Logger, emit
 
         async getModelPricing(_socket) {
             try {
-                emitResponse('get-model-pricing-response', { success: true, pricing: settings.infrastructure?.model_costs });
+                const { getAllPricing } = require('../../model_pricing.js');
+                emitResponse('get-model-pricing-response', { success: true, pricing: getAllPricing(settings) });
             } catch (error) {
                 emitResponse('get-model-pricing-response', { success: false, error: error.message });
             }

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { extractReasoningContent } = require('./llm_response_metadata.js');
+const { extractReasoningContent, extractReasoningChunkText, extractContentChunkText } = require('./llm_response_metadata.js');
 
 test('extracts OpenAI-compatible reasoning from additional kwargs', () => {
   assert.equal(extractReasoningContent({
@@ -41,4 +41,45 @@ test('extracts reasoning content blocks without treating answer blocks as reason
 test('returns null when no meaningful reasoning was returned', () => {
   assert.equal(extractReasoningContent({ additional_kwargs: { reasoning: '  ' } }), null);
   assert.equal(extractReasoningContent({ content: 'Answer only' }), null);
+});
+
+test('extracts reasoning text from streaming chunk shapes', () => {
+  assert.equal(
+    extractReasoningChunkText({ additional_kwargs: { reasoning_content: 'step one' } }),
+    'step one'
+  );
+  assert.equal(
+    extractReasoningChunkText({ response_metadata: { reasoning: 'step two' } }),
+    'step two'
+  );
+  assert.equal(
+    extractReasoningChunkText({ additional_kwargs: { reasoning: { type: 'reasoning', summary: [{ text: 'delta one' }] } } }),
+    'delta one'
+  );
+  // Chat-completions transport: LangChain drops delta.reasoning_content, but
+  // the raw SSE payload survives on __includeRawResponse.
+  assert.equal(
+    extractReasoningChunkText({
+      additional_kwargs: {
+        __raw_response: { choices: [{ delta: { reasoning_content: 'raw thought' } }] }
+      }
+    }),
+    'raw thought'
+  );
+  assert.equal(
+    extractReasoningChunkText({
+      additional_kwargs: {
+        __raw_response: { choices: [{ delta: { reasoning_details: [{ text: 'a' }, { text: 'b' }] } }] }
+      }
+    }),
+    'ab'
+  );
+  assert.equal(extractReasoningChunkText({ text: 'visible' }), '');
+  assert.equal(extractReasoningChunkText(null), '');
+});
+
+test('extracts visible text from streaming chunk shapes', () => {
+  assert.equal(extractContentChunkText({ text: 'Hello ' }), 'Hello ');
+  assert.equal(extractContentChunkText({ content: 'world' }), 'world');
+  assert.equal(extractContentChunkText({ additional_kwargs: { reasoning_content: 'hidden' } }), '');
 });

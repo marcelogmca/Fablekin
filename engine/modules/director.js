@@ -24,6 +24,9 @@ const pendingLedgerUpdatesByProject = new Map();
 const DEFAULT_DIRECTOR_ANALYSIS_TIMEOUT = 120000;
 const DEFAULT_DIRECTOR_LEDGER_TIMEOUT = 60000;
 const DEFAULT_DIRECTOR_RETRIES = 0;
+// The async ledger runs in the background, so a slow reasoning model can be
+// given a long deadline and several attempts without holding up the turn.
+const DEFAULT_DIRECTOR_LEDGER_RETRIES = 5;
 // No application-wide sampling defaults (temperature/top_p/penalties): the
 // selected model runs its native settings unless director.llm_params overrides.
 const DEFAULT_DIRECTOR_LLM_PARAMS = {
@@ -75,6 +78,7 @@ function getConfig() {
     RETRIES: parseNonNegativeInteger(director.retries, DEFAULT_DIRECTOR_RETRIES),
     ANALYSIS_TIMEOUT: analysisTimeout,
     LEDGER_TIMEOUT: parsePositiveInteger(director.ledger_timeout, Math.min(analysisTimeout, DEFAULT_DIRECTOR_LEDGER_TIMEOUT)),
+    LEDGER_RETRIES: parseNonNegativeInteger(director.ledger_retries, DEFAULT_DIRECTOR_LEDGER_RETRIES),
     PLUGIN_FEEDBACK_TIMEOUT: parsePositiveInteger(director.plugin_feedback_timeout, Math.min(analysisTimeout, DEFAULT_DIRECTOR_LEDGER_TIMEOUT)),
     CHAPTERS_TO_REVIEW: director.chapters_to_review ?? 4,
     DIRECT_PLUGINS_ENABLED: director.direct_plugins_enabled !== false,
@@ -1210,8 +1214,9 @@ async function runDeferredLedgerUpdate(promptObj, config, analysisResponse, turn
         prompt: preparedLedgerAsync,
         model: config.THINKING_MODEL,
         provider: config.PROVIDER,
-        // Keep call-2 completely background: no retry status noise in UI.
-        retries: 0,
+        // Background call: retries are retried silently (the road shows the
+        // attempt count, not a blocking status), so a slow model can recover.
+        retries: config.LEDGER_RETRIES,
         timeout: config.LEDGER_TIMEOUT,
         validationRegex: null,
         extra: { ...config.LLM_PARAMS },

@@ -51,7 +51,7 @@ Legacy root-level theme and socket fields are normalized into `infrastructure` w
 
 ### Model Pricing
 
-`infrastructure.model_costs` holds USD-per-million-token pricing used by the Log Inspector:
+Shipped default pricing lives in `workspace/model_pricing.json` (USD-per-million-token, used by the Log Inspector). `infrastructure.model_costs` in `workspace/settings.json` holds sparse per-model overrides that merge over those defaults:
 
 ```json
 {
